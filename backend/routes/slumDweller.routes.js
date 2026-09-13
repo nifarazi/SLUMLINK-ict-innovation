@@ -16,6 +16,11 @@ import {
   updateChildInfo,
   updateSpouseStatus,
   updateChildStatus,
+  reviewSpouseUpdate,
+  reviewChildUpdate,
+  getSpouseDocument,
+  getChildDocument,
+  getMemberDocuments,
   initPhoneChange,
   verifyCurrentPhone,
   sendNewPhoneOTP,
@@ -75,6 +80,21 @@ router.put("/:slumId/child/:childId", updateChildInfo);
 
 // PATCH /api/slum-dweller/:slumId/child/:childId/status - Update child status
 router.patch("/:slumId/child/:childId/status", upload.single('death_certificate'), updateChildStatus);
+
+// GET /api/slum-dweller/:slumId/spouse/:spouseId/document/:docType
+router.get("/:slumId/spouse/:spouseId/document/:docType", getSpouseDocument);
+
+// GET /api/slum-dweller/:slumId/child/:childId/document/:docType
+router.get("/:slumId/child/:childId/document/:docType", getChildDocument);
+
+// GET /api/slum-dweller/:slumId/member-documents
+router.get("/:slumId/member-documents", getMemberDocuments);
+
+// POST /api/slum-dweller/:slumId/spouse/:spouseId/review - Approve/reject spouse updates
+router.post("/:slumId/spouse/:spouseId/review", reviewSpouseUpdate);
+
+// POST /api/slum-dweller/:slumId/child/:childId/review - Approve/reject child updates
+router.post("/:slumId/child/:childId/review", reviewChildUpdate);
 
 // POST /api/slum-dweller/:slumCode/change-password - Change password
 router.post("/:slumCode/change-password", changePassword);

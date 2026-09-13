@@ -158,6 +158,7 @@
       };
       var parts = timeStr.split(' ');
       var num = parseInt(parts[0]);
+      if (Number.isNaN(num) || parts.length < 2) return 0;
       var unit = parts[1].toLowerCase();
       
       if (unit.includes('hour')) return num * multipliers.hour;
@@ -239,6 +240,39 @@
     }
 
     renderNotifications();
+
+    async function loadUpdateNotifications() {
+      try {
+        const response = await fetch('/api/slum-dweller/active');
+        const result = await response.json();
+
+        if (result.status !== 'success') return;
+
+        const updates = (result.data || [])
+          .filter(function(account) {
+            const updateCount = Number(account.spouse_updates || 0) + Number(account.child_updates || 0);
+            return updateCount > 0;
+          })
+          .map(function(account) {
+            return {
+              type: 'Active Resident',
+              message: 'Resident "' + (account.full_name || 'Unknown') + '" from "' + (account.area || '-') + '" has submitted family member updates for review.',
+              icon: '📄',
+              time: 'Just now',
+              link: 'SlumResidentsInfo.html?id=' + account.id
+            };
+          });
+
+        if (updates.length > 0) {
+          notifications = updates.concat(notifications);
+          renderNotifications();
+        }
+      } catch (error) {
+        console.error('Error loading update notifications:', error);
+      }
+    }
+
+    loadUpdateNotifications();
     
     document.getElementById('sortBtn').addEventListener('click', function(e) {
       e.stopPropagation();

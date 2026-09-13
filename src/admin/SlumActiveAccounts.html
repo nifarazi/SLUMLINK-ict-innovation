@@ -64,6 +64,17 @@
       font-weight: bold;
       font-size: 12px;
     }
+
+    .update-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-left: 6px;
+      border-radius: 50%;
+      background: #c0392b;
+      box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.15);
+      vertical-align: middle;
+    }
   </style>
 </head>
 <body>
@@ -227,10 +238,18 @@
 
         filtered.forEach(function (account) {
           const row = document.createElement('tr');
+          const updateCount = Number(account.spouse_updates || 0) + Number(account.child_updates || 0);
+          const hasUpdates = updateCount > 0;
 
           // Name
           const nameCell = document.createElement('td');
           nameCell.textContent = account.full_name || 'Unknown';
+          if (hasUpdates) {
+            const dot = document.createElement('span');
+            dot.className = 'update-dot';
+            dot.title = 'Pending family updates';
+            nameCell.appendChild(dot);
+          }
           row.appendChild(nameCell);
 
           // Slum Code
@@ -270,6 +289,12 @@
           statusBadge.className = 'status-badge';
           statusBadge.textContent = 'Active';
           statusCell.appendChild(statusBadge);
+          if (hasUpdates) {
+            const dot = document.createElement('span');
+            dot.className = 'update-dot';
+            dot.title = 'Pending family updates';
+            statusCell.appendChild(dot);
+          }
           row.appendChild(statusCell);
 
           // Actions

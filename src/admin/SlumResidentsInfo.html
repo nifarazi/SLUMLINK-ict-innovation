@@ -210,6 +210,7 @@
   <script src="adminSlumAnalytics.js"></script>
   <script>
     let currentResident = null;
+    let currentResidentId = null;
 
     function formatDate(value) {
       if (!value) return '-';
@@ -226,6 +227,104 @@
       return skills.length ? skills.join(', ') : '-';
     }
 
+    function renderMemberDocButtons(memberType, member, labels) {
+      const buttons = [];
+      if (memberType === 'spouse') {
+        if (member.has_marriage_certificate) {
+          buttons.push({ type: 'marriage_certificate', label: labels.marriage });
+        }
+        if (member.has_divorce_certificate) {
+          buttons.push({ type: 'divorce_certificate', label: labels.divorce });
+        }
+      }
+
+      if (memberType === 'child') {
+        if (member.has_birth_certificate) {
+          buttons.push({ type: 'birth_certificate', label: labels.birth });
+        }
+        if (member.has_death_certificate) {
+          buttons.push({ type: 'death_certificate', label: labels.death });
+        }
+      }
+
+      if (buttons.length === 0) return '';
+
+      return `
+        <div class="action-buttons">
+          ${buttons
+            .map((btn) => `
+              <button class="btn btn-secondary" onclick="viewMemberDocument('${memberType}', ${member.id}, '${btn.type}')">${btn.label}</button>
+            `)
+            .join('')}
+        </div>
+      `;
+    }
+
+    function buildMemberDocumentsFromResident() {
+      const resident = currentResident?.resident;
+      if (!resident?.slum_code) return [];
+
+      const allSpouses = currentResident?.spouses || [];
+      const allChildren = currentResident?.children || [];
+
+      const activeSpouses = allSpouses.filter((spouse) => spouse.status === 'active');
+      const activeChildren = allChildren.filter((child) => child.status === 'active');
+
+      const documents = [];
+
+      activeSpouses.forEach((spouse) => {
+        if (spouse.has_marriage_certificate) {
+          documents.push({
+            source: 'member',
+            member_type: 'spouse',
+            member_id: spouse.id,
+            member_name: spouse.name,
+            document_type: 'marriage_certificate',
+            document_title: 'Marriage Certificate',
+            uploaded_at: spouse.created_at
+          });
+        }
+        if (spouse.has_divorce_certificate) {
+          documents.push({
+            source: 'member',
+            member_type: 'spouse',
+            member_id: spouse.id,
+            member_name: spouse.name,
+            document_type: 'divorce_certificate',
+            document_title: 'Divorce Certificate',
+            uploaded_at: spouse.created_at
+          });
+        }
+      });
+
+      activeChildren.forEach((child) => {
+        if (child.has_birth_certificate) {
+          documents.push({
+            source: 'member',
+            member_type: 'child',
+            member_id: child.id,
+            member_name: child.name,
+            document_type: 'birth_certificate',
+            document_title: 'Birth Certificate',
+            uploaded_at: child.created_at
+          });
+        }
+        if (child.has_death_certificate) {
+          documents.push({
+            source: 'member',
+            member_type: 'child',
+            member_id: child.id,
+            member_name: child.name,
+            document_type: 'death_certificate',
+            document_title: 'Death Certificate',
+            uploaded_at: child.created_at
+          });
+        }
+      });
+
+      return documents;
+    }
+
     document.addEventListener('DOMContentLoaded', async function () {
       const mainContent = document.getElementById('mainContent');
       const params = new URLSearchParams(window.location.search);
@@ -236,9 +335,13 @@
         return;
       }
 
-      // Fetch resident data from database
+      currentResidentId = residentId;
+      await loadResident(mainContent);
+    });
+
+    async function loadResident(mainContent) {
       try {
-        const response = await fetch(`/api/slum-dweller/${residentId}`);
+        const response = await fetch(`/api/slum-dweller/${currentResidentId}`);
         const result = await response.json();
 
         if (result.status !== 'success' || !result.data) {
@@ -252,13 +355,17 @@
         console.error('Error loading resident:', error);
         mainContent.innerHTML = '<div class="error-message">Error loading resident information. Please try again.</div>';
       }
-    });
+    }
 
     function renderResidentInfo() {
       const mainContent = document.getElementById('mainContent');
       const resident = currentResident.resident;
-      const spouses = currentResident.spouses || [];
-      const children = currentResident.children || [];
+      const allSpouses = currentResident.spouses || [];
+      const allChildren = currentResident.children || [];
+      const activeSpouses = allSpouses.filter((spouse) => spouse.status === 'active');
+      const activeChildren = allChildren.filter((child) => child.status === 'active');
+      const pendingSpouses = allSpouses.filter((spouse) => spouse.status === 'pending_add' || spouse.status === 'pending_remove');
+      const pendingChildren = allChildren.filter((child) => child.status === 'pending_add' || child.status === 'pending_remove');
 
       const statusBadge = resident.status === 'accepted' ? '<span style="background: rgba(45, 122, 61, 0.15); color: #2d7a3d; padding: 4px 8px; border-radius: 4px; font-weight: bold;">Active</span>' : 
                          resident.status === 'pending' ? '<span style="background: rgba(217, 165, 116, 0.15); color: #d9a574; padding: 4px 8px; border-radius: 4px; font-weight: bold;">Pending</span>' : 
@@ -341,9 +448,9 @@
       `;
 
       // Spouses
-      if (spouses.length > 0) {
-        html += '<div class="info-section"><h3>Spouse Information (' + spouses.length + ')</h3>';
-        spouses.forEach((spouse, idx) => {
+      if (activeSpouses.length > 0) {
+        html += '<div class="info-section"><h3>Spouse Information (' + activeSpouses.length + ')</h3>';
+        activeSpouses.forEach((spouse, idx) => {
           html += `
             <div class="subsection">
               <h4>Spouse ${idx + 1}</h4>
@@ -392,9 +499,9 @@
       }
 
       // Children
-      if (children.length > 0) {
-        html += '<div class="info-section"><h3>Children Information (' + children.length + ')</h3>';
-        children.forEach((child, idx) => {
+      if (activeChildren.length > 0) {
+        html += '<div class="info-section"><h3>Children Information (' + activeChildren.length + ')</h3>';
+        activeChildren.forEach((child, idx) => {
           html += `
             <div class="subsection">
               <h4>Child ${idx + 1}</h4>
@@ -442,6 +549,85 @@
         html += '</div>';
       }
 
+      // Pending updates section
+      if (pendingSpouses.length > 0 || pendingChildren.length > 0) {
+        html += '<div class="info-section"><h3>Pending Updates</h3>';
+
+        pendingSpouses.forEach((spouse, idx) => {
+          const updateLabel = spouse.status === 'pending_add' ? 'Add request' : 'Remove request';
+          const docButtons = renderMemberDocButtons('spouse', spouse, {
+            marriage: 'View Marriage Certificate',
+            divorce: 'View Divorce Certificate'
+          });
+          html += `
+            <div class="subsection">
+              <h4>Spouse Update ${idx + 1} (${updateLabel})</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">Name</span>
+                  <span class="info-value">${spouse.name || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">NID</span>
+                  <span class="info-value">${spouse.nid || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Mobile</span>
+                  <span class="info-value">${spouse.mobile || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Skills</span>
+                  <span class="info-value">${formatSkills(spouse)}</span>
+                </div>
+              </div>
+              ${docButtons}
+              <div class="action-buttons">
+                <button class="btn btn-primary" data-update-type="spouse" data-update-id="${spouse.id}" data-update-action="approve">Accept</button>
+                <button class="btn btn-secondary" data-update-type="spouse" data-update-id="${spouse.id}" data-update-action="reject">Reject</button>
+              </div>
+            </div>
+          `;
+        });
+
+        pendingChildren.forEach((child, idx) => {
+          const updateLabel = child.status === 'pending_add' ? 'Add request' : 'Remove request';
+          const docButtons = renderMemberDocButtons('child', child, {
+            birth: 'View Birth Certificate',
+            death: 'View Death Certificate'
+          });
+          html += `
+            <div class="subsection">
+              <h4>Child Update ${idx + 1} (${updateLabel})</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">Name</span>
+                  <span class="info-value">${child.name || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Birth Certificate No.</span>
+                  <span class="info-value">${child.birth_certificate_number || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Education</span>
+                  <span class="info-value">${child.education || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Skills</span>
+                  <span class="info-value">${formatSkills(child)}</span>
+                </div>
+              </div>
+              ${docButtons}
+              <div class="action-buttons">
+                <button class="btn btn-primary" data-update-type="child" data-update-id="${child.id}" data-update-action="approve">Accept</button>
+                <button class="btn btn-secondary" data-update-type="child" data-update-id="${child.id}" data-update-action="reject">Reject</button>
+              </div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+      }
+
       // Action buttons
       html += `
         <!-- Documents Section -->
@@ -465,61 +651,191 @@
 
       // Attach PDF generation handler
       document.getElementById('generateReportBtn').addEventListener('click', generatePdf);
+
+      // Attach update review handlers
+      document.querySelectorAll('[data-update-action]').forEach((button) => {
+        button.addEventListener('click', handleUpdateReview);
+      });
+    }
+
+    async function handleUpdateReview(event) {
+      const button = event.currentTarget;
+      const updateType = button.getAttribute('data-update-type');
+      const updateId = button.getAttribute('data-update-id');
+      const action = button.getAttribute('data-update-action');
+      const resident = currentResident.resident;
+
+      if (!updateType || !updateId || !action || !resident?.slum_code) return;
+
+      const endpoint = `/api/slum-dweller/${resident.slum_code}/${updateType}/${updateId}/review`;
+
+      try {
+        button.disabled = true;
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action })
+        });
+        const result = await response.json();
+
+        if (result.status !== 'success') {
+          alert(result.message || 'Failed to update request.');
+          button.disabled = false;
+          return;
+        }
+
+        await loadResident(document.getElementById('mainContent'));
+      } catch (error) {
+        console.error('Error reviewing update:', error);
+        alert('Error processing the update. Please try again.');
+        button.disabled = false;
+      }
+    }
+
+    async function viewMemberDocument(memberType, memberId, docType) {
+      const resident = currentResident?.resident;
+      if (!resident?.slum_code) return;
+
+      const endpoint = `/api/slum-dweller/${resident.slum_code}/${memberType}/${memberId}/document/${docType}`;
+
+      try {
+        const response = await fetch(endpoint);
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(message || 'Failed to load document');
+        }
+
+        const contentType = response.headers.get('content-type') || 'application/octet-stream';
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        const modalTitle = document.getElementById('documentTitle');
+        const modalContent = document.getElementById('documentContent');
+        const modal = document.getElementById('documentModal');
+
+        const titleText = docType.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+        modalTitle.textContent = titleText;
+
+        if (contentType.startsWith('image/')) {
+          modalContent.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; padding: 10px 0;">
+              <img src="${objectUrl}" alt="${titleText}" style="max-height: 500px; max-width: 100%; border-radius: 4px;" />
+              <a href="${objectUrl}" download="${docType}" style="display: inline-block; padding: 10px 20px; background: #7D5A3B; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">⬇ Download</a>
+            </div>
+          `;
+        } else if (contentType === 'application/pdf') {
+          modalContent.innerHTML = `
+            <div style="padding: 20px;">
+              <iframe src="${objectUrl}" style="width: 100%; height: 480px; border: none;"></iframe>
+              <div style="margin-top: 12px;">
+                <a href="${objectUrl}" download="${docType}.pdf" style="display: inline-block; padding: 10px 20px; background: #7D5A3B; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">⬇ Download PDF</a>
+              </div>
+            </div>
+          `;
+        } else {
+          modalContent.innerHTML = `
+            <div style="padding: 20px;">
+              <p style="font-size: 48px; margin: 20px 0;">📎</p>
+              <p style="font-weight: bold;">Document Ready</p>
+              <p style="color: #999; margin-bottom: 20px;">Preview is not available for this file type.</p>
+              <a href="${objectUrl}" download="${docType}" style="display: inline-block; padding: 10px 20px; background: #7D5A3B; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">⬇ Download File</a>
+            </div>
+          `;
+        }
+
+        modal.classList.add('active');
+      } catch (error) {
+        console.error('Error viewing member document:', error);
+        alert('Failed to load document.');
+      }
     }
 
     // Load and display documents
     async function loadDocuments(slumCode) {
       try {
         console.log('Loading documents for slumCode:', slumCode);
-        const response = await fetch(`/api/documents/${slumCode}/all`);
-        console.log('Response status:', response.status);
-        const result = await response.json();
-        console.log('Documents response:', result);
-        
+        const [residentResponse, memberResponse] = await Promise.all([
+          fetch(`/api/documents/${slumCode}/all`),
+          fetch(`/api/slum-dweller/${slumCode}/member-documents`)
+        ]);
+
+        console.log('Documents response status:', residentResponse.status);
+        console.log('Member documents response status:', memberResponse.status);
+
         const container = document.getElementById('documentsContainer');
-        
-        if (!result.success || !result.documents || result.documents.length === 0) {
+
+        let residentResult = { success: false, documents: [] };
+        let memberResult = { status: 'error', data: [] };
+
+        if (residentResponse.ok) {
+          try {
+            residentResult = await residentResponse.json();
+          } catch (error) {
+            console.error('Error parsing resident documents:', error);
+          }
+        } else {
+          console.error('Resident documents request failed:', residentResponse.status);
+        }
+
+        if (memberResponse.ok) {
+          try {
+            memberResult = await memberResponse.json();
+          } catch (error) {
+            console.error('Error parsing member documents:', error);
+          }
+        } else {
+          console.error('Member documents request failed:', memberResponse.status);
+        }
+
+        const residentDocs = residentResult.documents || [];
+        const memberDocs = (memberResult.data || []).length
+          ? memberResult.data
+          : buildMemberDocumentsFromResident();
+        const allDocs = residentDocs.concat(memberDocs);
+
+        if (allDocs.length === 0) {
           console.log('No documents found for slumCode:', slumCode);
           container.innerHTML = '<p style="color: #999;">No documents submitted.</p>';
           return;
         }
 
         let html = '<div style="display: grid; gap: 12px;">';
-        
-        result.documents.forEach(doc => {
-          const uploadDate = new Date(doc.uploaded_at).toLocaleDateString();
+
+        allDocs.forEach(doc => {
+          const uploadDate = doc.uploaded_at ? new Date(doc.uploaded_at).toLocaleDateString() : '-';
           let statusBadge = '';
           let statusColor = '';
-          
-          if (doc.status === 'approved') {
-            statusBadge = '✓ Approved';
-            statusColor = '#2d7a3d';
-          } else if (doc.status === 'rejected') {
-            statusBadge = '✗ Rejected';
-            statusColor = '#a83e3e';
-          } else {
-            statusBadge = '⏳ Pending Review';
-            statusColor = '#d9a574';
-          }
+
+          statusBadge = '';
+          statusColor = '';
+
+          const subtitle = doc.source === 'member'
+            ? `Accepted member document · ${doc.member_type === 'spouse' ? 'Spouse' : 'Child'}: ${doc.member_name || '-'}`
+            : `Type: ${doc.document_type}`;
+
+          const actionButton = doc.source === 'member'
+            ? `<button onclick="viewMemberDocument('${doc.member_type}', ${doc.member_id}, '${doc.document_type}')" style="padding: 6px 12px; background: #7D5A3B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">View Document</button>`
+            : `<button onclick="viewDocument(${doc.id})" style="padding: 6px 12px; background: #7D5A3B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">View Document</button>`;
 
           html += `
             <div style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;">
               <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
                 <div>
                   <div style="font-weight: bold; color: #7D5A3B; margin-bottom: 4px;">${doc.document_title || doc.document_type}</div>
-                  <div style="font-size: 12px; color: #999;">Type: ${doc.document_type}</div>
+                  <div style="font-size: 12px; color: #999;">${subtitle}</div>
                 </div>
-                <span style="background: rgba(${statusColor === '#2d7a3d' ? '45, 122, 61' : statusColor === '#a83e3e' ? '168, 62, 62' : '217, 165, 116'}, 0.15); color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; white-space: nowrap;">${statusBadge}</span>
+                ${statusBadge ? `<span style="background: rgba(${statusColor === '#2d7a3d' ? '45, 122, 61' : statusColor === '#a83e3e' ? '168, 62, 62' : statusColor === '#d9a574' ? '217, 165, 116' : '107, 91, 75'}, 0.15); color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; white-space: nowrap;">${statusBadge}</span>` : ''}
               </div>
               <div style="font-size: 12px; color: #999; margin-bottom: 8px;">
-                Uploaded: ${uploadDate} | Size: ${(doc.file_size / 1024).toFixed(2)} KB
+                Uploaded: ${uploadDate}
+                ${doc.file_size ? ` | Size: ${(doc.file_size / 1024).toFixed(2)} KB` : ''}
               </div>
               ${doc.status === 'rejected' && doc.rejection_reason ? `<div style="font-size: 12px; color: #a83e3e; background: rgba(168, 62, 62, 0.1); padding: 8px; border-radius: 4px; margin-bottom: 8px;">Reason: ${doc.rejection_reason}</div>` : ''}
-              <button onclick="viewDocument(${doc.id})" style="padding: 6px 12px; background: #7D5A3B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">View Document</button>
+              ${actionButton}
             </div>
           `;
         });
-        
+
         html += '</div>';
         container.innerHTML = html;
       } catch (error) {

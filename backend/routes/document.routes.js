@@ -7,13 +7,17 @@ import {
   getDocumentById,
   approveDocument,
   rejectDocument,
-  getDocumentCount
+  getDocumentCount,
+  approvePendingDocumentsForAcceptedAccounts
 } from "../controllers/document.controller.js";
 
 const router = express.Router();
 
 // POST /api/documents/upload - Upload new document
 router.post("/upload", uploadDocument);
+
+// PATCH /api/documents/approve-accepted - Approve pending docs for accepted accounts
+router.patch("/approve-accepted", approvePendingDocumentsForAcceptedAccounts);
 
 // GET /api/documents/:slum_id/pending - Get pending documents for resident
 router.get("/:slum_id/pending", getPendingDocumentsForResident);

@@ -16,14 +16,17 @@ export async function sendSMS(number, message) {
     
     // Use GET method as per the existing implementation
     const response = await fetch(url, { method: 'GET' });
+    const responseText = await response.text();
     
     if (response.ok) {
       console.log('📱 SMS sent successfully to:', number);
+      console.log('📱 SMS provider response:', responseText);
       return true;
-    } else {
-      console.error('❌ SMS send failed:', response.status, response.statusText);
-      return false;
     }
+
+    console.error('❌ SMS send failed:', response.status, response.statusText);
+    console.error('❌ SMS provider response:', responseText);
+    return false;
   } catch (error) {
     console.error('❌ SMS send error:', error);
     return false;
@@ -38,5 +41,17 @@ SlumLink`;
 // Create OTP message for spouse verification during add member process
 export function createOTPMessage(otp, spouseName, verificationType = 'spouse verification') {
   return `Your SlumLink OTP for ${verificationType} is: ${otp}. Valid for 5 minutes. Name: ${spouseName}. Do not share this code.
+- SlumLink`;
+}
+
+// Create spouse addition approval message
+export function createSpouseAddedMessage(spouseName, slumDwellerName) {
+  return `${spouseName} has been added as spouse by ${slumDwellerName}. For any query, contact SlumLink.
+- SlumLink`;
+}
+
+// Create spouse removal message  
+export function createSpouseRemovedMessage(spouseName, slumDwellerName) {
+  return `${spouseName} has been removed as spouse by ${slumDwellerName}. For any query, contact SlumLink.
 - SlumLink`;
 }

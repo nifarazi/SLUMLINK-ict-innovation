@@ -270,6 +270,32 @@ export const rejectDocument = async (req, res) => {
   }
 };
 
+// Approve all pending documents for already-accepted accounts
+export const approvePendingDocumentsForAcceptedAccounts = async (req, res) => {
+  try {
+    const [result] = await pool.query(
+      `UPDATE documents d
+       JOIN slum_dwellers s ON d.slum_id = s.slum_code
+       SET d.status = 'approved', d.reviewed_by = ?, d.reviewed_at = NOW()
+       WHERE d.status = 'pending' AND s.status = 'accepted'`,
+      ['admin']
+    );
+
+    return res.json({
+      status: "success",
+      message: "Pending documents for accepted accounts approved.",
+      updated: result.affectedRows || 0
+    });
+  } catch (error) {
+    console.error('❌ Error approving documents for accepted accounts:', error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to approve pending documents for accepted accounts.",
+      error: error.message
+    });
+  }
+};
+
 // Get document count for resident
 export const getDocumentCount = async (req, res) => {
   const { slum_id } = req.params;

@@ -1,6 +1,6 @@
 import pool from "../db.js";
 import bcrypt from "bcrypt";
-import { sendSMS, createVerificationMessage, createOTPMessage } from "../utils/sms.js";
+import { sendSMS, createVerificationMessage, createOTPMessage, createSpouseAddedMessage, createSpouseRemovedMessage } from "../utils/sms.js";
 
 // Signin controller for slum dwellers using slum_code and password
 export const signinSlumDweller = async (req, res) => {
@@ -369,6 +369,38 @@ function getAgeGroup(age) {
   return age >= 18 ? 'adult' : 'child';
 }
 
+function detectMimeType(buffer) {
+  if (!buffer || buffer.length < 4) return 'application/octet-stream';
+
+  const signature = buffer.subarray(0, 4);
+
+  if (signature[0] === 0x25 && signature[1] === 0x50 && signature[2] === 0x44 && signature[3] === 0x46) {
+    return 'application/pdf';
+  }
+
+  if (signature[0] === 0x89 && signature[1] === 0x50 && signature[2] === 0x4e && signature[3] === 0x47) {
+    return 'image/png';
+  }
+
+  if (signature[0] === 0xff && signature[1] === 0xd8 && signature[2] === 0xff) {
+    return 'image/jpeg';
+  }
+
+  if (signature[0] === 0x47 && signature[1] === 0x49 && signature[2] === 0x46) {
+    return 'image/gif';
+  }
+
+  return 'application/octet-stream';
+}
+
+function extensionFromMime(mimeType) {
+  if (mimeType === 'application/pdf') return 'pdf';
+  if (mimeType === 'image/png') return 'png';
+  if (mimeType === 'image/jpeg') return 'jpg';
+  if (mimeType === 'image/gif') return 'gif';
+  return 'bin';
+}
+
 export const registerSlumDweller = async (req, res) => {
   const connection = await pool.getConnection();
   
@@ -624,7 +656,29 @@ export const getPendingSlumDwellers = async (req, res) => {
 export const getActiveSlumDwellers = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      'SELECT id, slum_code, full_name, mobile, nid, gender, education, occupation, income, area, district, division, created_at FROM slum_dwellers WHERE status = ? ORDER BY created_at DESC',
+      `SELECT 
+         sd.id,
+         sd.slum_code,
+         sd.full_name,
+         sd.mobile,
+         sd.nid,
+         sd.gender,
+         sd.education,
+         sd.occupation,
+         sd.income,
+         sd.area,
+         sd.district,
+         sd.division,
+         sd.created_at,
+         (SELECT COUNT(*) FROM spouses s 
+          WHERE s.slum_id = sd.slum_code 
+            AND s.status IN ('pending_add', 'pending_remove')) AS spouse_updates,
+         (SELECT COUNT(*) FROM children c 
+          WHERE c.slum_id = sd.slum_code 
+            AND c.status IN ('pending_add', 'pending_remove')) AS child_updates
+       FROM slum_dwellers sd
+       WHERE sd.status = ?
+       ORDER BY sd.created_at DESC`,
       ['accepted']
     );
     
@@ -665,16 +719,50 @@ export const getSlumDwellerById = async (req, res) => {
     const resident = dwellerRows[0];
     const slumCode = resident.slum_code;
 
-    // Get spouses (only active and pending_remove, exclude pending_add)
+    // Get spouses (include active, pending_add, pending_remove)
     const [spouseRows] = await connection.query(
-      'SELECT * FROM spouses WHERE slum_id = ? AND status IN (?, ?)',
-      [slumCode, 'active', 'pending_remove']
+      `SELECT 
+         id,
+         slum_id,
+         name,
+         dob,
+         gender,
+         nid,
+         education,
+         job,
+         income,
+         mobile,
+         skills_1,
+         skills_2,
+         status,
+         CASE WHEN marriage_certificate IS NULL THEN 0 ELSE 1 END AS has_marriage_certificate,
+         CASE WHEN divorce_certificate IS NULL THEN 0 ELSE 1 END AS has_divorce_certificate
+       FROM spouses 
+       WHERE slum_id = ? AND status IN (?, ?, ?)`,
+      [slumCode, 'active', 'pending_add', 'pending_remove']
     );
 
-    // Get children (only active and pending_remove, exclude pending_add)
+    // Get children (include active, pending_add, pending_remove)
     const [childrenRows] = await connection.query(
-      'SELECT * FROM children WHERE slum_id = ? AND status IN (?, ?)',
-      [slumCode, 'active', 'pending_remove']
+      `SELECT 
+         id,
+         slum_id,
+         name,
+         dob,
+         gender,
+         education,
+         job,
+         income,
+         preferred_job,
+         birth_certificate_number,
+         skills_1,
+         skills_2,
+         status,
+         CASE WHEN birth_certificate IS NULL THEN 0 ELSE 1 END AS has_birth_certificate,
+         CASE WHEN death_certificate IS NULL THEN 0 ELSE 1 END AS has_death_certificate
+       FROM children 
+       WHERE slum_id = ? AND status IN (?, ?, ?)`,
+      [slumCode, 'active', 'pending_add', 'pending_remove']
     );
 
     console.log('👤 Retrieved resident:', resident.full_name);
@@ -696,6 +784,195 @@ export const getSlumDwellerById = async (req, res) => {
     });
   } finally {
     connection.release();
+  }
+};
+
+// Get spouse document (marriage/divorce)
+export const getSpouseDocument = async (req, res) => {
+  const { slumId, spouseId, docType } = req.params;
+
+  const columnMap = {
+    marriage_certificate: 'marriage_certificate',
+    divorce_certificate: 'divorce_certificate'
+  };
+
+  const column = columnMap[docType];
+  if (!column) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid document type"
+    });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT ${column} AS file_blob FROM spouses WHERE id = ? AND slum_id = ?`,
+      [spouseId, slumId]
+    );
+
+    if (!rows.length || !rows[0].file_blob) {
+      return res.status(404).json({
+        status: "error",
+        message: "Document not found"
+      });
+    }
+
+    const buffer = rows[0].file_blob;
+    const mimeType = detectMimeType(buffer);
+    const extension = extensionFromMime(mimeType);
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${docType}.${extension}"`);
+    return res.send(buffer);
+  } catch (error) {
+    console.error('❌ Error fetching spouse document:', error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch spouse document",
+      error: error.message
+    });
+  }
+};
+
+// Get child document (birth/death)
+export const getChildDocument = async (req, res) => {
+  const { slumId, childId, docType } = req.params;
+
+  const columnMap = {
+    birth_certificate: 'birth_certificate',
+    death_certificate: 'death_certificate'
+  };
+
+  const column = columnMap[docType];
+  if (!column) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid document type"
+    });
+  }
+
+  try {
+    const [rows] = await pool.query(
+      `SELECT ${column} AS file_blob FROM children WHERE id = ? AND slum_id = ?`,
+      [childId, slumId]
+    );
+
+    if (!rows.length || !rows[0].file_blob) {
+      return res.status(404).json({
+        status: "error",
+        message: "Document not found"
+      });
+    }
+
+    const buffer = rows[0].file_blob;
+    const mimeType = detectMimeType(buffer);
+    const extension = extensionFromMime(mimeType);
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${docType}.${extension}"`);
+    return res.send(buffer);
+  } catch (error) {
+    console.error('❌ Error fetching child document:', error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch child document",
+      error: error.message
+    });
+  }
+};
+
+// List spouse/child documents for a resident (active members only)
+export const getMemberDocuments = async (req, res) => {
+  const { slumId } = req.params;
+
+  try {
+    const [spouseDocs] = await pool.query(
+      `SELECT 
+         id,
+         name,
+         created_at,
+         CASE WHEN marriage_certificate IS NULL THEN 0 ELSE 1 END AS has_marriage_certificate,
+         CASE WHEN divorce_certificate IS NULL THEN 0 ELSE 1 END AS has_divorce_certificate
+       FROM spouses
+       WHERE slum_id = ? AND status = 'active'`,
+      [slumId]
+    );
+
+    const [childDocs] = await pool.query(
+      `SELECT 
+         id,
+         name,
+         created_at,
+         CASE WHEN birth_certificate IS NULL THEN 0 ELSE 1 END AS has_birth_certificate,
+         CASE WHEN death_certificate IS NULL THEN 0 ELSE 1 END AS has_death_certificate
+       FROM children
+       WHERE slum_id = ? AND status = 'active'`,
+      [slumId]
+    );
+
+    const documents = [];
+
+    spouseDocs.forEach((spouse) => {
+      if (spouse.has_marriage_certificate) {
+        documents.push({
+          source: 'member',
+          member_type: 'spouse',
+          member_id: spouse.id,
+          member_name: spouse.name,
+          document_type: 'marriage_certificate',
+          document_title: 'Marriage Certificate',
+          uploaded_at: spouse.created_at
+        });
+      }
+      if (spouse.has_divorce_certificate) {
+        documents.push({
+          source: 'member',
+          member_type: 'spouse',
+          member_id: spouse.id,
+          member_name: spouse.name,
+          document_type: 'divorce_certificate',
+          document_title: 'Divorce Certificate',
+          uploaded_at: spouse.created_at
+        });
+      }
+    });
+
+    childDocs.forEach((child) => {
+      if (child.has_birth_certificate) {
+        documents.push({
+          source: 'member',
+          member_type: 'child',
+          member_id: child.id,
+          member_name: child.name,
+          document_type: 'birth_certificate',
+          document_title: 'Birth Certificate',
+          uploaded_at: child.created_at
+        });
+      }
+      if (child.has_death_certificate) {
+        documents.push({
+          source: 'member',
+          member_type: 'child',
+          member_id: child.id,
+          member_name: child.name,
+          document_type: 'death_certificate',
+          document_title: 'Death Certificate',
+          uploaded_at: child.created_at
+        });
+      }
+    });
+
+    return res.json({
+      status: "success",
+      data: documents
+    });
+  } catch (error) {
+    console.error('❌ Error fetching member documents:', error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch member documents",
+      error: error.message
+    });
   }
 };
 
@@ -727,6 +1004,14 @@ export const approveSlumDweller = async (req, res) => {
     await connection.query(
       'UPDATE slum_dwellers SET status = ? WHERE id = ?',
       ['accepted', id]
+    );
+
+    // Approve any documents submitted during registration
+    await connection.query(
+      `UPDATE documents
+       SET status = 'approved', reviewed_by = ?, reviewed_at = NOW()
+       WHERE slum_id = ? AND status = 'pending'`,
+      ['admin', slumCode]
     );
 
     // Update all spouses status to 'active'
@@ -1915,6 +2200,201 @@ export const updateChildStatus = async (req, res) => {
   }
 };
 
+// Review spouse add/remove requests (admin)
+export const reviewSpouseUpdate = async (req, res) => {
+  const { slumId, spouseId } = req.params;
+  const { action } = req.body;
+  const connection = await pool.getConnection();
+
+  try {
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid action. Allowed values: approve, reject"
+      });
+    }
+
+    // Get spouse and slum dweller information for SMS notifications
+    const [spouseRows] = await connection.query(
+      `SELECT s.id, s.status, s.name, s.mobile, sd.full_name as slum_dweller_name
+       FROM spouses s 
+       JOIN slum_dwellers sd ON s.slum_id = sd.slum_code 
+       WHERE s.id = ? AND s.slum_id = ?`,
+      [spouseId, slumId]
+    );
+
+    if (spouseRows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Spouse not found or does not belong to this slum dweller"
+      });
+    }
+
+    const spouseInfo = spouseRows[0];
+    const currentStatus = spouseInfo.status;
+    const spouseMobile = spouseInfo.mobile;
+    const slumDwellerName = spouseInfo.slum_dweller_name;
+
+    if (!['pending_add', 'pending_remove'].includes(currentStatus)) {
+      return res.status(400).json({
+        status: "error",
+        message: "No pending update found for this spouse"
+      });
+    }
+
+    let smsMessage = '';
+    let sendSMSNotification = false;
+
+    if (currentStatus === 'pending_add') {
+      if (action === 'approve') {
+        await connection.query(
+          'UPDATE spouses SET status = ?, updated_at = NOW() WHERE id = ? AND slum_id = ?',
+          ['active', spouseId, slumId]
+        );
+        // Send SMS notification to spouse about being added
+        if (spouseMobile) {
+          smsMessage = createSpouseAddedMessage(spouseInfo.name, slumDwellerName);
+          sendSMSNotification = true;
+        }
+      } else {
+        await connection.query(
+          'DELETE FROM spouses WHERE id = ? AND slum_id = ?',
+          [spouseId, slumId]
+        );
+        // No SMS for rejection of add request
+      }
+    }
+
+    if (currentStatus === 'pending_remove') {
+      if (action === 'approve') {
+        await connection.query(
+          'DELETE FROM spouses WHERE id = ? AND slum_id = ?',
+          [spouseId, slumId]
+        );
+        // Send SMS notification to spouse about being removed
+        if (spouseMobile) {
+          smsMessage = createSpouseRemovedMessage(spouseInfo.name, slumDwellerName);
+          sendSMSNotification = true;
+        }
+      } else {
+        await connection.query(
+          'UPDATE spouses SET status = ?, updated_at = NOW() WHERE id = ? AND slum_id = ?',
+          ['active', spouseId, slumId]
+        );
+        // No SMS for rejection of remove request
+      }
+    }
+
+    // Send SMS notification if applicable
+    if (sendSMSNotification && smsMessage) {
+      try {
+        const smsResult = await sendSMS(spouseMobile, smsMessage);
+        if (smsResult) {
+          console.log(`📱 SMS sent to spouse (${spouseMobile}) for ${currentStatus} ${action} operation`);
+        } else {
+          console.warn(`⚠️ Failed to send SMS to spouse (${spouseMobile}) for ${currentStatus} ${action} operation`);
+        }
+      } catch (smsError) {
+        console.error(`❌ SMS sending error for spouse (${spouseMobile}):`, smsError);
+        // Don't fail the entire operation if SMS fails
+      }
+    }
+
+    return res.json({
+      status: "success",
+      message: `Spouse update ${action}ed successfully`
+    });
+  } catch (error) {
+    console.error("❌ Error reviewing spouse update:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to review spouse update",
+      error: error.message
+    });
+  } finally {
+    connection.release();
+  }
+};
+
+// Review child add/remove requests (admin)
+export const reviewChildUpdate = async (req, res) => {
+  const { slumId, childId } = req.params;
+  const { action } = req.body;
+  const connection = await pool.getConnection();
+
+  try {
+    if (!['approve', 'reject'].includes(action)) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid action. Allowed values: approve, reject"
+      });
+    }
+
+    const [rows] = await connection.query(
+      'SELECT id, status FROM children WHERE id = ? AND slum_id = ?',
+      [childId, slumId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        status: "error",
+        message: "Child not found or does not belong to this slum dweller"
+      });
+    }
+
+    const currentStatus = rows[0].status;
+
+    if (!['pending_add', 'pending_remove'].includes(currentStatus)) {
+      return res.status(400).json({
+        status: "error",
+        message: "No pending update found for this child"
+      });
+    }
+
+    if (currentStatus === 'pending_add') {
+      if (action === 'approve') {
+        await connection.query(
+          'UPDATE children SET status = ?, updated_at = NOW() WHERE id = ? AND slum_id = ?',
+          ['active', childId, slumId]
+        );
+      } else {
+        await connection.query(
+          'DELETE FROM children WHERE id = ? AND slum_id = ?',
+          [childId, slumId]
+        );
+      }
+    }
+
+    if (currentStatus === 'pending_remove') {
+      if (action === 'approve') {
+        await connection.query(
+          'DELETE FROM children WHERE id = ? AND slum_id = ?',
+          [childId, slumId]
+        );
+      } else {
+        await connection.query(
+          'UPDATE children SET status = ?, updated_at = NOW() WHERE id = ? AND slum_id = ?',
+          ['active', childId, slumId]
+        );
+      }
+    }
+
+    return res.json({
+      status: "success",
+      message: `Child update ${action}ed successfully`
+    });
+  } catch (error) {
+    console.error("❌ Error reviewing child update:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to review child update",
+      error: error.message
+    });
+  } finally {
+    connection.release();
+  }
+};
+
 // Prepare spouse addition - validate and send OTP without database insertion
 export const prepareSpouseAdd = async (req, res) => {
   const { slumCode } = req.params;
@@ -2310,6 +2790,18 @@ export const sendSpouseAddOTP = async (req, res) => {
     const smsResult = await sendSMS(mobile, otpMessage);
 
     if (!smsResult) {
+      if (!process.env.BULKSMS_API_KEY) {
+        console.warn('⚠️ SMS disabled: returning test OTP for development.');
+        return res.json({
+          status: "success",
+          message: "OTP generated (SMS disabled).",
+          data: {
+            maskedPhone: mobile.replace(/(\d{3})\d{5}(\d{3})/, '$1*****$2'),
+            testOtp: otp.toString()
+          }
+        });
+      }
+
       return res.status(500).json({
         status: "error",
         message: "Failed to send OTP. Please check the mobile number and try again."
