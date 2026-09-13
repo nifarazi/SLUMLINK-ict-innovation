@@ -36,6 +36,7 @@ import {
   addChild,
   sendSpouseAddOTP,
   verifySpouseAddOTP,
+  sendSignupOtpSMS,
   getSpousesByArea,
   getChildrenByArea
 } from "../controllers/slumDweller.controller.js";
@@ -151,6 +152,9 @@ router.post("/spouse-add-otp/send", sendSpouseAddOTP);
 
 // POST /api/slum-dweller/spouse-add-otp/verify - Verify spouse add OTP
 router.post("/spouse-add-otp/verify", verifySpouseAddOTP);
+
+// POST /api/slum-dweller/signup-otp/send - Send OTP SMS during signup (frontend-generated OTP map)
+router.post("/signup-otp/send", sendSignupOtpSMS);
 
 // DELETE /api/slum-dweller/:id
 router.delete("/:id", rejectSlumDweller);

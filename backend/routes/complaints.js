@@ -4,7 +4,8 @@ import {
   getComplaintCounts,
   getComplaintsByCategory,
   getComplaintById,
-  updateComplaintStatus
+  updateComplaintStatus,
+  getComplaintAttachment
 } from "../controllers/complaintController.js";
 
 const router = express.Router();
@@ -17,6 +18,9 @@ router.get("/", getComplaintsByCategory);
 
 // 3️⃣ Get single complaint by ID
 router.get("/:id", getComplaintById);
+
+// 3.5️⃣ Get complaint attachment file as binary
+router.get("/:id/attachment", getComplaintAttachment);
 
 // 4️⃣ Update complaint status
 router.put("/:id/status", updateComplaintStatus);

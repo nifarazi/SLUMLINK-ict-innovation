@@ -586,26 +586,34 @@
     numbers.forEach(n => otpMap[n] = genOtp());
     sessionStorage.setItem('SLUMLINK_OTP_MAP', JSON.stringify(otpMap));
 
-    // Send SMS via BulkSMSBD API for each number
-    async function sendSms(number, message){
-      try{
-        const apiKey = '';
-        const senderid = '';
-        const url = `http://bulksmsbd.net/api/smsapi?api_key=${encodeURIComponent(apiKey)}&type=text&number=${encodeURIComponent(number)}&senderid=${encodeURIComponent(senderid)}&message=${encodeURIComponent(message)}`;
-        // Use GET
-        const resp = await fetch(url, { method: 'GET' });
-        // best-effort: don't require response parsing; return ok status
-        return resp.ok;
-      }catch(err){ console.warn('SMS send failed', err); return false; }
+    // Helper to ask backend to send OTP SMS using env-based BulkSMS credentials
+    async function sendOtpBatch(map){
+      try {
+        const resp = await fetch('/api/slum-dweller/signup-otp/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ otpMap: map })
+        });
+        if (!resp.ok) {
+          console.warn('Signup OTP SMS API responded with non-OK status');
+          return false;
+        }
+        const result = await resp.json().catch(() => ({}));
+        if (result.status !== 'success') {
+          console.warn('Signup OTP SMS API error:', result.message || result);
+          return false;
+        }
+        return true;
+      } catch (err) {
+        console.warn('Signup OTP SMS API call failed', err);
+        return false;
+      }
     }
 
-    // Fire off sends (do not block UI heavily)
-    for (const num of numbers){
-      const msg = `Your SLUMLINK OTP is: ${otpMap[num]}`;
-      sendSms(num, msg).then(ok => {
-        if (!ok) console.warn('SMS might have failed for', num);
-      });
-    }
+    // Ask backend to send OTPs (do not block UI heavily)
+    sendOtpBatch(otpMap).then(ok => {
+      if (!ok) console.warn('OTP SMS sending might have failed');
+    });
 
     // Populate modal inputs and open
     function makeInputsForNumbers(list){
@@ -750,12 +758,17 @@
 
     document.getElementById('resendOtpLink').onclick = (e) => {
       e.preventDefault();
-      // regenerate OTPs and resend
+      // regenerate OTPs and ask backend to resend
       const newMap = {};
       numbers.forEach(n => newMap[n] = genOtp());
       sessionStorage.setItem('SLUMLINK_OTP_MAP', JSON.stringify(newMap));
-      for (const num of numbers){ const msg = `Your SLUMLINK OTP is: ${newMap[num]}`; sendSms(num, msg); }
-      alert('New OTPs sent');
+      sendOtpBatch(newMap).then(ok => {
+        if (!ok) {
+          alert('Failed to resend OTPs. Please try again.');
+        } else {
+          alert('New OTPs sent');
+        }
+      });
     };
   });
 })();

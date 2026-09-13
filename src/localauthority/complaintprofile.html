@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="google" content="notranslate" />
+<meta http-equiv="Content-Language" content="en" />
 <title>Complaint Profile | SlumLink</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,6 +89,36 @@ background:linear-gradient(143deg, rgba(164,98,77,.75), rgba(223,164,119,.75));}
   cursor:pointer;
 }
 
+.attachment-section {
+  margin-bottom: 28px;
+}
+
+.attachment-image {
+  width: 100%;
+  max-width: 400px;
+  height: 250px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid var(--sand);
+  display: block;
+}
+
+.attachment-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(173, 117, 98, 0.3);
+  border-color: var(--terra);
+}
+
+.attachment-label {
+  font-size: 13px;
+  color: rgba(97, 55, 41, 0.6);
+  margin-top: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
 .save-btn{
   margin-top:40px;
   padding:14px 28px;
@@ -104,6 +136,94 @@ background:linear-gradient(143deg, rgba(164,98,77,.75), rgba(223,164,119,.75));}
   box-shadow:0 8px 16px rgba(0,0,0,0.15);
 }
 
+/* Success Toast Notification */
+.success-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 1000;
+  background: #CDEFD6;
+  color: #0F5132;
+  border-left: 8px solid #0F7D3B;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 12px 28px rgba(0, 0, 0, 0.18);
+  border-radius: 10px;
+  width: 320px;
+  min-height: 80px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 14px;
+  padding: 14px 16px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  opacity: 0;
+  transform: translateX(400px);
+  animation: toast-slide-in 0.3s ease forwards;
+}
+
+.success-toast .icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #0F7D3B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 32px;
+}
+
+.success-toast .icon svg {
+  width: 20px;
+  height: 20px;
+  fill: #ffffff;
+}
+
+.success-toast .toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.success-toast strong {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.success-toast .subtitle {
+  font-weight: 500;
+  font-size: 13px;
+  color: #0F5132;
+}
+
+.toast-hide {
+  animation: toast-slide-out 0.3s ease forwards;
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(400px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-slide-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(400px);
+  }
+}
+
 .footer{
   text-align:center;
   padding:20px;
@@ -113,7 +233,7 @@ background:linear-gradient(143deg, rgba(164,98,77,.75), rgba(223,164,119,.75));}
 </style>
 </head>
 
-<body>
+<body translate="no">
 
 <header class="topbar">
   <div class="brand" id="brandBtn">
@@ -154,6 +274,15 @@ background:linear-gradient(143deg, rgba(164,98,77,.75), rgba(223,164,119,.75));}
       </select>
     </div>
 
+    <div class="attachment-section">
+      <div class="section-title">Attachment</div>
+      <div id="attachmentContainer" style="display: none;">
+        <img id="attachmentImage" class="attachment-image" alt="Complaint attachment" title="Click to download">
+        <div class="attachment-label" id="attachmentName"></div>
+      </div>
+      <div id="noAttachment" style="color: rgba(97, 55, 41, 0.6); font-size: 14px;">No attachment available</div>
+    </div>
+
     <button class="save-btn" id="saveBtn">Save Changes</button>
 
   </div>
@@ -171,6 +300,11 @@ const titleEl = document.getElementById("complaintTitle");
 const categoryEl = document.getElementById("complaintCategory");
 const descriptionEl = document.getElementById("complaintDescription");
 const statusSelect = document.getElementById("statusSelect");
+const attachmentImage = document.getElementById("attachmentImage");
+const attachmentContainer = document.getElementById("attachmentContainer");
+const attachmentName = document.getElementById("attachmentName");
+const noAttachment = document.getElementById("noAttachment");
+let complaintData = null;
 
 async function loadComplaint() {
   try {
@@ -182,11 +316,40 @@ async function loadComplaint() {
       return;
     }
 
+    complaintData = data;
     titleEl.textContent = data.title;
     categoryEl.textContent = data.category;
     descriptionEl.textContent = data.description;
-
     statusSelect.value = data.status;
+
+    // Handle attachment display using dedicated endpoint
+    if (data.attachment_filename) {
+      try {
+        const attachmentUrl = `/api/complaints/${complaintId}/attachment`;
+        attachmentImage.src = attachmentUrl;
+        attachmentName.textContent = `Click to download: ${data.attachment_filename}`;
+        attachmentContainer.style.display = "block";
+        noAttachment.style.display = "none";
+
+        // Add click handler for download
+        attachmentImage.addEventListener('click', (e) => {
+          e.preventDefault();
+          const link = document.createElement('a');
+          link.href = attachmentUrl;
+          link.download = data.attachment_filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        });
+      } catch (err) {
+        console.log("Error loading attachment:", err);
+        attachmentContainer.style.display = "none";
+        noAttachment.style.display = "block";
+      }
+    } else {
+      attachmentContainer.style.display = "none";
+      noAttachment.style.display = "block";
+    }
   } catch (err) {
     console.error(err);
   }
@@ -205,8 +368,30 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
     const result = await res.json();
 
     if (result.success) {
-      alert("Status updated successfully!");
-      window.location.href = document.referrer;
+      // Show success toast notification
+      const toast = document.createElement('div');
+      toast.className = 'success-toast';
+      toast.innerHTML = [
+        '<span class="icon" aria-hidden="true">',
+          '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">',
+            '<path d="M9 16.17 5.83 13l-1.42 1.41L9 19 20.59 7.41 19.17 6z"/>',
+          '</svg>',
+        '</span>',
+        '<div class="toast-content">',
+          '<strong>Status Updated</strong>',
+          '<div class="subtitle">Complaint status has been updated successfully</div>',
+        '</div>'
+      ].join('');
+      document.body.appendChild(toast);
+      
+      // Auto-dismiss and redirect after 2.5s
+      setTimeout(() => {
+        toast.classList.add('toast-hide');
+        setTimeout(() => {
+          try { toast.remove(); } catch {}
+          window.location.href = document.referrer;
+        }, 300);
+      }, 2500);
     } else {
       alert("Update failed.");
     }

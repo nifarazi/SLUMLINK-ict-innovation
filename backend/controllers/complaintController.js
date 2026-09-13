@@ -72,7 +72,8 @@ export const getComplaintById = async (req, res) => {
 
     const [rows] = await pool.query(
       `SELECT complaint_id, slum_id, title, category, description,
-              division, district, area, status, created_at
+              division, district, area, status, created_at,
+              attachment_filename, attachment_mimetype, attachment_file
        FROM complaints
        WHERE complaint_id = ?`,
       [id]
@@ -110,5 +111,36 @@ export const updateComplaintStatus = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Update failed" });
+  }
+};
+
+// 5️⃣ Get complaint attachment file as binary blob
+export const getComplaintAttachment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [rows] = await pool.query(
+      `SELECT attachment_file, attachment_filename, attachment_mimetype
+       FROM complaints
+       WHERE complaint_id = ?`,
+      [id]
+    );
+
+    if (rows.length === 0 || !rows[0].attachment_file) {
+      return res.status(404).json({ error: "Attachment not found" });
+    }
+
+    const attachment = rows[0];
+    
+    // Set proper headers for file download
+    res.setHeader('Content-Type', attachment.attachment_mimetype || 'application/octet-stream');
+    res.setHeader('Content-Disposition', `inline; filename="${attachment.attachment_filename}"`);
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    // Send the binary data directly
+    res.send(attachment.attachment_file);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to retrieve attachment" });
   }
 };

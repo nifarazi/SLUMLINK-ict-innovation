@@ -110,6 +110,16 @@ function getCurrentUser() {
   return currentRaw ? safeJsonParse(currentRaw, null) : null;
 }
 
+// Reload the profile page so latest data is shown (used after phone changes)
+function loadUserProfile() {
+  try {
+    window.location.reload();
+  } catch (e) {
+    // Fallback: simple navigation reload
+    window.location.href = window.location.href;
+  }
+}
+
 const API_BASES = Array.from(new Set([
   `${window.location.origin}/api`,
   'http://localhost:5001/api'
@@ -164,7 +174,35 @@ function showProfileUpdateToast() {
     '</span>',
     '<div class="toast-content">',
       '<strong>Success</strong>',
-      '<div class="subtitle">Profile Information Editted Successfully</div>',
+      '<div class="subtitle">Profile information updated successfully</div>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(toast);
+
+  // Auto-dismiss after 2.5s
+  setTimeout(() => {
+    toast.classList.add('toast-hide');
+    setTimeout(() => { try { toast.remove(); } catch {} }, 350);
+  }, 2500);
+}
+
+// Show success toast specifically for phone number change
+function showPhoneChangeSuccessToast() {
+  // Remove any existing toast
+  const existing = document.querySelector('.profile-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'profile-toast';
+  toast.innerHTML = [
+    '<span class="icon" aria-hidden="true">',
+      '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">',
+        '<path d="M9 16.17 5.83 13l-1.42 1.41L9 19 20.59 7.41 19.17 6z"/>',
+      '</svg>',
+    '</span>',
+    '<div class="toast-content">',
+      '<strong>Success</strong>',
+      '<div class="subtitle">Phone number has been successfully changed</div>',
     '</div>'
   ].join('');
   document.body.appendChild(toast);
@@ -3561,8 +3599,8 @@ function showToast(title, message, type = 'success') {
         currentUser.mobile = newPhone;
         localStorage.setItem('SLUMLINK_CURRENT_USER', JSON.stringify(currentUser));
         
-        // Show success toast
-        showProfileUpdateToast();
+        // Show success toast specific to phone change
+        showPhoneChangeSuccessToast();
         
         // Hide modal
         hideModal();
@@ -3920,8 +3958,8 @@ function showToast(title, message, type = 'success') {
       const data = await response.json();
 
       if (data.status === 'success') {
-        // Show success toast
-        showProfileUpdateToast();
+        // Show success toast specific to phone change
+        showPhoneChangeSuccessToast();
         
         // Hide modal
         hideSpouseModal();

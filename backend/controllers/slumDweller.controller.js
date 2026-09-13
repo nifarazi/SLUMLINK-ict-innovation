@@ -1634,6 +1634,67 @@ function verifyOTP(key, providedOTP) {
   return false;
 }
 
+// ===================
+// SIGNUP OTP SMS SENDER
+// ===================
+
+// Send OTP SMS for signup using backend BulkSMS configuration
+export const sendSignupOtpSMS = async (req, res) => {
+  try {
+    const { otpMap } = req.body || {};
+
+    if (!otpMap || typeof otpMap !== 'object') {
+      return res.status(400).json({
+        status: "error",
+        message: "otpMap object is required."
+      });
+    }
+
+    const entries = Object.entries(otpMap).filter(([num, code]) => !!num && !!code);
+    if (!entries.length) {
+      return res.status(400).json({
+        status: "error",
+        message: "No valid OTP entries provided."
+      });
+    }
+
+    // Fire off SMS sends in parallel but wait for completion
+    const results = await Promise.all(entries.map(async ([number, otp]) => {
+      const message = `Your SLUMLINK OTP is: ${otp}`;
+      try {
+        const ok = await sendSMS(number, message);
+        return { number, success: ok };
+      } catch (err) {
+        console.error('Signup OTP SMS send error for', number, err);
+        return { number, success: false };
+      }
+    }));
+
+    const failed = results.filter(r => !r.success).map(r => r.number);
+
+    if (failed.length === results.length) {
+      return res.status(500).json({
+        status: "error",
+        message: "Failed to send OTP to all numbers.",
+        failedNumbers: failed
+      });
+    }
+
+    return res.json({
+      status: "success",
+      message: "OTP SMS processing completed.",
+      failedNumbers: failed
+    });
+
+  } catch (error) {
+    console.error("Send Signup OTP SMS Error:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Server error while sending signup OTP SMS."
+    });
+  }
+};
+
 // Initialize phone number change process
 export const initPhoneChange = async (req, res) => {
   try {

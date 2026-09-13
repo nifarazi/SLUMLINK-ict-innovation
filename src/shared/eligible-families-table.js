@@ -89,7 +89,6 @@ class EligibleFamiliesTable {
               <tr>
                 <th>Slum Code</th>
                 <th>Family Head</th>
-                <th>Family Size</th>
                 <th>Eligible Members</th>
                 <th>Eligible Count</th>
               </tr>
@@ -98,7 +97,6 @@ class EligibleFamiliesTable {
     `;
 
     families.forEach((family) => {
-      const familySize = family.total_family_members || 0;
       const eligibleCount = family.eligible_members_count || 0;
       const eligibleNames =
         family.eligible_member_names || family.family_head_name || "—";
@@ -109,7 +107,6 @@ class EligibleFamiliesTable {
             family.slum_code || "—"
           )}</strong></td>
           <td>${this.escapeHtml(family.family_head_name || "—")}</td>
-          <td>${familySize}</td>
           <td class="eligible-names">
             <small>${this.escapeHtml(eligibleNames)}</small>
           </td>
@@ -182,15 +179,14 @@ class EligibleFamiliesTable {
     csv += `Total Families,${summary.total_families || 0}\n`;
     csv += `Total Eligible Individuals,${summary.total_eligible_individuals || 0}\n\n`;
 
-    csv += `Slum Code,Family Head,Family Size,Eligible Members,Eligible Count\n`;
+    csv += `Slum Code,Family Head,Eligible Members,Eligible Count\n`;
 
     families.forEach((family) => {
-      const familySize = family.total_family_members || 0;
       const eligibleCount = family.eligible_members_count || 0;
       const eligibleNames =
         family.eligible_member_names || family.family_head_name || "";
 
-      csv += `"${family.slum_code || ""}","${family.family_head_name || ""}",${familySize},"${eligibleNames}",${eligibleCount}\n`;
+      csv += `"${family.slum_code || ""}","${family.family_head_name || ""}","${eligibleNames}",${eligibleCount}\n`;
     });
 
     // Create and download file
