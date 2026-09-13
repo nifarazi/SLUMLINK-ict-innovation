@@ -7,6 +7,7 @@ import {
   getLocalAuthorities,
   getNGODetails,
   getNGOLicense,
+  getNgoAnalytics,
   approveNGO,
   rejectNGO,
   deleteNGO,
@@ -26,6 +27,9 @@ router.get("/pending", getPendingNGOs);
 
 // GET /api/ngo/active - Get all active NGOs
 router.get("/active", getActiveNGOs);
+
+// GET /api/ngo/analytics - Get NGO analytics
+router.get("/analytics", getNgoAnalytics);
 
 // GET /api/ngo/local-authorities - Get all local authorities
 router.get("/local-authorities", getLocalAuthorities);

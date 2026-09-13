@@ -90,67 +90,13 @@
   <script>
     var currentSort = 'latest';
     
-    var notifications = [
-      {
-        type: 'NGO Signup',
-        message: 'New NGO "Hope Foundation Bangladesh" has signed up and is awaiting verification.',
-        icon: '📋',
-        time: '2 hours ago',
-        link: 'adminVerifyNgo.html'
-      },
-      {
-        type: 'Slum Resident',
-        message: 'New pending account "Shima Akter" from slum "Korail" awaiting verification.',
-        icon: '👤',
-        time: '4 hours ago',
-        link: 'SlumPendingAccounts.html?slum=Korail'
-      },
-      {
-        type: 'NGO Signup',
-        message: 'New NGO "Green Earth Initiative" has signed up and is awaiting verification.',
-        icon: '📋',
-        time: '6 hours ago',
-        link: 'adminVerifyNgo.html'
-      },
-      {
-        type: 'Slum Resident',
-        message: 'New pending account "Rahim Uddin" from slum "Molla" awaiting verification.',
-        icon: '👤',
-        time: '8 hours ago',
-        link: 'SlumPendingAccounts.html?slum=Molla'
-      },
-      {
-        type: 'NGO Signup',
-        message: 'New NGO "Women Empowerment Trust" has signed up and is awaiting verification.',
-        icon: '📋',
-        time: '1 day ago',
-        link: 'adminVerifyNgo.html'
-      },
-      {
-        type: 'Slum Resident',
-        message: 'New pending account "Fatema Noor" from slum "Pora Basti" awaiting verification.',
-        icon: '👤',
-        time: '1 day ago',
-        link: 'SlumPendingAccounts.html?slum=Pora%20Basti'
-      },
-      {
-        type: 'Active Resident',
-        message: 'Resident "Rahim Ahmed" from "Molla" has added new documents for review.',
-        icon: '📄',
-        time: '3 hours ago',
-        link: 'SlumActiveAccounts.html?slum=Molla'
-      },
-      {
-        type: 'Active Resident',
-        message: 'Resident "Fatima Begum" from "Korail" has added new documents for review.',
-        icon: '📄',
-        time: '5 hours ago',
-        link: 'SlumActiveAccounts.html?slum=Korail'
-      }
-    ];
+    var notifications = [];
 
     function timeToMinutes(timeStr) {
+      if (!timeStr) return 0;
+      if (timeStr.toLowerCase() === 'just now') return 0;
       var multipliers = {
+        'minute': 1,
         'hour': 60,
         'day': 24 * 60,
         'week': 7 * 24 * 60,
@@ -162,10 +108,67 @@
       var unit = parts[1].toLowerCase();
       
       if (unit.includes('hour')) return num * multipliers.hour;
+      if (unit.includes('minute')) return num * multipliers.minute;
       if (unit.includes('day')) return num * multipliers.day;
       if (unit.includes('week')) return num * multipliers.week;
       if (unit.includes('month')) return num * multipliers.month;
       return 0;
+    }
+
+    function formatRelativeTime(dateValue) {
+      if (!dateValue) return 'Just now';
+      var date = new Date(dateValue);
+      if (isNaN(date)) return 'Just now';
+
+      var diffMs = Date.now() - date.getTime();
+      var diffMinutes = Math.floor(diffMs / 60000);
+      if (diffMinutes <= 0) return 'Just now';
+      if (diffMinutes < 60) return diffMinutes + ' minutes ago';
+      var diffHours = Math.floor(diffMinutes / 60);
+      if (diffHours < 24) return diffHours + ' hours ago';
+      var diffDays = Math.floor(diffHours / 24);
+      return diffDays + ' days ago';
+    }
+
+    var dismissedKey = 'slumlink_dismissed_notifications';
+
+    function loadDismissed() {
+      try {
+        var raw = localStorage.getItem(dismissedKey);
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        console.warn('Local storage not available:', error);
+        return [];
+      }
+    }
+
+    function saveDismissed(keys) {
+      try {
+        localStorage.setItem(dismissedKey, JSON.stringify(keys));
+      } catch (error) {
+        console.warn('Local storage not available:', error);
+      }
+    }
+
+    function makeNotificationKey(notif) {
+      return [notif.type, notif.message, notif.link].join('|');
+    }
+
+    var dismissedNotifications = loadDismissed();
+
+    function prependNotifications(items) {
+      if (!items || items.length === 0) return;
+      var stamped = items.map(function(item) {
+        if (!item._id) {
+          item._id = 'notif_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        }
+        return item;
+      });
+      var filtered = stamped.filter(function(item) {
+        return dismissedNotifications.indexOf(makeNotificationKey(item)) === -1;
+      });
+      notifications = filtered.concat(notifications);
+      renderNotifications();
     }
     
     function sortNotifications() {
@@ -199,7 +202,7 @@
         return;
       }
 
-      sortedNotifications.forEach(function(notif, index) {
+      sortedNotifications.forEach(function(notif) {
         var notifBox = document.createElement('div');
         notifBox.style.cssText = 'border: 1px solid #e0d5c7; border-radius: 8px; padding: 15px; background-color: #fafaf8; cursor: pointer; transition: all 0.3s ease; display: flex; justify-content: space-between; align-items: center;';
         notifBox.onmouseover = function() {
@@ -232,7 +235,18 @@
         notifBox.appendChild(contentDiv);
         
         notifBox.onclick = function() {
-          window.location.href = notif.link;
+          var key = makeNotificationKey(notif);
+          if (dismissedNotifications.indexOf(key) === -1) {
+            dismissedNotifications.push(key);
+            saveDismissed(dismissedNotifications);
+          }
+          notifications = notifications.filter(function(item) {
+            return item._id !== notif._id;
+          });
+          renderNotifications();
+          setTimeout(function () {
+            window.location.href = notif.link;
+          }, 50);
         };
         
         container.appendChild(notifBox);
@@ -263,16 +277,96 @@
             };
           });
 
-        if (updates.length > 0) {
-          notifications = updates.concat(notifications);
-          renderNotifications();
-        }
+        prependNotifications(updates);
       } catch (error) {
         console.error('Error loading update notifications:', error);
       }
     }
 
     loadUpdateNotifications();
+
+    async function loadPendingNgoNotifications() {
+      try {
+        const response = await fetch('/api/ngo/pending');
+        const result = await response.json();
+
+        if (!result || result.status !== 'success') return;
+
+        const pending = (result.data || []).map(function(ngo) {
+          return {
+            type: 'NGO Signup',
+            message: 'New NGO "' + (ngo.org_name || 'Unknown') + '" has signed up and is awaiting verification.',
+            icon: '📋',
+            time: formatRelativeTime(ngo.created_at),
+            link: 'adminVerifyNgo.html'
+          };
+        });
+
+        prependNotifications(pending);
+      } catch (error) {
+        console.error('Error loading NGO notifications:', error);
+      }
+    }
+
+    loadPendingNgoNotifications();
+
+    async function loadPendingSlumNotifications() {
+      try {
+        const response = await fetch('/api/slum-dweller/pending');
+        const result = await response.json();
+
+        if (!result || result.status !== 'success') return;
+
+        const pending = (result.data || []).map(function(account) {
+          return {
+            type: 'Slum Resident',
+            message: 'New pending account "' + (account.full_name || 'Unknown') + '" from slum "' + (account.area || '-') + '" awaiting verification.',
+            icon: '👤',
+            time: formatRelativeTime(account.created_at),
+            link: 'SlumPendingAccounts.html?slum=' + encodeURIComponent(account.area || '')
+          };
+        });
+
+        prependNotifications(pending);
+      } catch (error) {
+        console.error('Error loading slum dweller notifications:', error);
+      }
+    }
+
+    loadPendingSlumNotifications();
+
+    async function loadCampaignNotifications() {
+      try {
+        const response = await fetch('/api/campaigns');
+        const result = await response.json();
+
+        if (!result || result.success !== true) return;
+
+        const campaigns = (result.data || []).slice(0, 10).map(function(campaign) {
+          var isLocal = String(campaign.org_type || '').toLowerCase() === 'localauthority';
+          var typeLabel = isLocal ? 'Local Authority Campaign' : 'NGO Campaign';
+          var icon = isLocal ? '🏛' : '📢';
+          var orgName = campaign.org_name || 'Organization';
+            var link = isLocal
+              ? 'adminlocalcampaigninfo.html?org=' + encodeURIComponent(orgName)
+              : 'adminactivengoinfo.html?ngo=' + encodeURIComponent(orgName);
+
+          return {
+            type: typeLabel,
+            message: 'New campaign "' + (campaign.title || 'Untitled') + '" created by ' + orgName + ' in "' + (campaign.slum_area || '-') + '".',
+            icon: icon,
+            time: formatRelativeTime(campaign.created_at),
+            link: link
+          };
+        });
+
+        prependNotifications(campaigns);
+      } catch (error) {
+        console.error('Error loading campaign notifications:', error);
+      }
+    }
+
+    loadCampaignNotifications();
     
     document.getElementById('sortBtn').addEventListener('click', function(e) {
       e.stopPropagation();

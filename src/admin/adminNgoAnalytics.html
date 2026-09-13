@@ -49,25 +49,7 @@
     <!-- Main Content -->
     <main class="content">
 
-      <div class="card-grid">
-        <button class="card" type="button">Mastul</button>
-        <button class="card" type="button">Obhizatrik
-</button>
-        <button class="card" type="button">JAAGO</button>
-
-        <button class="card" type="button">Sajida</button>
-        <button class="card" type="button">Pathway</button>
-        <button class="card" type="button">Kaan Pete Roi
-</button>
-
-        <button class="card" type="button">BRAC</button>
-        <button class="card" type="button">ActionAid</button>
-        <button class="card" type="button">Shakti</button>
-
-        <button class="card" type="button">Jagorani Chakra</button>
-        <button class="card" type="button">OxFam</button>
-        <button class="card" type="button">TMSS</button>
-      </div>
+      <div class="card-grid" id="ngoGrid"></div>
 
     </main>
   </div>
@@ -86,11 +68,15 @@
 
   <script src="adminSlumAnalytics.js"></script>
   <script>
-    // Make each .card button navigate to the show page for that NGO.
-    // Adds ?ngo=Name so the show page can read which NGO to display.
     document.addEventListener('DOMContentLoaded', function () {
-      var cards = document.querySelectorAll('.card');
-      cards.forEach(function (card) {
+      var grid = document.getElementById('ngoGrid');
+
+      function renderEmpty(message) {
+        if (!grid) return;
+        grid.innerHTML = '<div style="color:#8b6f5a;">' + message + '</div>';
+      }
+
+      function bindCard(card) {
         card.addEventListener('click', function () {
           var name = (card.textContent || '').trim();
           var target = 'adminShowNgoAnalytics.html';
@@ -105,7 +91,31 @@
             card.click();
           }
         });
-      });
+      }
+
+      fetch('/api/ngo/active')
+        .then(function (response) { return response.json(); })
+        .then(function (payload) {
+          if (!grid) return;
+
+          if (!payload || payload.status !== 'success' || !Array.isArray(payload.data) || payload.data.length === 0) {
+            renderEmpty('No active NGOs found.');
+            return;
+          }
+
+          grid.innerHTML = '';
+          payload.data.forEach(function (ngo) {
+            var card = document.createElement('button');
+            card.type = 'button';
+            card.className = 'card';
+            card.textContent = ngo.org_name;
+            grid.appendChild(card);
+            bindCard(card);
+          });
+        })
+        .catch(function () {
+          renderEmpty('Unable to load NGOs right now.');
+        });
     });
   </script></body>
 </html>

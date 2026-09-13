@@ -787,6 +787,163 @@ export const getSlumDwellerById = async (req, res) => {
   }
 };
 
+// Get analytics for a slum area
+export const getSlumAnalytics = async (req, res) => {
+  const slum = (req.query.slum || '').trim();
+
+  if (!slum) {
+    return res.status(400).json({
+      status: "error",
+      message: "Slum name is required."
+    });
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    const [householdRows] = await connection.query(
+      `SELECT COUNT(*) AS households, COALESCE(SUM(family_members), 0) AS population
+       FROM slum_dwellers
+       WHERE status = 'accepted' AND area = ?`,
+      [slum]
+    );
+
+    const [genderRows] = await connection.query(
+      `SELECT gender, COUNT(*) AS count
+       FROM slum_dwellers
+       WHERE status = 'accepted' AND area = ?
+       GROUP BY gender`,
+      [slum]
+    );
+
+    const [spouseRows] = await connection.query(
+      `SELECT COUNT(*) AS count
+       FROM spouses
+       WHERE status = 'active'
+         AND slum_id IN (SELECT slum_code FROM slum_dwellers WHERE status = 'accepted' AND area = ?)`,
+      [slum]
+    );
+
+    const [childRows] = await connection.query(
+      `SELECT COUNT(*) AS count
+       FROM children
+       WHERE status = 'active'
+         AND slum_id IN (SELECT slum_code FROM slum_dwellers WHERE status = 'accepted' AND area = ?)`,
+      [slum]
+    );
+
+    const [educationRows] = await connection.query(
+      `SELECT education, COUNT(*) AS count
+       FROM slum_dwellers
+       WHERE status = 'accepted' AND area = ?
+       GROUP BY education
+       ORDER BY count DESC
+       LIMIT 5`,
+      [slum]
+    );
+
+    const [occupationRows] = await connection.query(
+      `SELECT occupation, COUNT(*) AS count
+       FROM slum_dwellers
+       WHERE status = 'accepted' AND area = ?
+       GROUP BY occupation
+       ORDER BY count DESC
+       LIMIT 5`,
+      [slum]
+    );
+
+    const [campaignRows] = await connection.query(
+      `SELECT category, COUNT(*) AS count
+       FROM campaigns
+       WHERE slum_area = ?
+       GROUP BY category
+       ORDER BY count DESC`,
+      [slum]
+    );
+
+    const [activeCampaignRows] = await connection.query(
+      `SELECT COUNT(*) AS count
+       FROM campaigns
+       WHERE slum_area = ? AND status IN ('pending', 'in_progress')`,
+      [slum]
+    );
+
+    const [complaintRows] = await connection.query(
+      `SELECT c.status, COUNT(*) AS count
+       FROM complaints c
+       JOIN slum_dwellers s ON c.slum_id = s.slum_code
+       WHERE s.area = ?
+       GROUP BY c.status`,
+      [slum]
+    );
+
+    const [complaintTotalRows] = await connection.query(
+      `SELECT COUNT(*) AS count
+       FROM complaints c
+       JOIN slum_dwellers s ON c.slum_id = s.slum_code
+       WHERE s.area = ?`,
+      [slum]
+    );
+
+    const [complaintCategoryRows] = await connection.query(
+      `SELECT c.category, COUNT(*) AS count
+       FROM complaints c
+       JOIN slum_dwellers s ON c.slum_id = s.slum_code
+       WHERE s.area = ?
+       GROUP BY c.category
+       ORDER BY count DESC`,
+      [slum]
+    );
+
+    const [documentRows] = await connection.query(
+      `SELECT d.status, COUNT(*) AS count
+       FROM documents d
+       JOIN slum_dwellers s ON d.slum_id = s.slum_code
+       WHERE s.area = ?
+       GROUP BY d.status`,
+      [slum]
+    );
+
+    const households = householdRows[0]?.households || 0;
+    const population = householdRows[0]?.population || 0;
+
+    const genderStats = genderRows.reduce((acc, row) => {
+      const key = row.gender || 'Unknown';
+      acc[key] = row.count;
+      return acc;
+    }, {});
+
+    return res.json({
+      status: "success",
+      data: {
+        slum,
+        households,
+        population,
+        adults: households + (spouseRows[0]?.count || 0),
+        children: childRows[0]?.count || 0,
+        activeProjects: activeCampaignRows[0]?.count || 0,
+        gender: genderStats,
+        educationTop: educationRows || [],
+        occupationTop: occupationRows || [],
+        aidByCategory: campaignRows || [],
+        complaintsByStatus: complaintRows || [],
+        complaintsByCategory: complaintCategoryRows || [],
+        documentsByStatus: documentRows || []
+        ,complaintsTotal: complaintTotalRows[0]?.count || 0
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error fetching slum analytics:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch slum analytics.",
+      error: error.message
+    });
+  } finally {
+    connection.release();
+  }
+};
+
 // Get spouse document (marriage/divorce)
 export const getSpouseDocument = async (req, res) => {
   const { slumId, spouseId, docType } = req.params;

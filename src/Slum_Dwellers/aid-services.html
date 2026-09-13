@@ -18,10 +18,59 @@
       background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 12px;
       padding: 16px; display: flex; flex-direction: column; gap: 6px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .aid-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
     }
     .aid-name { font-weight: 800; font-size: 18px; color: #A4624D; }
     .aid-org { font-size: 14px; color: #444; }
+    .aid-type { font-size: 14px; color: #666; font-style: italic; }
+    .aid-quantity { font-size: 13px; color: #007bff; font-weight: 600; }
     .aid-date { font-size: 13px; color: #555; }
+    .loading-message { grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; }
+    .error-message { grid-column: 1 / -1; text-align: center; padding: 40px; color: #dc3545; }
+    .no-data-message { grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; }
+    
+    /* Modal Styles */
+    .modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 1000; cursor: pointer;
+    }
+    .modal-overlay.show { display: flex; align-items: center; justify-content: center; }
+    .modal-content {
+      background: white; border-radius: 12px; width: min(600px, 90vw);
+      max-height: 80vh; overflow-y: auto; cursor: default;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px; border-bottom: 1px solid #e0e0e0;
+    }
+    .modal-header h2 { margin: 0; color: #A4624D; }
+    .modal-close {
+      background: none; border: none; font-size: 24px; cursor: pointer;
+      color: #666; padding: 0; width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-close:hover { color: #333; }
+    .modal-body { padding: 20px; }
+    .detail-grid { display: grid; gap: 16px; }
+    .detail-item { display: grid; grid-template-columns: 140px 1fr; gap: 12px; align-items: start; }
+    .detail-description { grid-template-columns: 140px 1fr; align-items: start; }
+    .detail-label { font-weight: 600; color: #333; }
+    .detail-value { color: #555; word-break: break-word; }
+    .detail-description .detail-value {
+      white-space: pre-wrap; line-height: 1.5;
+    }
+    
+    @media (max-width: 768px) {
+      .aid-grid { grid-template-columns: 1fr; }
+      .detail-item { grid-template-columns: 1fr; gap: 4px; }
+      .detail-description { grid-template-columns: 1fr; }
+      .modal-content { margin: 20px; width: calc(100vw - 40px); }
+    }
   </style>
 </head>
 <body>
@@ -59,31 +108,74 @@
           <div class="welcome-subtitle">View Past Received Services and Aids from Community Programs and Events</div>
         </div>
 
-        <!-- Aids and Services cards: 4 white cards, 2 per row -->
-        <div class="aid-grid" aria-label="Aids and Services List">
-          <div class="aid-card">
-            <div class="aid-name">Medical Camp</div>
-            <div class="aid-org">Hope Foundation</div>
-            <div class="aid-date">2025-08-19</div>
-          </div>
-          <div class="aid-card">
-            <div class="aid-name">Food Distribution</div>
-            <div class="aid-org">Community Care NGO</div>
-            <div class="aid-date">2025-09-02</div>
-          </div>
-          <div class="aid-card">
-            <div class="aid-name">Sanitation Drive</div>
-            <div class="aid-org">Clean City Initiative</div>
-            <div class="aid-date">2025-10-11</div>
-          </div>
-          <div class="aid-card">
-            <div class="aid-name">Job Training Workshop</div>
-            <div class="aid-org">Skills for Life</div>
-            <div class="aid-date">2025-11-25</div>
-          </div>
+        <!-- Aids and Services cards: dynamically populated -->
+        <div class="aid-grid" id="aidGrid" aria-label="Aids and Services List">
+          <div class="loading-message" id="loadingMessage">Loading your aid history...</div>
         </div>
       </section>
     </main>
+  </div>
+
+  <!-- Campaign Details Modal -->
+  <div class="modal-overlay" id="campaignModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">Campaign Details</h2>
+        <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="loading-message" id="modalLoading">Loading campaign details...</div>
+        <div class="modal-details" id="modalDetails" style="display: none;">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Campaign Title:</span>
+              <span class="detail-value" id="detailTitle"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Organization:</span>
+              <span class="detail-value" id="detailOrganization"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Category:</span>
+              <span class="detail-value" id="detailCategory"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Target Gender:</span>
+              <span class="detail-value" id="detailGender"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Target Age Group:</span>
+              <span class="detail-value" id="detailAgeGroup"></span>
+            </div>
+            <div class="detail-item" id="detailEducationItem" style="display: none;">
+              <span class="detail-label">Education Required:</span>
+              <span class="detail-value" id="detailEducation"></span>
+            </div>
+            <div class="detail-item" id="detailSkillsItem" style="display: none;">
+              <span class="detail-label">Skills Required:</span>
+              <span class="detail-value" id="detailSkills"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Start Date:</span>
+              <span class="detail-value" id="detailStartDate"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">End Date:</span>
+              <span class="detail-value" id="detailEndDate"></span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Start Time:</span>
+              <span class="detail-value" id="detailStartTime"></span>
+            </div>
+            <div class="detail-item detail-description">
+              <span class="detail-label">Description:</span>
+              <div class="detail-value" id="detailDescription"></div>
+            </div>
+          </div>
+        </div>
+        <div class="error-message" id="modalError" style="display: none;"></div>
+      </div>
+    </div>
   </div>
 
   <script src="./aid-services.js"></script>

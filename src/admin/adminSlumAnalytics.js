@@ -71,6 +71,102 @@ document.addEventListener('DOMContentLoaded', function () {
       hideModal();
     }
   });
+
+  var searchInput = document.querySelector('.search');
+  if (searchInput) {
+    var searchBox = document.createElement('div');
+    searchBox.style.position = 'absolute';
+    searchBox.style.zIndex = '200';
+    searchBox.style.background = '#ffffff';
+    searchBox.style.border = '1px solid #e0d5c7';
+    searchBox.style.borderRadius = '8px';
+    searchBox.style.boxShadow = '0 6px 16px rgba(0,0,0,0.08)';
+    searchBox.style.padding = '6px 0';
+    searchBox.style.display = 'none';
+    searchBox.style.minWidth = '220px';
+    document.body.appendChild(searchBox);
+
+    function getSidebarRoutes() {
+      var links = document.querySelectorAll('.sidebar a');
+      return Array.from(links).map(function (link) {
+        return {
+          label: (link.textContent || '').replace(/^[^A-Za-z0-9]+\s*/, '').trim(),
+          href: link.getAttribute('href')
+        };
+      }).filter(function (route) {
+        return route.label && route.href;
+      });
+    }
+
+    function positionSearchBox() {
+      var rect = searchInput.getBoundingClientRect();
+      searchBox.style.left = rect.left + 'px';
+      searchBox.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+      searchBox.style.width = rect.width + 'px';
+    }
+
+    function renderSuggestions(query) {
+      var routes = getSidebarRoutes();
+      var lower = query.toLowerCase();
+      var matches = routes.filter(function (route) {
+        return route.label.toLowerCase().indexOf(lower) !== -1;
+      });
+
+      searchBox.innerHTML = '';
+      if (!query || matches.length === 0) {
+        searchBox.style.display = 'none';
+        return [];
+      }
+
+      matches.forEach(function (route) {
+        var item = document.createElement('div');
+        item.textContent = route.label;
+        item.style.padding = '8px 12px';
+        item.style.cursor = 'pointer';
+        item.style.fontSize = '14px';
+        item.style.color = '#6b5b4b';
+        item.onmouseover = function () {
+          item.style.backgroundColor = '#f5f0e8';
+        };
+        item.onmouseout = function () {
+          item.style.backgroundColor = 'transparent';
+        };
+        item.onclick = function () {
+          window.location.href = route.href;
+        };
+        searchBox.appendChild(item);
+      });
+
+      positionSearchBox();
+      searchBox.style.display = 'block';
+      return matches;
+    }
+
+    searchInput.addEventListener('input', function () {
+      renderSuggestions(searchInput.value || '');
+    });
+
+    searchInput.addEventListener('focus', function () {
+      renderSuggestions(searchInput.value || '');
+    });
+
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter') return;
+      var matches = renderSuggestions(searchInput.value || '');
+      if (matches.length === 1) {
+        window.location.href = matches[0].href;
+      }
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.target !== searchInput && !searchBox.contains(e.target)) {
+        searchBox.style.display = 'none';
+      }
+    });
+
+    window.addEventListener('resize', positionSearchBox);
+    window.addEventListener('scroll', positionSearchBox);
+  }
 });
 
 // Table pagination for .table-card tables (5 rows per page)

@@ -11,14 +11,26 @@ function toSqlTime(vHHMM) {
   return t ? `${t}:00` : null;
 }
 
+function asISODate(v){
+  if (!v) return "";
+  if (typeof v === "string") return v.trim().slice(0, 10);
+  if (v instanceof Date && !isNaN(v.getTime())) return v.toISOString().slice(0, 10);
+  return String(v).trim().slice(0, 10);
+}
+
+function asHHMM(v){
+  if (!v) return "";
+  return String(v).trim().slice(0, 5);
+}
+
 function campaignSummaryText(c) {
   const parts = [
     `Title: ${c.title}`,
     `Category: ${c.category}`,
     `Location: ${c.division}, ${c.district}, ${c.slum_area}`,
-    `Start: ${String(c.start_date).slice(0, 10)}`,
-    `End: ${String(c.end_date).slice(0, 10)}`,
-    `Time: ${c.start_time ? String(c.start_time).slice(0, 5) : "—"}`,
+    `Start: ${asISODate(c.start_date)}`,
+    `End: ${asISODate(c.end_date)}`,
+    `Time: ${asHHMM(c.start_time) || "—"}`,
     `Target Gender: ${c.target_gender}`,
     `Age Group: ${c.age_group}`,
     `Education Required: ${c.education_required || "—"}`,
@@ -30,13 +42,13 @@ function campaignSummaryText(c) {
 
 function diffText(oldC, newC) {
   const changed = [];
-  const oldStart = oldC.start_date ? String(oldC.start_date).slice(0, 10) : "";
-  const oldEnd = oldC.end_date ? String(oldC.end_date).slice(0, 10) : "";
-  const oldTime = oldC.start_time ? String(oldC.start_time).slice(0, 5) : "";
+  const oldStart = asISODate(oldC.start_date);
+  const oldEnd = asISODate(oldC.end_date);
+  const oldTime = asHHMM(oldC.start_time);
 
-  const newStart = newC.start_date ? String(newC.start_date).slice(0, 10) : "";
-  const newEnd = newC.end_date ? String(newC.end_date).slice(0, 10) : "";
-  const newTime = newC.start_time ? String(newC.start_time).slice(0, 5) : "";
+  const newStart = asISODate(newC.start_date);
+  const newEnd = asISODate(newC.end_date);
+  const newTime = asHHMM(newC.start_time);
 
   if (oldStart !== newStart) changed.push(`Start Date: ${oldStart || "—"} → ${newStart || "—"}`);
   if (oldEnd !== newEnd) changed.push(`End Date: ${oldEnd || "—"} → ${newEnd || "—"}`);
@@ -203,6 +215,30 @@ async function replaceCampaignTargets(connection, campaign_id, slumCodes) {
   return insertTargetsBulk(connection, campaign_id, slumCodes);
 }
 
+/* ✅ B-Strong: Refresh campaign statuses based on dates */
+async function refreshCampaignStatuses(connection, orgIdNum = null){
+  // Refresh only non-final statuses. Cancelled + not_executed stay as-is.
+  let sql = `
+    UPDATE campaigns
+    SET status = CASE
+      WHEN status IN ('cancelled','not_executed') THEN status
+      WHEN end_date < CURDATE() THEN 'completed'
+      WHEN start_date <= CURDATE() AND end_date >= CURDATE() THEN 'in_progress'
+      ELSE 'pending'
+    END
+    WHERE status NOT IN ('cancelled','not_executed')
+  `;
+  const params = [];
+
+  // If org_id filter is provided, refresh only that org's campaigns (faster & safer)
+  if (orgIdNum) {
+    sql += ` AND org_id = ? `;
+    params.push(orgIdNum);
+  }
+
+  await connection.execute(sql, params);
+}
+
 /* ----------------------------- controllers ----------------------------- */
 
 export async function createCampaign(req, res) {
@@ -305,7 +341,13 @@ export async function createCampaign(req, res) {
         education_required, skills_required,
         description,
         status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+        CASE
+          WHEN ? < CURDATE() THEN 'completed'
+          WHEN ? <= CURDATE() AND ? >= CURDATE() THEN 'in_progress'
+          ELSE 'pending'
+        END
+      )
     `;
 
     const [ins] = await connection.execute(insertSql, [
@@ -323,6 +365,10 @@ export async function createCampaign(req, res) {
       cleanEdu || null,
       cleanSkills || null,
       cleanDesc,
+      // for CASE
+      cleanEndDate,
+      cleanStartDate,
+      cleanEndDate
     ]);
 
     const campaignId = ins.insertId;
@@ -385,16 +431,23 @@ export async function getAllCampaigns(req, res) {
     const { org_id } = req.query;
     connection = await db.getConnection();
 
+    const orgIdNum = org_id ? Number(org_id) : null;
+
+    // ✅ B-Strong: keep DB status consistent every time campaigns are requested
+    await refreshCampaignStatuses(connection, orgIdNum);
+
     let sql = `
-      SELECT campaign_id, org_id, title, category, division, district, slum_area,
-             start_date, end_date, start_time, target_gender, age_group,
-             education_required, skills_required, description, status, created_at, updated_at
-      FROM campaigns
+      SELECT c.campaign_id, c.org_id, c.title, c.category, c.division, c.district, c.slum_area,
+             c.start_date, c.end_date, c.start_time, c.target_gender, c.age_group,
+             c.education_required, c.skills_required, c.description, c.status, c.created_at, c.updated_at,
+             o.org_name, o.org_type
+      FROM campaigns c
+      LEFT JOIN organizations o ON o.org_id = c.org_id
     `;
     const params = [];
 
     if (org_id) {
-      sql += ` WHERE org_id = ? `;
+      sql += ` WHERE c.org_id = ? `;
       params.push(Number(org_id));
     }
 
@@ -423,6 +476,10 @@ export async function getCampaignById(req, res) {
     }
 
     connection = await db.getConnection();
+
+    // ✅ B-Strong: refresh status before retrieving
+    await refreshCampaignStatuses(connection, null);
+
     const [rows] = await connection.execute(
       `SELECT * FROM campaigns WHERE campaign_id = ? LIMIT 1`,
       [idNum]
@@ -495,8 +552,8 @@ export async function updateCampaign(req, res) {
       return res.status(403).json({ success: false, message: "Campaign already cancelled." });
     }
 
-    const finalStart = nextStart ?? (cur.start_date ? String(cur.start_date).slice(0, 10) : "");
-    const finalEnd = nextEnd ?? (cur.end_date ? String(cur.end_date).slice(0, 10) : "");
+    const finalStart = nextStart ?? asISODate(cur.start_date);
+    const finalEnd   = nextEnd   ?? asISODate(cur.end_date);
     const finalTime = payload.start_time !== undefined ? toSqlTime(nextTime) : cur.start_time;
 
     if (!finalStart || !finalEnd) {
@@ -533,11 +590,13 @@ export async function updateCampaign(req, res) {
       [...vals, idNum]
     );
 
-    const [afterRows] = await connection.execute(
+    // ✅ After changing dates, refresh DB status so viewcampaign stays consistent
+    await refreshCampaignStatuses(connection, cur.org_id);
+    const [afterRows2] = await connection.execute(
       `SELECT * FROM campaigns WHERE campaign_id = ? LIMIT 1`,
       [idNum]
     );
-    const after = afterRows[0];
+    const after = afterRows2[0];
 
     // always notify existing targets only (targets never change on update)
     const [targetRows] = await connection.execute(

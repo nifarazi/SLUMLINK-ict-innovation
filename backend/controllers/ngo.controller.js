@@ -442,3 +442,177 @@ export const signinNGO = async (req, res) => {
     });
   }
 };
+
+// Get analytics for an NGO
+export const getNgoAnalytics = async (req, res) => {
+  const orgId = (req.query.orgId || '').trim();
+  const ngoName = (req.query.ngo || '').trim();
+
+  if (!orgId && !ngoName) {
+    return res.status(400).json({
+      status: "error",
+      message: "NGO name or ID is required."
+    });
+  }
+
+  const connection = await pool.getConnection();
+
+  try {
+    const orgSql = orgId
+      ? `SELECT org_id, org_name FROM organizations WHERE org_type = 'ngo' AND org_id = ?`
+      : `SELECT org_id, org_name FROM organizations WHERE org_type = 'ngo' AND org_name = ?`;
+    const orgParams = orgId ? [orgId] : [ngoName];
+    const [orgRows] = await connection.query(orgSql, orgParams);
+
+    if (!orgRows.length) {
+      return res.status(404).json({
+        status: "error",
+        message: "NGO not found."
+      });
+    }
+
+    const org = orgRows[0];
+
+    const [projectTotalRows] = await connection.query(
+      `SELECT COUNT(*) AS count FROM campaigns WHERE org_id = ?`,
+      [org.org_id]
+    );
+
+    const [projectStatusRows] = await connection.query(
+      `SELECT status, COUNT(*) AS count
+       FROM campaigns
+       WHERE org_id = ?
+       GROUP BY status`,
+      [org.org_id]
+    );
+
+    const [campaignRows] = await connection.query(
+      `SELECT campaign_id, title, category, status, division, district, slum_area, start_date, end_date
+       FROM campaigns
+       WHERE org_id = ?
+       ORDER BY start_date DESC, campaign_id DESC`,
+      [org.org_id]
+    );
+
+    const [aidRows] = await connection.query(
+      `SELECT at.name AS aid_type,
+              COALESCE(SUM(COALESCE(de.quantity, 1)), 0) AS total
+       FROM distribution_entries de
+       JOIN distribution_sessions ds ON ds.session_id = de.session_id
+       JOIN aid_types at ON at.aid_type_id = ds.aid_type_id
+       WHERE de.org_id = ?
+       GROUP BY at.name
+       ORDER BY total DESC`,
+      [org.org_id]
+    );
+
+    const [aidTotalRows] = await connection.query(
+      `SELECT COALESCE(SUM(COALESCE(quantity, 1)), 0) AS total
+       FROM distribution_entries
+       WHERE org_id = ?`,
+      [org.org_id]
+    );
+
+    const [dwellersRows] = await connection.query(
+      `SELECT COUNT(DISTINCT family_code) AS count
+       FROM distribution_entries
+       WHERE org_id = ?`,
+      [org.org_id]
+    );
+
+    const [monthlyRows] = await connection.query(
+      `SELECT
+         SUM(CASE
+               WHEN distributed_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+               THEN COALESCE(quantity, 1) ELSE 0 END) AS current_month,
+         SUM(CASE
+               WHEN distributed_at >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
+                AND distributed_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+               THEN COALESCE(quantity, 1) ELSE 0 END) AS previous_month
+       FROM distribution_entries
+       WHERE org_id = ?`,
+      [org.org_id]
+    );
+
+    const [lastActivityRows] = await connection.query(
+      `SELECT MAX(distributed_at) AS last_activity
+       FROM distribution_entries
+       WHERE org_id = ?`,
+      [org.org_id]
+    );
+
+    const [dwellerHistoryRows] = await connection.query(
+      `SELECT s.full_name,
+              s.slum_code,
+              s.area,
+              c.title AS event,
+              de.distributed_at
+       FROM distribution_entries de
+       JOIN campaigns c ON c.campaign_id = de.campaign_id
+       JOIN slum_dwellers s ON s.slum_code = de.family_code
+       WHERE de.org_id = ?
+       ORDER BY de.distributed_at DESC
+       LIMIT 50`,
+      [org.org_id]
+    );
+
+    const totals = {
+      dwellersHelped: dwellersRows[0]?.count || 0,
+      aidsDistributed: aidTotalRows[0]?.total || 0,
+      totalProjects: projectTotalRows[0]?.count || 0
+    };
+
+    const projectStatus = projectStatusRows.reduce((acc, row) => {
+      acc[row.status] = row.count;
+      return acc;
+    }, {});
+
+    const activeProjects = (projectStatus.pending || 0) + (projectStatus.in_progress || 0);
+    const currentMonth = monthlyRows[0]?.current_month || 0;
+    const previousMonth = monthlyRows[0]?.previous_month || 0;
+    const growthPercent = previousMonth === 0
+      ? (currentMonth > 0 ? 100 : 0)
+      : Math.round(((currentMonth - previousMonth) / previousMonth) * 1000) / 10;
+
+    const mostHelped = aidRows[0]
+      ? {
+          aidType: aidRows[0].aid_type,
+          total: aidRows[0].total,
+          percent: aidTotalRows[0]?.total
+            ? Math.round((aidRows[0].total / aidTotalRows[0].total) * 1000) / 10
+            : 0
+        }
+      : { aidType: "No data", total: 0, percent: 0 };
+
+    return res.json({
+      status: "success",
+      data: {
+        ngo: org,
+        totals: {
+          ...totals,
+          activeProjects
+        },
+        projectsByStatus: projectStatus,
+        campaigns: campaignRows || [],
+        aidDistribution: aidRows || [],
+        monthlyGrowth: {
+          currentMonth,
+          previousMonth,
+          percent: growthPercent
+        },
+        mostHelped,
+        lastActivity: lastActivityRows[0]?.last_activity || null,
+        dwellersHistory: dwellerHistoryRows || []
+      }
+    });
+  } catch (error) {
+    console.error("❌ Error fetching NGO analytics:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch NGO analytics.",
+      error: error.message
+    });
+  } finally {
+    connection.release();
+  }
+};

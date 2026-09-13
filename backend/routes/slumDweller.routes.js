@@ -6,6 +6,7 @@ import {
   getPendingSlumDwellers,
   getActiveSlumDwellers,
   getSlumDwellerById,
+  getSlumAnalytics,
   approveSlumDweller,
   rejectSlumDweller,
   getCurrentUserProfile,
@@ -59,6 +60,9 @@ router.get("/active", getActiveSlumDwellers);
 
 // GET /api/slum-dweller/profile/:id (for dashboard - lightweight)
 router.get("/profile/:id", getCurrentUserProfile);
+
+// GET /api/slum-dweller/analytics?slum=Name
+router.get("/analytics", getSlumAnalytics);
 
 // GET /api/slum-dweller/:id (full details with spouse and children)
 router.get("/:id", getSlumDwellerById);

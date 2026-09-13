@@ -243,8 +243,8 @@ export async function addDistributionEntry(req, res) {
 
     const [ins] = await conn.execute(
       `INSERT INTO distribution_entries
-       (session_id, campaign_id, org_id, family_code, quantity, comment, verification_method)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (session_id, campaign_id, org_id, family_code, quantity, comment, verification_method, round_no)
+       VALUES (?, ?, ?, ?, ?, ?, ?, NULL)`,
       [
         sessionId,
         sess.campaign_id,
@@ -384,6 +384,7 @@ export async function getFamilySnapshotAllHistory(req, res) {
          de.distributed_at,
          o.org_name,
          c.title AS campaign_title,
+         c.campaign_id,
          at.name AS aid_type,
          de.quantity,
          de.verification_method,
@@ -409,6 +410,7 @@ export async function getFamilySnapshotAllHistory(req, res) {
           date: String(h.distributed_at).replace("T", " ").slice(0, 19),
           orgName: h.org_name,
           campaignTitle: h.campaign_title,
+          campaignId: h.campaign_id,
           aidType: h.aid_type,
           quantity: h.quantity,
           verification: h.verification_method,

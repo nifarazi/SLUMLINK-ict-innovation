@@ -40,12 +40,107 @@
     .dweller-table tr:hover {
       background-color: #f5f5f5;
     }
+
+    .clickable-row {
+      cursor: pointer;
+    }
+
+    .clickable-row:hover {
+      background-color: #f7f1ea;
+    }
     
     .page-title {
       font-size: 24px;
       font-weight: 600;
       color: #8b6f5a;
       margin-bottom: 20px;
+    }
+
+    .chart-stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 50px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #6b5b4b;
+      background: #ffffff;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid #efe6db;
+    }
+
+    .chart-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #8b6f5a, #d4b5a0);
+      min-width: 6px;
+    }
+
+    .chart-value {
+      text-align: right;
+      font-weight: 600;
+      color: #5a4a42;
+    }
+
+    .stacked-bar {
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      background: #f3eee8;
+      margin-top: 10px;
+    }
+
+    .stacked-segment {
+      height: 100%;
+    }
+
+    .stacked-legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 6px 12px;
+      font-size: 12px;
+      color: #6b5b4b;
+      margin-top: 10px;
+    }
+
+    .vertical-chart {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 10px;
+      align-items: end;
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #efe6db;
+      background: #ffffff;
+      min-height: 180px;
+    }
+
+    .vertical-bar {
+      display: grid;
+      gap: 6px;
+      justify-items: center;
+      font-size: 11px;
+      color: #6b5b4b;
+    }
+
+    .vertical-bar-fill {
+      width: 22px;
+      border-radius: 10px 10px 4px 4px;
+      background: linear-gradient(180deg, #8b6f5a, #d4b5a0);
+      min-height: 6px;
+    }
+
+    .vertical-bar-value {
+      font-weight: 600;
+      color: #5a4a42;
     }
   </style>
 </head>
@@ -99,72 +194,38 @@
           <section class="aid-section">
             <div class="aid-header">
               <h2>Aid Distribution</h2>
-              <div class="date-range">Last 30 days</div>
+              <div class="date-range">By aid type</div>
             </div>
-
-            <div class="donut-chart" role="img" aria-label="Aid distribution donut chart">
-              <svg class="chart-svg" viewBox="0 0 32 32">
-                <!-- Background circle -->
-                <circle r="16" cx="16" cy="16" fill="#f3f3f3"></circle>
-                <!-- Food segment (42%) - dark color -->
-                <circle r="10" cx="16" cy="16" fill="transparent" stroke="#5A4A42" stroke-width="6" stroke-dasharray="26.4 62.8" stroke-dashoffset="0" stroke-linecap="round"></circle>
-                <!-- Shelter segment (25%) - light color, offset to start after Food -->
-                <circle r="10" cx="16" cy="16" fill="transparent" stroke="#D4B5A0" stroke-width="6" stroke-dasharray="15.7 62.8" stroke-dashoffset="-26.4" stroke-linecap="round"></circle>
-                <!-- Clothing segment (33%) - accent brown color, offset to start after Shelter -->
-                <circle r="10" cx="16" cy="16" fill="transparent" stroke="#AD7562" stroke-width="6" stroke-dasharray="20.7 62.8" stroke-dashoffset="-42.1" stroke-linecap="round"></circle>
-              </svg>
-            </div>
-
-            <div class="legend" aria-hidden="false">
-              <div class="legend-item"><span class="legend-dot" style="background:#5A4A42"></span><span class="legend-label">Food</span> <span class="legend-value">42%</span></div>
-              <div class="legend-item"><span class="legend-dot" style="background:#D4B5A0"></span><span class="legend-label">Shelter</span> <span class="legend-value">25%</span></div>
-              <div class="legend-item"><span class="legend-dot" style="background:#AD7562"></span><span class="legend-label">Clothing</span> <span class="legend-value">33%</span></div>
-            </div>
+            <div id="aidTable"></div>
+            <div id="aidChart" class="chart-stack"></div>
+            <div id="aidVerticalChart" class="vertical-chart"></div>
           </section>
 
           <section class="development-section">
-            <div class="development-header"><h2>Development Work Activity</h2></div>
-            <div class="update-info">Most recent update: 2 days ago</div>
-
-            <div class="bar-chart" aria-hidden="false">
-              <div class="bar-group">
-                <div class="bar bar-dark" style="height:80%"></div>
-                <div class="bar bar-light" style="height:60%"></div>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-dark" style="height:60%"></div>
-                <div class="bar bar-light" style="height:40%"></div>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-dark" style="height:90%"></div>
-                <div class="bar bar-light" style="height:70%"></div>
-              </div>
-            </div>
-
-            <div class="chart-legend">
-              <div class="chart-legend-item"><span style="display:inline-block;width:12px;height:12px;background:#5A4A42;border-radius:2px"></span> Completed</div>
-              <div class="chart-legend-item"><span style="display:inline-block;width:12px;height:12px;background:#D4B5A0;border-radius:2px"></span> In progress</div>
-            </div>
+            <div class="development-header"><h2>Projects by Status</h2></div>
+            <div id="projectsTable"></div>
+            <div id="projectsChart" class="chart-stack"></div>
+            <div id="projectsStack"></div>
           </section>
         </div>
 
         <aside class="right-sidebar">
           <div class="stats-grid">
-            <div class="stat-card" id="dwellersCard"><div class="stat-label">Total Dwellers helped</div><div class="stat-value">3,214</div></div>
-            <div class="stat-card"><div class="stat-label">Aids distributed</div><div class="stat-value">12,840</div></div>
-            <div class="stat-card"><div class="stat-label">Total Projects</div><div class="stat-value">14</div></div>
+            <div class="stat-card" id="dwellersCard"><div class="stat-label">Total Dwellers helped</div><div class="stat-value" id="dwellersValue">0</div></div>
+            <div class="stat-card"><div class="stat-label">Aids distributed</div><div class="stat-value" id="aidsValue">0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Projects</div><div class="stat-value" id="projectsValue">0</div></div>
           </div>
 
           <div class="urgent-card">
             <div class="urgent-label">Most helped sector</div>
-            <div class="urgent-subtitle">Food</div>
-            <div class="urgent-value">42%</div>
+            <div class="urgent-subtitle" id="mostHelpedLabel">No data</div>
+            <div class="urgent-value" id="mostHelpedValue">0%</div>
           </div>
 
           <div class="growth-card">
             <div class="growth-label">Monthly Growth</div>
-            <div class="growth-value">+6.2%</div>
-            <div class="mini-chart"><svg viewBox="0 0 100 40"><polyline points="0,30 20,20 40,10 60,15 80,8 100,4" fill="none" stroke="#5A4A42" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline></svg></div>
+            <div class="growth-value" id="growthValue">0%</div>
+            <div class="urgent-subtitle" id="activityValue">No activity yet</div>
           </div>
 
           <button class="btn-primary" id="exportBtn">Generate Report</button>
@@ -198,6 +259,32 @@
     </div>
   </div>
 
+  <!-- Projects by Status Modal -->
+  <div class="modal-overlay" id="projectsModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="projectsTitle">
+      <div class="modal-header" id="projectsTitle">Projects</div>
+      <div class="modal-body dweller-history">
+        <table class="dweller-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Area</th>
+              <th>Dates</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="projectsTableBody">
+            <!-- Project records will be populated here -->
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="closeProjectsModal">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- logout modal markup -->
   <div class="modal-overlay" id="logoutModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
@@ -213,22 +300,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="adminSlumAnalytics.js"></script>
   <script>
-    // Sample dweller data
-    const dwellerData = [
-      { name: 'Ahmed Hassan', id: 'DW001', slum: 'Molla', event: 'Food Distribution Drive' },
-      { name: 'Fatima Khan', id: 'DW002', slum: 'Korail', event: 'Water Supply Program' },
-      { name: 'Raj Kumar', id: 'DW003', slum: 'Begun Bari', event: 'Health Clinic Support' },
-      { name: 'Amina Begum', id: 'DW004', slum: 'DuariPara', event: 'Skill Training Initiative' },
-      { name: 'Hassan Ali', id: 'DW005', slum: 'Kallyanpur', event: 'Food Distribution Drive' },
-      { name: 'Nasrin Akter', id: 'DW006', slum: 'Pora Basti', event: 'Educational Support Program' },
-      { name: 'Karim Ahmed', id: 'DW007', slum: 'Pura', event: 'Community Center Program' },
-      { name: 'Rehana Begum', id: 'DW008', slum: 'Nubur', event: 'Sanitation Improvement' },
-      { name: 'Mohammad Habib', id: 'DW009', slum: 'Mannan', event: 'Women Empowerment Program' },
-      { name: 'Salma Akter', id: 'DW010', slum: 'Basbari', event: 'Child Education Initiative' },
-      { name: 'Ibrahim Khan', id: 'DW011', slum: 'Chalantika', event: 'Healthcare Outreach' },
-      { name: 'Leyla Hassan', id: 'DW012', slum: 'Nama Para', event: 'Livelihood Training' }
-    ];
-
     document.addEventListener('DOMContentLoaded', function () {
       // Display NGO name from URL parameter
       var ngoName = new URLSearchParams(window.location.search).get('ngo');
@@ -236,27 +307,41 @@
       if (ngoTitle && ngoName) {
         ngoTitle.textContent = ngoName + ' Analytics';
       }
+
+      var analyticsData = null;
       
       // Handle Total Dwellers Helped click
       const dwellersCard = document.getElementById('dwellersCard');
       const dwellerModal = document.getElementById('dwellerModal');
       const closeDwellerBtn = document.getElementById('closeDwellerModal');
       const dwellerTableBody = document.getElementById('dwellerTableBody');
+      const projectsModal = document.getElementById('projectsModal');
+      const closeProjectsBtn = document.getElementById('closeProjectsModal');
+      const projectsTableBody = document.getElementById('projectsTableBody');
+      const projectsTitle = document.getElementById('projectsTitle');
 
       if (dwellersCard) {
         dwellersCard.addEventListener('click', function () {
-          // Populate table with dweller data
+          if (!analyticsData || !dwellerTableBody) {
+            return;
+          }
           dwellerTableBody.innerHTML = '';
-          dwellerData.forEach(function (dweller) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-              <td>${dweller.name}</td>
-              <td>${dweller.id}</td>
-              <td>${dweller.slum}</td>
-              <td>${dweller.event}</td>
-            `;
-            dwellerTableBody.appendChild(row);
-          });
+          var history = analyticsData.dwellersHistory || [];
+          if (history.length === 0) {
+            var emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = '<td colspan="4">No distribution history.</td>';
+            dwellerTableBody.appendChild(emptyRow);
+          } else {
+            history.forEach(function (dweller) {
+              var row = document.createElement('tr');
+              row.innerHTML =
+                '<td>' + (dweller.full_name || '-') + '</td>' +
+                '<td>' + (dweller.slum_code || '-') + '</td>' +
+                '<td>' + (dweller.area || '-') + '</td>' +
+                '<td>' + (dweller.event || '-') + '</td>';
+              dwellerTableBody.appendChild(row);
+            });
+          }
           dwellerModal.classList.add('show');
           dwellerModal.setAttribute('aria-hidden', 'false');
         });
@@ -279,26 +364,319 @@
         });
       }
 
-      // Make each .card button navigate to the show page for that slum.
-      // Adds ?slum=Name so the show page can read which slum to display.
-      var cards = document.querySelectorAll('.card');
-      cards.forEach(function (card) {
-        card.addEventListener('click', function () {
-          var name = (card.textContent || '').trim();
-          var target = 'adminShowNgoAnalytics.html';
-          if (name) {
-            target += '?slum=' + encodeURIComponent(name);
-          }
-          window.location.href = target;
+      if (closeProjectsBtn) {
+        closeProjectsBtn.addEventListener('click', function () {
+          if (!projectsModal) return;
+          projectsModal.classList.remove('show');
+          projectsModal.setAttribute('aria-hidden', 'true');
         });
-        // make keyboard accessible
-        card.addEventListener('keydown', function (e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            card.click();
+      }
+
+      if (projectsModal) {
+        projectsModal.addEventListener('click', function (e) {
+          if (e.target === projectsModal) {
+            projectsModal.classList.remove('show');
+            projectsModal.setAttribute('aria-hidden', 'true');
           }
         });
-      });
+      }
+
+      function formatDate(value) {
+        if (!value) return '-';
+        var date = new Date(value);
+        if (isNaN(date)) return value;
+        return date.toLocaleDateString();
+      }
+
+      function openProjectsModal(statusKey) {
+        if (!projectsModal || !projectsTableBody || !analyticsData) return;
+
+        var campaigns = analyticsData.campaigns || [];
+        var filtered = campaigns.filter(function (campaign) {
+          return statusKey ? campaign.status === statusKey : true;
+        });
+
+        if (projectsTitle) {
+          var label = statusKey ? statusKey.replace('_', ' ') : 'All';
+          projectsTitle.textContent = 'Projects: ' + label;
+        }
+
+        projectsTableBody.innerHTML = '';
+
+        if (!filtered.length) {
+          var emptyRow = document.createElement('tr');
+          emptyRow.innerHTML = '<td colspan="5">No projects for this status.</td>';
+          projectsTableBody.appendChild(emptyRow);
+        } else {
+          filtered.forEach(function (campaign) {
+            var row = document.createElement('tr');
+            var area = [campaign.slum_area, campaign.district, campaign.division]
+              .filter(Boolean)
+              .join(', ');
+            var dates = formatDate(campaign.start_date) + ' - ' + formatDate(campaign.end_date);
+            row.innerHTML =
+              '<td>' + (campaign.title || '-') + '</td>' +
+              '<td>' + (campaign.category || '-') + '</td>' +
+              '<td>' + (area || '-') + '</td>' +
+              '<td>' + dates + '</td>' +
+              '<td>' + (campaign.status ? campaign.status.replace('_', ' ') : '-') + '</td>';
+            projectsTableBody.appendChild(row);
+          });
+        }
+
+        projectsModal.classList.add('show');
+        projectsModal.setAttribute('aria-hidden', 'false');
+      }
+
+      function renderTable(containerId, headers, rows) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!rows || rows.length === 0) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var html = '<table class="active-table" style="width:100%;"><thead><tr>';
+        headers.forEach(function (header) {
+          html += '<th>' + header + '</th>';
+        });
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(function (row) {
+          html += '<tr>';
+          headers.forEach(function (header) {
+            var value = row[header];
+            html += '<td>' + (value === undefined || value === null ? '' : value) + '</td>';
+          });
+          html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+
+      function renderProjectsTable(rows) {
+        var container = document.getElementById('projectsTable');
+        if (!container) return;
+
+        if (!rows || rows.length === 0) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var html = '<table class="active-table" style="width:100%;"><thead><tr>';
+        html += '<th>Status</th><th>Total</th>';
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(function (row) {
+          var statusKey = row.statusKey || '';
+          html += '<tr class="clickable-row" data-status="' + statusKey + '">' +
+            '<td>' + row.Status + '</td>' +
+            '<td>' + row.Total + '</td>' +
+            '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        var tableRows = container.querySelectorAll('tbody tr[data-status]');
+        tableRows.forEach(function (row) {
+          row.addEventListener('click', function () {
+            var status = row.getAttribute('data-status');
+            openProjectsModal(status);
+          });
+        });
+      }
+
+      function renderChart(containerId, rows, labelKey, valueKey) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!rows || rows.length === 0) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var max = rows.reduce(function (acc, row) {
+          return Math.max(acc, Number(row[valueKey]) || 0);
+        }, 1);
+
+        var html = '';
+        rows.forEach(function (row) {
+          var value = Number(row[valueKey]) || 0;
+          var width = Math.round((value / max) * 100);
+          var statusKey = row.statusKey || '';
+          var rowClass = (containerId === 'projectsChart' && statusKey) ? 'chart-row clickable-row' : 'chart-row';
+          var dataAttr = (containerId === 'projectsChart' && statusKey) ? ' data-status="' + statusKey + '"' : '';
+          html += '<div class="' + rowClass + '"' + dataAttr + '>' +
+            '<div>' + row[labelKey] + '</div>' +
+            '<div class="chart-bar" style="width:' + width + '%"></div>' +
+            '<div class="chart-value">' + value + '</div>' +
+            '</div>';
+        });
+        container.innerHTML = html;
+
+        if (containerId === 'projectsChart') {
+          var chartRows = container.querySelectorAll('.chart-row[data-status]');
+          chartRows.forEach(function (row) {
+            row.addEventListener('click', function () {
+              var status = row.getAttribute('data-status');
+              openProjectsModal(status);
+            });
+          });
+        }
+      }
+
+      function renderStack(containerId, rows, labelKey, valueKey) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!rows || rows.length === 0) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var total = rows.reduce(function (acc, row) {
+          return acc + (Number(row[valueKey]) || 0);
+        }, 0);
+
+        if (!total) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var barHtml = '<div class="stacked-bar">';
+        var legendHtml = '<div class="stacked-legend">';
+        var palette = ['#8b6f5a', '#d4b5a0', '#ad7562', '#c39b7d', '#6e5a4f', '#b08974'];
+
+        rows.forEach(function (row, idx) {
+          var value = Number(row[valueKey]) || 0;
+          var percent = Math.round((value / total) * 1000) / 10;
+          var color = palette[idx % palette.length];
+          barHtml += '<div class="stacked-segment" style="width:' + percent + '%; background:' + color + '"></div>';
+          legendHtml += '<div><span style="display:inline-block;width:10px;height:10px;background:' + color + ';border-radius:2px;margin-right:6px"></span>' +
+            row[labelKey] + ' (' + percent + '%)</div>';
+        });
+
+        barHtml += '</div>';
+        legendHtml += '</div>';
+        container.innerHTML = barHtml + legendHtml;
+      }
+
+      function renderVerticalChart(containerId, rows, labelKey, valueKey) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!rows || rows.length === 0) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var max = rows.reduce(function (acc, row) {
+          return Math.max(acc, Number(row[valueKey]) || 0);
+        }, 1);
+
+        var html = '';
+        rows.forEach(function (row) {
+          var value = Number(row[valueKey]) || 0;
+          var height = Math.round((value / max) * 140) + 12;
+          html += '<div class="vertical-bar">' +
+            '<div class="vertical-bar-value">' + value + '</div>' +
+            '<div class="vertical-bar-fill" style="height:' + height + 'px"></div>' +
+            '<div>' + row[labelKey] + '</div>' +
+            '</div>';
+        });
+
+        container.innerHTML = html;
+      }
+
+      function fetchAnalytics() {
+        if (!ngoName) {
+          return;
+        }
+
+        fetch('/api/ngo/analytics?ngo=' + encodeURIComponent(ngoName))
+          .then(function (response) { return response.json(); })
+          .then(function (payload) {
+            if (!payload || payload.status !== 'success') {
+              return;
+            }
+
+            analyticsData = payload.data || {};
+            var totals = analyticsData.totals || {};
+
+            var dwellersValue = document.getElementById('dwellersValue');
+            var aidsValue = document.getElementById('aidsValue');
+            var projectsValue = document.getElementById('projectsValue');
+            var mostHelpedLabel = document.getElementById('mostHelpedLabel');
+            var mostHelpedValue = document.getElementById('mostHelpedValue');
+            var growthValue = document.getElementById('growthValue');
+            var activityValue = document.getElementById('activityValue');
+
+            if (dwellersValue) {
+              dwellersValue.textContent = totals.dwellersHelped || 0;
+            }
+            if (aidsValue) {
+              aidsValue.textContent = totals.aidsDistributed || 0;
+            }
+            if (projectsValue) {
+              projectsValue.textContent = totals.totalProjects || 0;
+            }
+
+            var mostHelped = analyticsData.mostHelped || {};
+            if (mostHelpedLabel) {
+              mostHelpedLabel.textContent = mostHelped.aidType || 'No data';
+            }
+            if (mostHelpedValue) {
+              mostHelpedValue.textContent = (mostHelped.percent || 0) + '%';
+            }
+
+            if (growthValue) {
+              var percent = analyticsData.monthlyGrowth ? Number(analyticsData.monthlyGrowth.percent) : 0;
+              if (!isFinite(percent)) {
+                percent = 0;
+              }
+              growthValue.textContent = (percent > 0 ? '+' : '') + percent + '%';
+            }
+            if (activityValue) {
+              if (analyticsData.lastActivity) {
+                var lastDate = new Date(analyticsData.lastActivity);
+                activityValue.textContent = 'Last activity: ' + lastDate.toLocaleDateString();
+              } else {
+                activityValue.textContent = 'No activity yet';
+              }
+            }
+
+            var aidRows = (analyticsData.aidDistribution || []).map(function (row) {
+              return {
+                Type: row.aid_type,
+                Total: row.total
+              };
+            });
+
+            renderTable('aidTable', ['Type', 'Total'], aidRows);
+            renderChart('aidChart', aidRows, 'Type', 'Total');
+            renderVerticalChart('aidVerticalChart', aidRows, 'Type', 'Total');
+
+            var projectRows = Object.keys(analyticsData.projectsByStatus || {}).map(function (key) {
+              return {
+                Status: key.replace('_', ' '),
+                Total: analyticsData.projectsByStatus[key],
+                statusKey: key
+              };
+            });
+
+            renderProjectsTable(projectRows);
+            renderChart('projectsChart', projectRows, 'Status', 'Total');
+            renderStack('projectsStack', projectRows, 'Status', 'Total');
+          })
+          .catch(function () {
+            return;
+          });
+      }
+
+      fetchAnalytics();
 
       // Export Report button - generates and downloads a PDF report
       var exportBtn = document.getElementById('exportBtn');
@@ -315,135 +693,146 @@
           var contentWidth = pageWidth - 2 * margin;
           var y = margin;
           
-          // Title
+          var totals = (analyticsData && analyticsData.totals) ? analyticsData.totals : {};
+          var aidRows = (analyticsData && analyticsData.aidDistribution) ? analyticsData.aidDistribution : [];
+          var statusRows = (analyticsData && analyticsData.projectsByStatus) ? analyticsData.projectsByStatus : {};
+          var mostHelped = (analyticsData && analyticsData.mostHelped) ? analyticsData.mostHelped : {};
+          var growthPercent = (analyticsData && analyticsData.monthlyGrowth) ? analyticsData.monthlyGrowth.percent : 0;
+
+          function sectionHeader(title) {
+            doc.setFillColor(244, 238, 232);
+            doc.rect(margin, y, contentWidth, 7, 'F');
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(90, 74, 66);
+            doc.text(title, margin + 2, y + 5);
+            y += 10;
+            doc.setTextColor(0, 0, 0);
+          }
+
+          // Title block
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
           doc.text('SLUMLINK NGO Analytics Report', pageWidth / 2, y, { align: 'center' });
-          y += 15;
-          
-          // NGO Name
-          doc.setFontSize(14);
-          doc.setFont('helvetica', 'bold');
-          doc.text(ngoName, margin, y);
-          y += 10;
-          
-          // Generated Date
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Generated on: ' + new Date().toLocaleString(), margin, y);
-          y += 10;
-          
-          // Divider line
-          doc.setDrawColor(139, 111, 90);
-          doc.line(margin, y, pageWidth - margin, y);
-          y += 8;
-          
-          // Statistics Section
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Key Statistics', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Total Dwellers Helped: 3,214', margin + 5, y);
+          y += 12;
+          doc.setFontSize(13);
+          doc.text(ngoName, pageWidth / 2, y, { align: 'center' });
           y += 6;
-          doc.text('Aids Distributed: 12,840', margin + 5, y);
-          y += 6;
-          doc.text('Total Projects: 14', margin + 5, y);
-          y += 10;
-          
-          // Aid Distribution Section
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Aid Distribution (Last 30 days)', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Food: 42%', margin + 5, y);
-          y += 6;
-          doc.text('Shelter: 25%', margin + 5, y);
-          y += 6;
-          doc.text('Clothing: 33%', margin + 5, y);
-          y += 10;
-          
-          // Development Work Activity Section
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Development Work Activity', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Most recent update: 2 days ago', margin + 5, y);
-          y += 8;
-          
-          // Projects Completed
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Completed Projects', margin + 5, y);
-          y += 6;
-          
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          var completedProjects = [
-            'Water Supply to Korail Slum',
-            'Educational Support Program - Molla',
-            'Health Clinic Setup - Begun Bari',
-            'Skill Training Center - DuariPara',
-            'Food Distribution Drive - Kallyanpur'
-          ];
-          completedProjects.forEach(function(project) {
-            doc.text('• ' + project, margin + 10, y);
-            y += 5;
-          });
+          doc.text('Generated on: ' + new Date().toLocaleString(), pageWidth / 2, y, { align: 'center' });
+          y += 10;
+
+          // Summary
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          var summaryText = 'This report summarizes project activity, aid distribution, and recent outreach outcomes for ' + ngoName + '.';
+          var summaryLines = doc.splitTextToSize(summaryText, contentWidth);
+          doc.text(summaryLines, margin, y);
+          y += summaryLines.length * 5 + 4;
+
+          sectionHeader('Key Statistics');
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.text('Total Dwellers Helped: ' + (totals.dwellersHelped || 0), margin + 4, y);
+          doc.text('Aids Distributed: ' + (totals.aidsDistributed || 0), margin + 70, y);
+          doc.text('Total Projects: ' + (totals.totalProjects || 0), margin + 130, y);
+          y += 8;
+
+          sectionHeader('Aid Distribution (Last 30 Days)');
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          if (!aidRows.length) {
+            doc.text('No distribution data available.', margin + 4, y);
+            y += 6;
+          } else {
+            aidRows.slice(0, 6).forEach(function (row) {
+              doc.text(row.aid_type + ': ' + row.total, margin + 4, y);
+              y += 5;
+            });
+          }
           y += 2;
-          
-          // Projects In Progress
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Projects In Progress', margin + 5, y);
+
+          if (aidRows.length) {
+            var chartHeight = 30;
+            var chartWidth = contentWidth;
+            var barGap = 4;
+            var maxAid = aidRows.reduce(function (acc, row) {
+              return Math.max(acc, Number(row.total) || 0);
+            }, 1);
+            var barWidth = Math.floor((chartWidth - (barGap * (aidRows.length - 1))) / aidRows.length);
+            var chartX = margin;
+            var chartY = y + 4;
+            var palette = [
+              [139, 111, 90],
+              [212, 181, 160],
+              [173, 117, 98],
+              [195, 155, 125],
+              [110, 90, 79],
+              [176, 137, 116]
+            ];
+
+            aidRows.slice(0, 6).forEach(function (row, idx) {
+              var value = Number(row.total) || 0;
+              var barHeight = Math.round((value / maxAid) * chartHeight);
+              var color = palette[idx % palette.length];
+              var barX = chartX + idx * (barWidth + barGap);
+              var barY = chartY + (chartHeight - barHeight);
+              doc.setFillColor(color[0], color[1], color[2]);
+              doc.rect(barX, barY, barWidth, barHeight, 'F');
+              doc.setFontSize(8);
+              doc.text(row.aid_type, barX, chartY + chartHeight + 4, { maxWidth: barWidth });
+            });
+
+            y = chartY + chartHeight + 10;
+          } else {
+            y += 4;
+          }
+
+          sectionHeader('Project Activity');
+          if (analyticsData && analyticsData.lastActivity) {
+            var lastActivity = new Date(analyticsData.lastActivity);
+            doc.text('Most recent update: ' + lastActivity.toLocaleDateString(), margin + 4, y);
+          } else {
+            doc.text('Most recent update: No activity yet', margin + 4, y);
+          }
           y += 6;
-          
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          var inProgressProjects = [
-            'Community Center Development - Pura (65% complete)',
-            'Sanitation Improvement - Nubur (70% complete)',
-            'Women Empowerment Program - Mannan (45% complete)',
-            'Child Education Initiative - Basbari (80% complete)',
-            'Healthcare Outreach - Chalantika (55% complete)',
-            'Livelihood Training - Nama Para (50% complete)',
-            'Infrastructure Development - Pora Basti (40% complete)',
-            'Youth Skills Program - Korail (60% complete)',
-            'Nutrition Program - Molla (75% complete)'
-          ];
-          inProgressProjects.forEach(function(project) {
-            if (y > 270) {
-              doc.addPage();
-              y = margin;
-            }
-            doc.text('• ' + project, margin + 10, y);
+          Object.keys(statusRows).forEach(function (status) {
+            doc.text(status.replace('_', ' ') + ': ' + statusRows[status], margin + 8, y);
             y += 5;
           });
-          y += 8;
-          
-          // Most Helped Sector
+
+          var campaigns = (analyticsData && analyticsData.campaigns) ? analyticsData.campaigns : [];
+          if (campaigns.length) {
+            y += 2;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Top Projects', margin + 4, y);
+            y += 6;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            campaigns.slice(0, 3).forEach(function (campaign) {
+              var dateLabel = formatDate(campaign.start_date) + ' - ' + formatDate(campaign.end_date);
+              doc.text('• ' + (campaign.title || '-') + ' (' + dateLabel + ')', margin + 6, y);
+              y += 5;
+              doc.text('  Status: ' + (campaign.status ? campaign.status.replace('_', ' ') : '-'), margin + 10, y);
+              y += 5;
+            });
+          }
+
           if (y > 250) {
             doc.addPage();
             y = margin;
           }
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Impact Summary', margin, y);
-          y += 8;
-          
+
+          sectionHeader('Impact Summary');
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
-          doc.text('Most Helped Sector: Food (42%)', margin + 5, y);
+          doc.text('Most Helped Sector: ' + (mostHelped.aidType || 'No data') + ' (' + (mostHelped.percent || 0) + '%)', margin + 4, y);
           y += 6;
-          doc.text('Monthly Growth: +6.2%', margin + 5, y);
+          doc.text('Monthly Growth: ' + (growthPercent > 0 ? '+' : '') + growthPercent + '%', margin + 4, y);
           
           // Save PDF
           var filename = ngoName.replace(/[^a-z0-9]+/gi, '_').toLowerCase() + '_report.pdf';

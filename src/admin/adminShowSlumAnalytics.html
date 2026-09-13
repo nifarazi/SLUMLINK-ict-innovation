@@ -13,6 +13,102 @@
       color: #8b6f5a;
       margin-bottom: 20px;
     }
+
+    .aid-section,
+    .development-section {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 18px;
+      box-shadow: 0 2px 6px rgba(90, 74, 66, 0.08);
+      border: 1px solid #efe6db;
+    }
+
+    .chart-stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .chart-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 50px;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #6b5b4b;
+      background: #ffffff;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid #efe6db;
+    }
+
+    .chart-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #8b6f5a, #d4b5a0);
+      min-width: 6px;
+    }
+
+    .chart-value {
+      text-align: right;
+      font-weight: 600;
+      color: #5a4a42;
+    }
+
+    .donut-wrap {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .donut-legend {
+      display: grid;
+      gap: 10px;
+      font-size: 13px;
+      color: #6b5b4b;
+    }
+
+    .donut-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #ffffff;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid #efe6db;
+    }
+
+    .donut-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .stacked-bar {
+      height: 14px;
+      border-radius: 999px;
+      overflow: hidden;
+      display: flex;
+      background: #f3eee8;
+      margin-top: 10px;
+    }
+
+    .stacked-segment {
+      height: 100%;
+    }
+
+    .stacked-legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 6px 12px;
+      font-size: 12px;
+      color: #6b5b4b;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -63,72 +159,55 @@
           <section class="aid-section">
             <div class="aid-header">
               <h2>Aid Distribution</h2>
-              <div class="date-range">Last 30 days</div>
+              <div class="date-range">By campaign category</div>
             </div>
-
-            <div class="donut-chart" role="img" aria-label="Aid distribution donut chart">
-              <svg class="chart-svg" viewBox="0 0 32 32">
-                <!-- Background circle -->
-                <circle r="16" cx="16" cy="16" fill="#f3f3f3"></circle>
-                <!-- Food segment (42%) - dark color -->
-                <circle r="10" cx="16" cy="16" fill="transparent" stroke="#5A4A42" stroke-width="6" stroke-dasharray="26.4 62.8" stroke-dashoffset="0" stroke-linecap="round"></circle>
-                <!-- Shelter segment (25%) - light color, offset to start after Food -->
-                <circle r="10" cx="16" cy="16" fill="transparent" stroke="#D4B5A0" stroke-width="6" stroke-dasharray="15.7 62.8" stroke-dashoffset="-26.4" stroke-linecap="round"></circle>
-                <!-- Clothing segment (33%) - accent brown color, offset to start after Shelter -->
-                <circle r="10" cx="16" cy="16" fill="transparent" stroke="#AD7562" stroke-width="6" stroke-dasharray="20.7 62.8" stroke-dashoffset="-42.1" stroke-linecap="round"></circle>
-              </svg>
-            </div>
-
-            <div class="legend" aria-hidden="false">
-              <div class="legend-item"><span class="legend-dot" style="background:#5A4A42"></span><span class="legend-label">Food</span> <span class="legend-value">42%</span></div>
-              <div class="legend-item"><span class="legend-dot" style="background:#D4B5A0"></span><span class="legend-label">Shelter</span> <span class="legend-value">25%</span></div>
-              <div class="legend-item"><span class="legend-dot" style="background:#AD7562"></span><span class="legend-label">Clothing</span> <span class="legend-value">33%</span></div>
-            </div>
+            <div id="aidTable"></div>
+            <div id="aidChart" class="chart-stack"></div>
           </section>
 
           <section class="development-section">
-            <div class="development-header"><h2>Development Activity</h2></div>
-            <div class="update-info">Most recent update: 2 days ago</div>
-
-            <div class="bar-chart" aria-hidden="false">
-              <div class="bar-group">
-                <div class="bar bar-dark" style="height:80%"></div>
-                <div class="bar bar-light" style="height:60%"></div>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-dark" style="height:60%"></div>
-                <div class="bar bar-light" style="height:40%"></div>
-              </div>
-              <div class="bar-group">
-                <div class="bar bar-dark" style="height:90%"></div>
-                <div class="bar bar-light" style="height:70%"></div>
-              </div>
-            </div>
-
-            <div class="chart-legend">
-              <div class="chart-legend-item"><span style="display:inline-block;width:12px;height:12px;background:#5A4A42;border-radius:2px"></span> Completed</div>
-              <div class="chart-legend-item"><span style="display:inline-block;width:12px;height:12px;background:#D4B5A0;border-radius:2px"></span> In progress</div>
-            </div>
+            <div class="development-header"><h2>Population Breakdown</h2></div>
+            <div id="populationTable"></div>
+            <div id="populationChart" class="chart-stack"></div>
           </section>
+
+          <section class="development-section">
+            <div class="development-header"><h2>Top Education</h2></div>
+            <div id="educationTable"></div>
+            <div id="educationChart" class="chart-stack"></div>
+          </section>
+
+          <section class="development-section">
+            <div class="development-header"><h2>Top Occupations</h2></div>
+            <div id="occupationTable"></div>
+            <div id="occupationChart" class="chart-stack"></div>
+          </section>
+
+          <section class="development-section">
+            <div class="development-header"><h2>Complaints</h2></div>
+            <div id="complaintsTable"></div>
+            <div id="complaintsChart" class="chart-stack"></div>
+          </section>
+
         </div>
 
         <aside class="right-sidebar">
           <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Households</div><div class="stat-value">3,214</div></div>
-            <div class="stat-card"><div class="stat-label">Population</div><div class="stat-value">12,840</div></div>
-            <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value">14</div></div>
+            <div class="stat-card"><div class="stat-label">Households</div><div class="stat-value" id="householdsValue">0</div></div>
+            <div class="stat-card"><div class="stat-label">Population</div><div class="stat-value" id="populationValue">0</div></div>
+            <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="projectsValue">0</div></div>
           </div>
 
           <div class="urgent-card">
             <div class="urgent-label">Urgent Issues</div>
-            <div class="urgent-subtitle">Water access</div>
-            <div class="urgent-value">3</div>
+            <div class="urgent-subtitle" id="urgentCategory">No complaints</div>
+            <div class="urgent-value" id="urgentValue">0</div>
           </div>
 
           <div class="growth-card">
-            <div class="growth-label">Monthly Growth</div>
-            <div class="growth-value">+6.2%</div>
-            <div class="mini-chart"><svg viewBox="0 0 100 40"><polyline points="0,30 20,20 40,10 60,15 80,8 100,4" fill="none" stroke="#5A4A42" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline></svg></div>
+            <div class="growth-label">Total Complaints</div>
+            <div class="growth-value" id="complaintsTotalValue">0</div>
+            <div class="urgent-subtitle">All complaint records for this slum</div>
           </div>
 
           <button class="btn-primary" id="exportBtn">Generate Report</button>
@@ -152,6 +231,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="adminSlumAnalytics.js"></script>
   <script>
+    var analyticsData = null;
+
     // Make each .card button navigate to the show page for that slum.
     // Adds ?slum=Name so the show page can read which slum to display.
     document.addEventListener('DOMContentLoaded', function () {
@@ -161,6 +242,231 @@
       if (slumTitle && slumName) {
         slumTitle.textContent = slumName + ' Analytics';
       }
+
+      function renderTable(containerId, headers, rows) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!rows || rows.length === 0) {
+          container.innerHTML = '<div style="color:#8b6f5a;">No data available.</div>';
+          return;
+        }
+
+        var html = '<table class="active-table" style="width:100%;"><thead><tr>';
+        headers.forEach(function (header) {
+          html += '<th>' + header + '</th>';
+        });
+        html += '</tr></thead><tbody>';
+
+        rows.forEach(function (row) {
+          html += '<tr>' + row.map(function (cell) {
+            return '<td>' + cell + '</td>';
+          }).join('') + '</tr>';
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+
+      function renderBarChart(containerId, items) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!items || items.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var maxValue = Math.max.apply(null, items.map(function (item) { return item.value; }));
+        if (!maxValue || maxValue <= 0) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var html = '';
+        items.forEach(function (item) {
+          var width = Math.max(6, Math.round((item.value / maxValue) * 100));
+          html += '<div class="chart-row">' +
+            '<div>' + item.label + '</div>' +
+            '<div class="chart-bar" style="width:' + width + '%"></div>' +
+            '<div class="chart-value">' + item.value + '</div>' +
+            '</div>';
+        });
+
+        container.innerHTML = html;
+      }
+
+      function renderDonut(containerId, items) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!items || items.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var total = items.reduce(function (sum, item) { return sum + item.value; }, 0);
+        if (!total) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var palette = ['#8b6f5a', '#d4b5a0', '#ad7562', '#5a4a42', '#c6a07b', '#8f9aa3', '#4f6d7a'];
+        var radius = 54;
+        var circumference = 2 * Math.PI * radius;
+        var offset = 0;
+
+        var svg = '<svg width="140" height="140" viewBox="0 0 140 140">';
+        svg += '<circle cx="70" cy="70" r="54" fill="transparent" stroke="#f3eee8" stroke-width="16"></circle>';
+
+        items.forEach(function (item, index) {
+          var value = item.value;
+          var dash = (value / total) * circumference;
+          var color = palette[index % palette.length];
+          svg += '<circle cx="70" cy="70" r="54" fill="transparent" stroke="' + color + '" stroke-width="16" stroke-dasharray="' + dash + ' ' + (circumference - dash) + '" stroke-dashoffset="' + (-offset) + '" stroke-linecap="round" transform="rotate(-90 70 70)"></circle>';
+          offset += dash;
+        });
+
+        svg += '</svg>';
+
+        var legend = '<div class="donut-legend">' + items.map(function (item, index) {
+          var color = palette[index % palette.length];
+          var percent = Math.round((item.value / total) * 100);
+          return '<div class="donut-legend-item"><span class="donut-dot" style="background:' + color + '"></span>' + item.label + ' (' + percent + '%)</div>';
+        }).join('') + '</div>';
+
+        container.innerHTML = '<div class="donut-wrap">' + svg + legend + '</div>';
+      }
+
+      function renderStackedBar(containerId, items) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!items || items.length === 0) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var total = items.reduce(function (sum, item) { return sum + item.value; }, 0);
+        if (!total) {
+          container.innerHTML = '';
+          return;
+        }
+
+        var palette = ['#8b6f5a', '#d4b5a0', '#ad7562', '#5a4a42', '#c6a07b'];
+        var bar = '<div class="stacked-bar">' + items.map(function (item, index) {
+          var width = Math.max(2, Math.round((item.value / total) * 100));
+          var color = palette[index % palette.length];
+          return '<div class="stacked-segment" style="width:' + width + '%; background:' + color + '"></div>';
+        }).join('') + '</div>';
+
+        var legend = '<div class="stacked-legend">' + items.map(function (item, index) {
+          var color = palette[index % palette.length];
+          return '<div class="donut-legend-item"><span class="donut-dot" style="background:' + color + '"></span>' + item.label + ': ' + item.value + '</div>';
+        }).join('') + '</div>';
+
+        container.innerHTML = bar + legend;
+      }
+
+      function getCountByStatus(rows, status) {
+        var match = rows.find(function (row) { return row.status === status; });
+        return match ? match.count : 0;
+      }
+
+      function loadAnalytics() {
+        if (!slumName) return;
+
+        fetch('/api/slum-dweller/analytics?slum=' + encodeURIComponent(slumName))
+          .then(function (response) { return response.json(); })
+          .then(function (result) {
+            if (result.status !== 'success') throw new Error(result.message || 'Failed to load analytics');
+
+            analyticsData = result.data;
+
+            document.getElementById('householdsValue').textContent = analyticsData.households || 0;
+            document.getElementById('populationValue').textContent = analyticsData.population || 0;
+            document.getElementById('projectsValue').textContent = analyticsData.activeProjects || 0;
+
+            var pendingComplaints = getCountByStatus(analyticsData.complaintsByStatus || [], 'pending');
+            var complaintCategories = analyticsData.complaintsByCategory || [];
+            if (complaintCategories.length > 0) {
+              var maxCount = Math.max.apply(null, complaintCategories.map(function (row) { return row.count; }));
+              var tied = complaintCategories.filter(function (row) { return row.count === maxCount; });
+              var label = tied.map(function (row) {
+                return row.category + ' (' + row.count + ')';
+              }).join(', ');
+              document.getElementById('urgentValue').textContent = maxCount;
+              document.getElementById('urgentCategory').textContent = label;
+            } else {
+              document.getElementById('urgentValue').textContent = 0;
+              document.getElementById('urgentCategory').textContent = 'No complaints';
+            }
+
+            document.getElementById('complaintsTotalValue').textContent = analyticsData.complaintsTotal || 0;
+
+            renderTable('aidTable', ['Category', 'Count'],
+              (analyticsData.aidByCategory || []).map(function (row) {
+                return [row.category || 'Unknown', row.count || 0];
+              })
+            );
+
+            renderDonut('aidChart', (analyticsData.aidByCategory || []).map(function (row) {
+              return { label: row.category || 'Unknown', value: row.count || 0 };
+            }));
+
+            renderTable('populationTable', ['Metric', 'Count'], [
+              ['Adults', analyticsData.adults || 0],
+              ['Children', analyticsData.children || 0],
+              ['Male', (analyticsData.gender || {}).Male || 0],
+              ['Female', (analyticsData.gender || {}).Female || 0],
+              ['Others', (analyticsData.gender || {}).Others || 0]
+            ]);
+
+            renderStackedBar('populationChart', [
+              { label: 'Adults', value: analyticsData.adults || 0 },
+              { label: 'Children', value: analyticsData.children || 0 },
+              { label: 'Male', value: (analyticsData.gender || {}).Male || 0 },
+              { label: 'Female', value: (analyticsData.gender || {}).Female || 0 },
+              { label: 'Others', value: (analyticsData.gender || {}).Others || 0 }
+            ]);
+
+            renderTable('educationTable', ['Education', 'Count'],
+              (analyticsData.educationTop || []).map(function (row) {
+                return [row.education || 'Unknown', row.count || 0];
+              })
+            );
+
+            renderDonut('educationChart', (analyticsData.educationTop || []).map(function (row) {
+              return { label: row.education || 'Unknown', value: row.count || 0 };
+            }));
+
+            renderTable('occupationTable', ['Occupation', 'Count'],
+              (analyticsData.occupationTop || []).map(function (row) {
+                return [row.occupation || 'Unknown', row.count || 0];
+              })
+            );
+
+            renderDonut('occupationChart', (analyticsData.occupationTop || []).map(function (row) {
+              return { label: row.occupation || 'Unknown', value: row.count || 0 };
+            }));
+
+            renderTable('complaintsTable', ['Status', 'Count'],
+              (analyticsData.complaintsByStatus || []).map(function (row) {
+                return [row.status || 'Unknown', row.count || 0];
+              })
+            );
+
+            renderDonut('complaintsChart', (analyticsData.complaintsByStatus || []).map(function (row) {
+              return { label: row.status || 'Unknown', value: row.count || 0 };
+            }));
+
+          })
+          .catch(function (error) {
+            console.error('Error loading analytics:', error);
+          });
+      }
+
+      loadAnalytics();
       
       var cards = document.querySelectorAll('.card');
       cards.forEach(function (card) {
@@ -189,140 +495,211 @@
           if (!jsPDFCtor) { alert('PDF library not loaded'); return; }
           
           var slumName = new URLSearchParams(window.location.search).get('slum') || 'Slum Report';
+          var reportData = analyticsData || {};
           var doc = new jsPDFCtor({ unit: 'mm', format: 'a4' });
           
           var pageWidth = doc.internal.pageSize.getWidth();
           var margin = 15;
           var contentWidth = pageWidth - 2 * margin;
           var y = margin;
+          var lineGap = 6;
+          var sectionGap = 8;
+
+          function addSectionTitle(text) {
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(90, 74, 66);
+            doc.text(text, margin, y);
+            y += lineGap;
+            doc.setDrawColor(210, 197, 183);
+            doc.line(margin, y, pageWidth - margin, y);
+            y += sectionGap;
+          }
+
+          function addKeyValue(label, value) {
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(60);
+            doc.text(label + ': ' + value, margin, y);
+            y += lineGap;
+          }
+
+          function addList(title, items) {
+            addSectionTitle(title);
+            if (!items || items.length === 0) {
+              addKeyValue('No data available', '');
+              return;
+            }
+            items.forEach(function (item) {
+              if (y > 270) {
+                doc.addPage();
+                y = margin;
+              }
+              doc.setFontSize(10);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(60);
+              doc.text('- ' + item, margin, y);
+              y += lineGap;
+            });
+          }
+
+          function drawBarChart(items) {
+            if (!items || items.length === 0) return;
+            var maxValue = Math.max.apply(null, items.map(function (item) { return item.value; }));
+            if (!maxValue || maxValue <= 0) return;
+
+            var barWidth = contentWidth - 30;
+            var barHeight = 5;
+
+            items.forEach(function (item) {
+              if (y > 270) {
+                doc.addPage();
+                y = margin;
+              }
+
+              var ratio = item.value / maxValue;
+              var width = Math.max(10, Math.round(barWidth * ratio));
+
+              doc.setFontSize(9);
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(90);
+              doc.text(item.label, margin, y + 4);
+
+              doc.setFillColor(239, 230, 219);
+              doc.rect(margin + 30, y, barWidth, barHeight, 'F');
+
+              doc.setFillColor(139, 111, 90);
+              doc.rect(margin + 30, y, width, barHeight, 'F');
+
+              doc.setFontSize(9);
+              doc.setTextColor(60);
+              doc.text(String(item.value), margin + 30 + barWidth + 4, y + 4);
+
+              y += barHeight + 5;
+            });
+
+            y += 3;
+          }
+
+          function drawStackedBar(items) {
+            if (!items || items.length === 0) return;
+            var total = items.reduce(function (sum, item) { return sum + item.value; }, 0);
+            if (!total) return;
+
+            var barWidth = contentWidth;
+            var barHeight = 6;
+            var startX = margin;
+
+            if (y > 270) {
+              doc.addPage();
+              y = margin;
+            }
+
+            var colors = [
+              [139, 111, 90],
+              [212, 181, 160],
+              [173, 117, 98],
+              [90, 74, 66],
+              [198, 160, 123]
+            ];
+
+            items.forEach(function (item, index) {
+              var width = Math.max(4, Math.round((item.value / total) * barWidth));
+              var color = colors[index % colors.length];
+              doc.setFillColor(color[0], color[1], color[2]);
+              doc.rect(startX, y, width, barHeight, 'F');
+              startX += width;
+            });
+
+            y += barHeight + 4;
+
+            items.forEach(function (item, index) {
+              if (y > 270) {
+                doc.addPage();
+                y = margin;
+              }
+              var color = colors[index % colors.length];
+              doc.setFillColor(color[0], color[1], color[2]);
+              doc.rect(margin, y, 4, 4, 'F');
+              doc.setFontSize(9);
+              doc.setTextColor(60);
+              doc.text(item.label + ': ' + item.value, margin + 6, y + 4);
+              y += 5;
+            });
+
+            y += 3;
+          }
           
           // Title
           doc.setFontSize(18);
           doc.setFont('helvetica', 'bold');
-          doc.text('SLUMLINK Analytics Report', pageWidth / 2, y, { align: 'center' });
+          doc.setTextColor(90, 74, 66);
+          doc.text('SLUMLINK Slum Analytics Report', pageWidth / 2, y, { align: 'center' });
           y += 15;
           
           // Slum Name
           doc.setFontSize(14);
           doc.setFont('helvetica', 'bold');
-          doc.text(slumName, margin, y);
+          doc.text(slumName + ' Overview', margin, y);
           y += 10;
           
           // Generated Date
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
+          doc.setTextColor(90);
           doc.text('Generated on: ' + new Date().toLocaleString(), margin, y);
           y += 10;
-          
-          // Divider line
-          doc.setDrawColor(139, 111, 90);
-          doc.line(margin, y, pageWidth - margin, y);
-          y += 8;
-          
-          // Statistics Section
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Key Statistics', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Households: 3,214', margin + 5, y);
-          y += 6;
-          doc.text('Population: 12,840', margin + 5, y);
-          y += 6;
-          doc.text('Active Projects: 14', margin + 5, y);
-          y += 10;
-          
-          // Aid Distribution Section
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Aid Distribution (Last 30 days)', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Food: 42%', margin + 5, y);
-          y += 6;
-          doc.text('Shelter: 25%', margin + 5, y);
-          y += 6;
-          doc.text('Clothing: 33%', margin + 5, y);
-          y += 10;
-          
-          // Development Activity Section
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Development Activity', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Most recent update: 2 days ago', margin + 5, y);
-          y += 8;
-          
-          // Projects Completed
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Completed Projects', margin + 5, y);
-          y += 6;
-          
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          var completedProjects = [
-            'Water Supply Pipeline Installation',
-            'Community Health Center Construction',
-            'Primary School Renovation',
-            'Drainage System Upgrade',
-            'Street Lighting Installation',
-            'Waste Management Facility'
-          ];
-          completedProjects.forEach(function(project) {
-            doc.text('• ' + project, margin + 10, y);
-            y += 5;
-          });
-          y += 2;
-          
-          // Projects In Progress
-          doc.setFontSize(11);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Projects In Progress', margin + 5, y);
-          y += 6;
-          
-          doc.setFontSize(9);
-          doc.setFont('helvetica', 'normal');
-          var inProgressProjects = [
-            'Community Center Development (70% complete)',
-            'Vocational Training Center Setup (55% complete)',
-            'Housing Improvement Scheme (45% complete)',
-            'Agricultural Extension Program (60% complete)',
-            'Youth Sports Complex (50% complete)',
-            'Digital Literacy Center (35% complete)',
-            'Medical Camp Organization (75% complete)',
-            'Sanitation Drive (85% complete)'
-          ];
-          inProgressProjects.forEach(function(project) {
-            if (y > 270) {
-              doc.addPage();
-              y = margin;
-            }
-            doc.text('• ' + project, margin + 10, y);
-            y += 5;
-          });
-          y += 8;
-          
-          // Urgent Issues Section
-          if (y > 250) {
-            doc.addPage();
-            y = margin;
-          }
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'bold');
-          doc.text('Urgent Issues', margin, y);
-          y += 8;
-          
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'normal');
-          doc.text('Water access: 3 issues', margin + 5, y);
+
+          addSectionTitle('Key Statistics');
+          addKeyValue('Households', reportData.households || 0);
+          addKeyValue('Population', reportData.population || 0);
+          addKeyValue('Active Projects', reportData.activeProjects || 0);
+
+          var adults = reportData.adults || 0;
+          var children = reportData.children || 0;
+          addKeyValue('Adults', adults);
+          addKeyValue('Children', children);
+
+          var gender = reportData.gender || {};
+          addKeyValue('Male', gender.Male || 0);
+          addKeyValue('Female', gender.Female || 0);
+          addKeyValue('Others', gender.Others || 0);
+
+          var aidRows = reportData.aidByCategory || [];
+          addList('Aid Distribution', aidRows.map(function (row) {
+            return (row.category || 'Unknown') + ': ' + (row.count || 0);
+          }));
+          drawBarChart(aidRows.map(function (row) {
+            return { label: row.category || 'Unknown', value: row.count || 0 };
+          }));
+
+          var educationRows = reportData.educationTop || [];
+          addList('Top Education', educationRows.map(function (row) {
+            return (row.education || 'Unknown') + ': ' + (row.count || 0);
+          }));
+
+          var occupationRows = reportData.occupationTop || [];
+          addList('Top Occupations', occupationRows.map(function (row) {
+            return (row.occupation || 'Unknown') + ': ' + (row.count || 0);
+          }));
+
+          var complaintRows = reportData.complaintsByStatus || [];
+          addList('Complaints by Status', complaintRows.map(function (row) {
+            return (row.status || 'Unknown') + ': ' + (row.count || 0);
+          }));
+          drawBarChart(complaintRows.map(function (row) {
+            return { label: row.status || 'Unknown', value: row.count || 0 };
+          }));
+
+          var categoryRows = reportData.complaintsByCategory || [];
+          addList('Top Complaint Categories', categoryRows.map(function (row) {
+            return (row.category || 'Unknown') + ': ' + (row.count || 0);
+          }));
+
+          drawStackedBar([
+            { label: 'Adults', value: reportData.adults || 0 },
+            { label: 'Children', value: reportData.children || 0 }
+          ]);
           
           // Save PDF
           var filename = slumName.replace(/[^a-z0-9]+/gi, '_').toLowerCase() + '_report.pdf';
