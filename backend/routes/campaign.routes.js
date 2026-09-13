@@ -5,7 +5,8 @@ import {
   getCampaignById,
   updateCampaign,
   deleteCampaign,
-  getMyActiveCampaignsToday // ✅ NEW
+  getMyActiveCampaignsToday, // ✅ NEW
+  getEligibleFamilies // ✅ NEW
 } from "../controllers/campaign.controller.js";
 
 const router = express.Router();
@@ -18,6 +19,9 @@ router.post("/create", createCampaign);
 
 // GET /api/campaigns?org_id=...
 router.get("/", getAllCampaigns);
+
+// ✅ NEW: GET /api/campaigns/:campaignId/eligible-families
+router.get("/:campaignId/eligible-families", getEligibleFamilies);
 
 // GET /api/campaigns/:campaignId
 router.get("/:campaignId", getCampaignById);

@@ -142,11 +142,27 @@ async function safeJson(res) {
 }
 
 /* Snapshot API */
+/* Snapshot API */
 async function fetchSnapshotAll(code) {
   const url = `${API_BASE}/api/distribution/families/${encodeURIComponent(code)}/snapshot`;
   const res = await fetch(url);
   const data = await safeJson(res);
   if (!res.ok) throw new Error(data?.message || "Snapshot failed");
+  
+  // Try to get eligible name from localStorage (persisted from setup page)
+  try {
+    const familiesJson = localStorage.getItem("slumlink_eligible_families");
+    if (familiesJson) {
+      const families = JSON.parse(familiesJson);
+      const family = families.find(f => f.slum_code === code);
+      if (family && family.eligible_member_names) {
+        data.data.family.eligibleName = family.eligible_member_names;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not retrieve eligible families from localStorage:", e);
+  }
+  
   return data?.data;
 }
 
@@ -154,9 +170,11 @@ function renderSnapshot(data) {
   const size = data?.family?.size ?? "—";
   const ages = Array.isArray(data?.family?.ages) ? data.family.ages : [];
   const agesText = ages.length ? ages.join(", ") : "—";
+  const eligibleName = data?.family?.eligibleName ?? "—";
 
   familySummaryEl.innerHTML = `
-    <div><b>Family size:</b> ${escapeHtml(size)}</div>
+    <div><b>Eligible Person:</b> ${escapeHtml(eligibleName)}</div>
+    <div style="margin-top:6px"><b>Family size:</b> ${escapeHtml(size)}</div>
     <div style="margin-top:6px"><b>Member ages:</b> ${escapeHtml(agesText)}</div>
   `;
 

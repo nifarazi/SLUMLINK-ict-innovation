@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SLUMLINK · View Complaints</title>
+  <link rel="stylesheet" href="adminSlumAnalytics.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .complaints-table th:last-child,
+    .complaints-table td:last-child {
+      text-align: center;
+      padding-right: 20px;
+    }
+
+    .complaints-table th:last-child {
+      text-align: center;
+      padding-right: 20px;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .status-pending {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    .status-in-progress {
+      background: rgba(33, 150, 243, 0.15);
+      color: #1976d2;
+    }
+
+    .status-resolved {
+      background: rgba(76, 175, 80, 0.15);
+      color: #388e3c;
+    }
+
+    .download-btn {
+      background-color: #8b6f5a !important;
+      color: white !important;
+      border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    .download-btn:hover {
+      background-color: #6b5744 !important;
+    }
+
+    .category-badge {
+      background: rgba(139, 111, 90, 0.1);
+      color: #8b6f5a;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .card-header h2 {
+      color: #8b6f5a;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" aria-label="Header">
+    <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <input type="text" placeholder="Search" class="search" />
+
+    <div class="top-right">
+      <div class="admin">
+        <span>Admin ▾</span>
+        <div class="admin-dropdown">
+          <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">Logout</button>
+        </div>
+      </div>
+      <div class="notification-bell-container">
+        <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+        <span class="notification-badge" id="notificationBadge">0</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <ul>
+        <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
+        <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
+        <li><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
+        <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
+        <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
+        <li class="active"><a href="adminviewcomplaints.html">📋 View Complaints</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <div class="page-header">
+      </div>
+
+      <div class="table-card">
+        <div class="card-header">
+          <h2>All Complaints</h2>
+          <p>Complaints submitted by slum dwellers</p>
+        </div>
+        <table class="complaints-table">
+          <thead>
+            <tr>
+              <th>Complaint ID</th>
+              <th>Resident Code</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Location</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="complaintsTableBody">
+            <tr><td colspan="9" style="text-align: center; color: #999;">Loading...</td></tr>
+          </tbody>
+        </table>
+        <div class="footer">
+          <span>Showing data</span>
+          <div class="pagination" id="pagination"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Complaint Details Modal -->
+  <div class="modal-overlay" id="complaintModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2>Complaint Details</h2>
+        <button type="button" class="modal-close" id="closeComplaintModal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <div id="complaintDetails" style="padding: 20px;">
+          <!-- Details will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div class="modal-overlay" id="logoutModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+      <div class="modal-header" id="logoutTitle">Log out</div>
+      <div class="modal-body">You're currently signed in as Admin. Do you want to log out and return to the home page?</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelLogout">Cancel</button>
+        <button class="btn btn-primary" id="confirmLogout">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="adminSlumAnalytics.js"></script>
+  <script>
+    let allComplaints = [];
+
+    document.addEventListener('DOMContentLoaded', async function () {
+      const tableBody = document.getElementById('complaintsTableBody');
+
+      // Fetch all complaints from API
+      async function fetchComplaints() {
+        try {
+          // Use /api/complaint (not /api/complaints) - this endpoint supports getAllComplaints without category filter
+          const response = await fetch('/api/complaint');
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const result = await response.json();
+          console.log('Total complaints loaded:', result);
+          
+          // Handle different response formats
+          if (Array.isArray(result)) {
+            allComplaints = result;
+          } else if (result.data && Array.isArray(result.data)) {
+            allComplaints = result.data;
+          } else {
+            allComplaints = [];
+          }
+          
+          renderComplaints();
+          
+        } catch (error) {
+          console.error('Error fetching complaints:', error);
+          tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: red;">Error loading complaints: ' + error.message + '</td></tr>';
+        }
+      }
+
+      function formatDate(dateString) {
+        if (!dateString) return '—';
+        const date = new Date(dateString);
+        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+      }
+
+      function getStatusClass(status) {
+        const statusLower = (status || '').toLowerCase();
+        if (statusLower === 'pending') return 'status-pending';
+        if (statusLower === 'in progress') return 'status-in-progress';
+        if (statusLower === 'resolved') return 'status-resolved';
+        return 'status-pending';
+      }
+
+      function renderComplaints() {
+        tableBody.innerHTML = '';
+
+        if (allComplaints.length === 0) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = document.createElement('td');
+          emptyCell.colSpan = 9;
+          emptyCell.style.textAlign = 'center';
+          emptyCell.style.color = '#8b6f5a';
+          emptyCell.textContent = 'No complaints found.';
+          emptyRow.appendChild(emptyCell);
+          tableBody.appendChild(emptyRow);
+          return;
+        }
+
+        allComplaints.forEach(function (complaint) {
+          const row = document.createElement('tr');
+
+          // Complaint ID
+          const idCell = document.createElement('td');
+          idCell.textContent = complaint.complaint_id || '—';
+          idCell.style.fontWeight = 'bold';
+          row.appendChild(idCell);
+
+          // Resident Code
+          const residentCell = document.createElement('td');
+          residentCell.textContent = complaint.slum_id || '—';
+          row.appendChild(residentCell);
+
+          // Title
+          const titleCell = document.createElement('td');
+          titleCell.textContent = complaint.title || '—';
+          row.appendChild(titleCell);
+
+          // Category
+          const categoryCell = document.createElement('td');
+          const categoryBadge = document.createElement('span');
+          categoryBadge.className = 'category-badge';
+          categoryBadge.textContent = complaint.category || '—';
+          categoryCell.appendChild(categoryBadge);
+          row.appendChild(categoryCell);
+
+          // Location
+          const locationCell = document.createElement('td');
+          const location = [complaint.area, complaint.district, complaint.division].filter(Boolean).join(', ');
+          locationCell.textContent = location || '—';
+          row.appendChild(locationCell);
+
+          // Description (truncated)
+          const descCell = document.createElement('td');
+          const desc = (complaint.description || '').substring(0, 50);
+          descCell.textContent = desc + (complaint.description && complaint.description.length > 50 ? '...' : '');
+          row.appendChild(descCell);
+
+          // Status
+          const statusCell = document.createElement('td');
+          const statusBadge = document.createElement('span');
+          statusBadge.className = 'status-badge ' + getStatusClass(complaint.status);
+          statusBadge.textContent = complaint.status || 'pending';
+          statusCell.appendChild(statusBadge);
+          row.appendChild(statusCell);
+
+          // Submitted Date
+          const dateCell = document.createElement('td');
+          dateCell.textContent = formatDate(complaint.created_at);
+          row.appendChild(dateCell);
+
+          // Actions
+          const actionsCell = document.createElement('td');
+          actionsCell.style.textAlign = 'center';
+          actionsCell.style.paddingRight = '20px';
+
+          const downloadBtn = document.createElement('button');
+          downloadBtn.textContent = 'Download PDF';
+          downloadBtn.className = 'download-btn';
+          downloadBtn.onclick = () => downloadComplaintPDF(complaint);
+
+          actionsCell.appendChild(downloadBtn);
+          row.appendChild(actionsCell);
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      function showComplaintDetails(complaint) {
+        const modal = document.getElementById('complaintModal');
+        const detailsDiv = document.getElementById('complaintDetails');
+
+        const attachment = complaint.attachment_file ? 
+          `<div style="margin-top: 15px; padding: 10px; background: #f5f0e8; border-radius: 4px;">
+            <strong>Attachment:</strong> ${complaint.attachment_filename || 'File'} 
+            (${(complaint.attachment_size / 1024).toFixed(2)} KB)
+           </div>` : '';
+
+        detailsDiv.innerHTML = `
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+              <strong>Complaint ID:</strong> ${complaint.complaint_id}
+            </div>
+            <div>
+              <strong>Resident Code:</strong> ${complaint.slum_id}
+            </div>
+            <div>
+              <strong>Title:</strong> ${complaint.title}
+            </div>
+            <div>
+              <strong>Category:</strong> <span class="category-badge">${complaint.category}</span>
+            </div>
+            <div>
+              <strong>Status:</strong> <span class="status-badge ${getStatusClass(complaint.status)}">${complaint.status}</span>
+            </div>
+            <div>
+              <strong>Submitted:</strong> ${formatDate(complaint.created_at)}
+            </div>
+          </div>
+          <div style="margin-top: 15px;">
+            <strong>Location:</strong><br>
+            Division: ${complaint.division || '—'} | District: ${complaint.district || '—'} | Area: ${complaint.area || '—'}
+          </div>
+          <div style="margin-top: 15px;">
+            <strong>Description:</strong><br>
+            <p style="color: #6b5b4b; line-height: 1.5;">${complaint.description}</p>
+          </div>
+          ${complaint.responded_by ? `<div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 3px solid #4caf50;">
+            <strong>Response:</strong> Handled by ${complaint.responded_by}
+          </div>` : ''}
+          ${attachment}
+        `;
+
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('show');
+      }
+
+      function closeComplaintModal() {
+        const modal = document.getElementById('complaintModal');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('show');
+      }
+
+      function downloadComplaintPDF(complaint) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Set font
+        doc.setFont('helvetica');
+        
+        // Title
+        doc.setFontSize(18);
+        doc.setTextColor(139, 111, 90);
+        doc.text('Complaint Details', 105, 20, { align: 'center' });
+        
+        // Line separator
+        doc.setDrawColor(139, 111, 90);
+        doc.line(20, 25, 190, 25);
+        
+        let yPos = 35;
+        
+        // Complaint Information
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        
+        const addField = (label, value, bold = false) => {
+          doc.setFont('helvetica', 'bold');
+          doc.text(label + ':', 20, yPos);
+          doc.setFont('helvetica', bold ? 'bold' : 'normal');
+          const textValue = String(value || 'N/A');
+          const splitText = doc.splitTextToSize(textValue, 120);
+          doc.text(splitText, 70, yPos);
+          yPos += splitText.length * 6 + 2;
+        };
+        
+        addField('Complaint ID', complaint.complaint_id, true);
+        addField('Resident Code', complaint.slum_id);
+        addField('Title', complaint.title);
+        addField('Category', complaint.category);
+        
+        const location = [complaint.area, complaint.district, complaint.division].filter(Boolean).join(', ');
+        addField('Location', location);
+        
+        addField('Status', complaint.status || 'pending');
+        addField('Submitted Date', formatDate(complaint.created_at));
+        
+        if (complaint.responded_by) {
+          addField('Responded By', complaint.responded_by);
+        }
+        
+        yPos += 5;
+        doc.setFont('helvetica', 'bold');
+        doc.text('Description:', 20, yPos);
+        yPos += 6;
+        doc.setFont('helvetica', 'normal');
+        const descText = doc.splitTextToSize(complaint.description || 'No description provided', 170);
+        doc.text(descText, 20, yPos);
+        yPos += descText.length * 6 + 5;
+        
+        if (complaint.attachment_filename) {
+          yPos += 5;
+          doc.setFont('helvetica', 'bold');
+          doc.text('Attachment:', 20, yPos);
+          yPos += 6;
+          doc.setFont('helvetica', 'normal');
+          doc.text('Filename: ' + complaint.attachment_filename, 20, yPos);
+          yPos += 6;
+          if (complaint.attachment_size) {
+            doc.text('Size: ' + (complaint.attachment_size / 1024).toFixed(2) + ' KB', 20, yPos);
+          }
+        }
+        
+        // Footer
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text('Generated by SLUMLINK Admin Dashboard on ' + new Date().toLocaleString(), 105, 285, { align: 'center' });
+        
+        // Save PDF
+        const fileName = `Complaint_${complaint.complaint_id}_${complaint.slum_id}.pdf`;
+        doc.save(fileName);
+      }
+
+      // Modal close handlers
+      document.getElementById('closeComplaintModal').addEventListener('click', closeComplaintModal);
+
+      document.getElementById('complaintModal').addEventListener('click', function(e) {
+        if (e.target === this) closeComplaintModal();
+      });
+
+      // Initial fetch
+      fetchComplaints();
+    });
+  </script>
+</body>
+</html>

@@ -567,7 +567,7 @@ export const getNgoAnalytics = async (req, res) => {
       return acc;
     }, {});
 
-    const activeProjects = (projectStatus.pending || 0) + (projectStatus.in_progress || 0);
+    const activeProjects = (projectStatus.in_progress || 0);
     const currentMonth = monthlyRows[0]?.current_month || 0;
     const previousMonth = monthlyRows[0]?.previous_month || 0;
     const growthPercent = previousMonth === 0

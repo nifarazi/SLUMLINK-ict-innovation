@@ -10,6 +10,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 
   <link rel="stylesheet" href="./aid-distribution-setup.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="./eligible-families-table.css" />
 </head>
 <body>
 
@@ -54,11 +56,17 @@
       </div>
 
       <div class="actions">
-        <button class="btn" id="startBtn" disabled>Start Distribution</button>
+        <button class="btn is-disabled" id="startBtn" type="button">Start Distribution</button>
       </div>
     </section>
+
+    <!-- ✅ NEW: Eligible Families Section -->
+    <section id="eligibleFamiliesContainer"></section>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="./eligible-families-table.js"></script>
   <script src="./aid-distribution-setup.js"></script>
 </body>
 </html>

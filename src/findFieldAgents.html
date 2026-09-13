@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Field Agents | SlumLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/slumhometheme.css" />
+  <link rel="stylesheet" href="/src/field-agent.css" />
+  <style>
+    /* Page-specific overrides */
+    .filter-card {
+  background: #fffaf3;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
+  margin: 10px 0 20px 0;
+}
+
+    .agents-table table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fffaf3;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+    }
+    .agents-table th, .agents-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #e0d5c7;
+      font-family: Poppins, sans-serif;
+      color: #3b1a0f;
+    }
+    .agents-table th {
+      background-color: #8b6f5a;
+      color: white;
+    }
+    .agents-table tbody tr:hover {
+      background-color: #f5f0e8;
+    }
+    select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #d6cbb7;
+      font-family: Poppins, sans-serif;
+      margin-right: 10px;
+    }
+    button.search-btn {
+      background-color: #f2c9a7;
+      color: #3b1a0f;
+      font-family: Poppins;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    button.search-btn:hover { background-color: #e6b48c; }
+    h2 { color: #8b6f5a; margin-bottom: 15px; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER (same as field-agent.html) -->
+  <header class="header" aria-label="Header">
+    <a class="brand-wrap" href="/" aria-label="SlumLink">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+      <span class="logo-text">SLUMLINK</span>
+    </a>
+
+    <nav class="nav" aria-label="Primary">
+      <a class="nav-link" href="/">Home</a>
+      <a class="nav-link" href="/src/about.html">About</a>
+      <a class="nav-link" href="/src/impact.html">Impact</a>
+      <a class="nav-link nav-link--active" href="/src/field-agent.html">Field Agent</a>
+    </nav>
+
+    <a class="signin-btn" href="/src/signin.html">Sign In</a>
+  </header>
+
+  <div class="canvas">
+    <div class="frame">
+
+      <!-- PAGE HEADING -->
+<div style="padding: 5px 40px 0 40px; margin-bottom: 5px;">
+  <h1 style="margin:0; font-size: 32px; color: #3b1a0f;">Find Your Field Agent</h1>
+  <p style="margin:2px 0 0 0; color:#6c5a43;">Search for field agents by Division, District, and Slum Area.</p>
+</div>
+
+
+      <!-- FILTERS -->
+      <div class="filter-card">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+          <select id="division"></select>
+          <select id="district" disabled></select>
+          <select id="slumArea" disabled></select>
+          <button id="searchBtn" class="search-btn">Search</button>
+        </div>
+      </div>
+
+      <!-- FIELD AGENTS TABLE -->
+      <div class="agents-table" style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Agent Name</th>
+              <th>Location</th>
+              <th>Phone Number</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody id="agentsBody">
+            <tr><td colspan="4" style="text-align:center; color:#8b6f5a;">Select a slum area to view agents</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER (same as field-agent.html) -->
+      <footer class="footer" aria-label="Footer" style="margin-top:40px;">
+        <div class="footer-inner">
+          <div class="footer-brand">
+            <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+            <span class="logo-text">SLUMLINK</span>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <script>
+    // ===== AREA DATA =====
+    const AREA_DATA = {
+      "Dhaka": {
+        "Dhaka (North)": ["Korail", "Begun Bari", "Duaripara", "Kallyanpur", "Pora Basti", "Chalantika", "Agargaon", "Sattola (Mohakhali)", "Mohammadpur", "Basbari", "Molla"],
+        "Dhaka (South)": ["Nama Para", "Pura", "Nubur", "Mannan"],
+        "Narayanganj": ["Bhuigar", "Chashara", "Fatullah Cluster"],
+        "Gazipur": ["Tongi Cluster", "Board Bazar Cluster"]
+      },
+      "Chattogram": {
+        "Chattogram (City)": ["Halishahar", "Pahartali", "Agrabad Cluster"],
+        "Cox's Bazar": ["Teknaf Cluster", "Kutupalong (Nearby)"]
+      },
+      "Khulna": { "Khulna": ["Rupsha Ghat Cluster", "Khalishpur Cluster"] },
+      "Rajshahi": { "Rajshahi": ["Kazla Cluster", "Bornali Cluster"] },
+      "Barishal": { "Barishal": ["Nathullabad Cluster", "Battala Cluster"] },
+      "Sylhet": { "Sylhet": ["Ambarkhana Cluster", "Subidbazar Cluster"] },
+      "Rangpur": { "Rangpur": ["Jahaj Company Cluster", "Modern Mor Cluster"] },
+      "Mymensingh": { "Mymensingh": ["Town Hall Cluster", "Charpara Cluster"] }
+    };
+
+    const divisionEl = document.getElementById("division");
+    const districtEl = document.getElementById("district");
+    const slumAreaEl = document.getElementById("slumArea");
+    const agentsBody = document.getElementById("agentsBody");
+    const searchBtn = document.getElementById("searchBtn");
+
+    function fillSelect(selectEl, items, placeholder="Select"){
+      selectEl.innerHTML = "";
+      const opt0 = document.createElement("option");
+      opt0.value = "";
+      opt0.textContent = placeholder;
+      selectEl.appendChild(opt0);
+      items.forEach(it => {
+        const opt = document.createElement("option");
+        opt.value = it;
+        opt.textContent = it;
+        selectEl.appendChild(opt);
+      });
+    }
+
+    function initDivision(){
+      fillSelect(divisionEl, Object.keys(AREA_DATA), "Select Division");
+      fillSelect(districtEl, [], "Select District");
+      fillSelect(slumAreaEl, [], "Select Slum Area");
+      districtEl.disabled = true;
+      slumAreaEl.disabled = true;
+    }
+    initDivision();
+
+    divisionEl.addEventListener("change", () => {
+      const division = divisionEl.value;
+      if(!division){
+        fillSelect(districtEl, [], "Select District");
+        fillSelect(slumAreaEl, [], "Select Slum Area");
+        districtEl.disabled = true;
+        slumAreaEl.disabled = true;
+        return;
+      }
+      fillSelect(districtEl, Object.keys(AREA_DATA[division]), "Select District");
+      districtEl.disabled = false;
+      fillSelect(slumAreaEl, [], "Select Slum Area");
+      slumAreaEl.disabled = true;
+    });
+
+    districtEl.addEventListener("change", () => {
+      const division = divisionEl.value;
+      const district = districtEl.value;
+      if(!division || !district){
+        fillSelect(slumAreaEl, [], "Select Slum Area");
+        slumAreaEl.disabled = true;
+        return;
+      }
+      fillSelect(slumAreaEl, AREA_DATA[division][district], "Select Slum Area");
+      slumAreaEl.disabled = false;
+    });
+
+    // ===== Fetch and Display Field Agents =====
+    async function loadAgents(){
+      const slum = slumAreaEl.value;
+      if(!slum) return;
+
+      try {
+        const res = await fetch("/src/admin/adminFieldAgents.html");
+        const html = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+        const rows = Array.from(doc.querySelectorAll("table tbody tr"));
+
+        const filtered = rows.filter(tr => tr.cells[1].textContent.trim() === slum);
+
+        agentsBody.innerHTML = "";
+        if(filtered.length === 0){
+          agentsBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#8b6f5a;">No Field Agents available in this area</td></tr>`;
+          return;
+        }
+
+        filtered.forEach(tr => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${tr.cells[0].textContent}</td>
+            <td>${tr.cells[1].textContent}</td>
+            <td>${tr.cells[2].textContent}</td>
+            <td>${tr.cells[3].textContent}</td>
+          `;
+          agentsBody.appendChild(row);
+        });
+
+      } catch(err){
+        console.error(err);
+        agentsBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:red;">Error loading agents</td></tr>`;
+      }
+    }
+
+    searchBtn.addEventListener("click", loadAgents);
+
+    // Brand click goes home
+    document.querySelector(".brand-wrap").addEventListener("click", ()=>{ window.location.href="/"; });
+  </script>
+
+</body>
+</html>

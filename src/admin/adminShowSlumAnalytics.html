@@ -133,7 +133,10 @@
         </button>
       </div>
     </div>
-    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+    <div class="notification-bell-container">
+      <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+      <span class="notification-badge" id="notificationBadge">0</span>
+    </div>
   </div>
 </header>
 
@@ -148,6 +151,7 @@
           <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
           <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
           <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
+          <li><a href="adminviewcomplaints.html">📋 View Complaints</a></li>
         </ul>
     </aside>
 
@@ -194,7 +198,10 @@
         <aside class="right-sidebar">
           <div class="stats-grid">
             <div class="stat-card"><div class="stat-label">Households</div><div class="stat-value" id="householdsValue">0</div></div>
-            <div class="stat-card"><div class="stat-label">Population</div><div class="stat-value" id="populationValue">0</div></div>
+            <div class="stat-card" id="populationCard" style="cursor: pointer;" title="Click to view all members">
+              <div class="stat-label">Population</div>
+              <div class="stat-value" id="populationValue">0</div>
+            </div>
             <div class="stat-card"><div class="stat-label">Active Projects</div><div class="stat-value" id="projectsValue">0</div></div>
           </div>
 
@@ -224,6 +231,19 @@
       <div class="modal-actions">
         <button class="btn btn-secondary" id="cancelLogout">Cancel</button>
         <button class="btn btn-primary" id="confirmLogout">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Members Modal -->
+  <div class="modal-overlay" id="membersModal" aria-hidden="true" style="display: none;">
+    <div class="modal" role="dialog" aria-modal="true" style="width: 90%; max-width: 900px; max-height: 80vh; overflow-y: auto;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 id="membersTitle">Slum Members</h2>
+        <button type="button" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #8b6f5a;" onclick="document.getElementById('membersModal').style.display='none';">×</button>
+      </div>
+      <div class="modal-body" style="padding: 20px;">
+        <div id="membersTableContainer"></div>
       </div>
     </div>
   </div>
@@ -368,6 +388,119 @@
         container.innerHTML = bar + legend;
       }
 
+      function fetchAndShowMembers(slumName) {
+        if (!slumName) {
+          alert('Slum name not found');
+          return;
+        }
+
+        // Fetch dwellers, spouses, and children in parallel
+        Promise.all([
+          fetch('/api/slum-dweller/active').then(r => {
+            if (!r.ok) throw new Error('Failed to fetch dwellers');
+            return r.json();
+          }),
+          fetch('/api/slum-dweller/spouses?area=' + encodeURIComponent(slumName)).then(r => {
+            if (!r.ok) return { data: [] }; // Return empty if endpoint doesn't exist yet
+            return r.json();
+          }),
+          fetch('/api/slum-dweller/children?area=' + encodeURIComponent(slumName)).then(r => {
+            if (!r.ok) return { data: [] }; // Return empty if endpoint doesn't exist yet
+            return r.json();
+          })
+        ])
+        .then(function([dwellerResult, spouseResult, childResult]) {
+          // Process dwellers
+          var allDwellers = [];
+          if (Array.isArray(dwellerResult)) {
+            allDwellers = dwellerResult;
+          } else if (dwellerResult.data && Array.isArray(dwellerResult.data)) {
+            allDwellers = dwellerResult.data;
+          }
+          
+          var dwellers = allDwellers.filter(d => 
+            d.area && d.area.toLowerCase() === slumName.toLowerCase()
+          );
+          
+          // Process spouses
+          var allSpouses = spouseResult.data || [];
+          
+          // Process children  
+          var allChildren = childResult.data || [];
+          
+          // Combine all members with type indicator
+          var allMembers = [
+            ...dwellers.map(d => ({...d, memberType: 'Main', occupation: d.occupation || 'N/A', family_members: d.family_members || 0})),
+            ...allSpouses.map(s => ({...s, memberType: 'Spouse', full_name: s.name, education: s.education || 'N/A', occupation: s.job || 'N/A', family_members: '-', slum_code: '-'})),
+            ...allChildren.map(c => ({...c, memberType: 'Child', full_name: c.name, education: c.education || 'N/A', occupation: c.job || 'N/A', family_members: '-', slum_code: '-'}))
+          ];
+          
+          return allMembers;
+        })
+        .then(function(members) {
+          var modal = document.getElementById('membersModal');
+          var container = document.getElementById('membersTableContainer');
+
+          if (!members || members.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #8b6f5a; padding: 20px;">No members found for this slum.</p>';
+          } else {
+            var html = '<table style="width: 100%; border-collapse: collapse; background: white;">';
+            html += '<thead><tr style="background: #f5f0e8; border-bottom: 2px solid #8b6f5a;">';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Type</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Code</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Full Name</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Gender</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Age Group</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Education</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Occupation</th>';
+            html += '<th style="padding: 10px; text-align: left; color: #8b6f5a; font-weight: bold;">Status</th>';
+            html += '</tr></thead><tbody>';
+
+            members.forEach(function (member, index) {
+              var rowBg = index % 2 === 0 ? '#ffffff' : '#faf6f1';
+              html += '<tr style="background: ' + rowBg + '; border-bottom: 1px solid #efe6db;">';
+              
+              var typeBg = member.memberType === 'Main' ? '#e8f4f8' : (member.memberType === 'Spouse' ? '#f0f8e8' : '#fff8e8');
+              html += '<td style="padding: 10px; background: ' + typeBg + '; font-weight: bold; color: #555;">' + member.memberType + '</td>';
+              html += '<td style="padding: 10px;">' + (member.slum_code || '—') + '</td>';
+              html += '<td style="padding: 10px;">' + (member.full_name || '—') + '</td>';
+              html += '<td style="padding: 10px;">' + (member.gender || '—') + '</td>';
+              
+              var age = member.dob ? calculateAge(member.dob) : '—';
+              var ageGroup = typeof age === 'number' ? (age < 18 ? 'Child' : 'Adult') : '—';
+              html += '<td style="padding: 10px;">' + ageGroup + '</td>';
+              
+              html += '<td style="padding: 10px;">' + (member.education || '—') + '</td>';
+              html += '<td style="padding: 10px;">' + (member.occupation || '—') + '</td>';
+              html += '<td style="padding: 10px;"><span style="background: ' + (member.status === 'accepted' || member.status === 'active' ? '#d4edda' : '#fff3cd') + '; padding: 4px 8px; border-radius: 4px; font-size: 12px;">' + (member.status || '—') + '</span></td>';
+              html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+          }
+
+          modal.style.display = 'block';
+        })
+        .catch(function (error) {
+          console.error('Error fetching members:', error);
+          var container = document.getElementById('membersTableContainer');
+          container.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Error loading members: ' + error.message + '</p>';
+          document.getElementById('membersModal').style.display = 'block';
+        });
+      }
+
+      function calculateAge(birthDate) {
+        var today = new Date();
+        var birth = new Date(birthDate);
+        var age = today.getFullYear() - birth.getFullYear();
+        var monthDiff = today.getMonth() - birth.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+          age--;
+        }
+        return age;
+      }
+
       function getCountByStatus(rows, status) {
         var match = rows.find(function (row) { return row.status === status; });
         return match ? match.count : 0;
@@ -467,6 +600,14 @@
       }
 
       loadAnalytics();
+
+      // Add click handler to population card to show all members
+      var populationCard = document.getElementById('populationCard');
+      if (populationCard) {
+        populationCard.addEventListener('click', function() {
+          fetchAndShowMembers(slumName);
+        });
+      }
       
       var cards = document.querySelectorAll('.card');
       cards.forEach(function (card) {
@@ -486,6 +627,16 @@
           }
         });
       });
+
+      // Close members modal when clicking outside it
+      var membersModal = document.getElementById('membersModal');
+      if (membersModal) {
+        membersModal.addEventListener('click', function(e) {
+          if (e.target === this) {
+            this.style.display = 'none';
+          }
+        });
+      }
 
       // Export Report button - generates and downloads a PDF report
       var exportBtn = document.getElementById('exportBtn');

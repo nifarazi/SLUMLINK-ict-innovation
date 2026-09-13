@@ -1,294 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SlumLink | Complaint Categories</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SlumLink | Complaint Categories</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    :root{
-      --sand:#CBB093;
-      --sand2:#E0C7AC;
-      --paper:#FFF4E6;
-      --terra:#A4624D;
-      --shadow:#AD7562;
-      --ink:#613729;
-      --mint:#C0E0D0;
-      --pink:#FFC8D2;
-      --warning:#E8A444;
-
-      --header-h:56px;
-      --radius-lg:26px; 
-      --radius-md:18px;
-      --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-
-    *{ box-sizing:border-box; margin:0; padding:0; }
-    body{
-      font-family:"Poppins", system-ui, sans-serif;
-      background: linear-gradient(116.82deg, #CBB093 21.58%, #E0C7AC 31.36%, #F8E5CF 50.73%, #C0E0D0 71.52%);
-      color: var(--ink);
-      min-height: 100vh;
-      padding-bottom: 72px;
-      overflow-x: hidden;
-    }
-
-    a{text-decoration:none;}
-
-    /* ===== Header ===== */
-    .topbar{
-      position: fixed;
-      top: 0; left:0; right:0;
-      height: var(--header-h);
-      background: var(--paper);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 0 73px 0 70px;
-      z-index: 50;
-    }
-
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      cursor:pointer;
-    }
-
-    .brand-mark{
-      width: 32px; height: 32px;
-      border-radius: 14px;
-      background: linear-gradient(143.48deg, rgba(164,98,77,0.75) 38.34%, rgba(223,164,119,0.75) 78.43%);
-    }
-
-    .brand-text{
-      font-weight: 500;
-      font-size: 20px;
-      color: rgba(164,98,77,0.86);
-      letter-spacing: 0.04em;
-    }
-
-    .pill-btn{
-      height: 34px;
-      padding: 0 14px;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor:pointer;
-      border: 1px solid rgba(97,55,41,0.14);
-      background: rgba(255,244,230,0.85);
-      color: rgba(97,55,41,0.78);
-      transition: var(--transition);
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      position: relative;
-    }
-
-    /* ===== Alert Bubble ===== */
-    .alert-badge{
-      position:absolute;
-      top:-6px;
-      right:-10px;
-      background: var(--warning);
-      color:#fff;
-      font-size:15px;
-      font-weight:700;
-      min-width:26px;
-      height:26px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:0 4px 10px rgba(0,0,0,.2);
-      padding:0 8px;
-    }
-
-    /* ===== Page ===== */
-    .container{
-      max-width: 1440px;
-      margin: calc(var(--header-h) + 26px) auto 52px;
-      padding: 0 40px;
-    }
-
-    .page-title {
-      font-size: 40px;
-      font-weight: 700;
-      margin-top: 60px;
-      margin-bottom: 12px;
-    }
-
-    .page-subtitle {
-      font-size: 24px;
-      font-weight: 300;
-      margin-bottom: 40px;
-      max-width: 1200px;
-    }
-
-    /* ===== Categories ===== */
-    .categories-grid{
-      display:grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
-      margin-bottom: 80px;
-    }
-
-    .category-card{
-      background: var(--paper);
-      border: 1px solid var(--sand);
-      border-radius: var(--radius-md);
-      box-shadow: 5px 5px 4px rgba(173,117,98,0.24);
-      height: 180px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:24px;
-      font-weight:600;
-      text-align:center;
-      cursor:pointer;
-      padding: 10px;
-      position: relative;
-    }
-
-    .category-card .count{
-      position:absolute;
-      top:12px;
-      right:16px;
-      font-size:16px;
-      font-weight:500;
-      color: var(--terra);
-    }
-  </style>
+<style>
+:root{
+  --sand:#CBB093;
+  --sand2:#E0C7AC;
+  --paper:#FFF4E6;
+  --terra:#A4624D;
+  --ink:#613729;
+  --warning:#E8A444;
+  --header-h:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:"Poppins", sans-serif;
+  background: linear-gradient(116.82deg,#CBB093 21.58%,#E0C7AC 31.36%,#F8E5CF 50.73%,#C0E0D0 71.52%);
+  color: var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+.topbar{
+  position:fixed; top:0; left:0; right:0;
+  height:56px; background:var(--paper);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 70px; z-index:50;
+}
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.brand-mark{width:32px;height:32px;border-radius:14px;background:linear-gradient(143deg, rgba(164,98,77,.75), rgba(223,164,119,.75));}
+.brand-text{font-size:20px;font-weight:500;color:rgba(164,98,77,.86);}
+.pill-btn{height:34px;padding:0 14px;border-radius:14px;font-weight:700;font-size:14px;border:1px solid rgba(97,55,41,.14);background:rgba(255,244,230,.85);color:rgba(97,55,41,.78);display:flex;align-items:center;gap:8px;cursor:pointer;position:relative;}
+.alert-badge{position:absolute;top:-6px;right:-10px;background:var(--warning);color:#fff;min-width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;padding:0 8px;}
+.container{max-width:1440px;margin:82px auto 50px;padding:0 40px;}
+.page-title{font-size:40px;font-weight:700;margin-top:60px;margin-bottom:12px;}
+.page-subtitle{font-size:24px;font-weight:300;margin-bottom:40px;max-width:1200px;}
+.categories-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px;margin-bottom:80px;}
+.category-card{background:var(--paper);border:1px solid var(--sand);border-radius:18px;box-shadow:5px 5px 4px rgba(173,117,98,0.24);height:180px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:24px;font-weight:600;cursor:pointer;position:relative;padding:10px;}
+.category-card .count{position:absolute;top:12px;right:16px;font-size:16px;color:var(--terra);}
+</style>
 </head>
 
 <body>
 
 <header class="topbar">
   <div class="brand" id="brandBtn">
-    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark"/>
+    <img src="/src/images/slum Logo.png" class="brand-mark"/>
     <div class="brand-text">SLUMLINK</div>
   </div>
 
   <button class="pill-btn" id="backBtn">
-    <i class="fas fa-arrow-left"></i>
-    Back to Dashboard
+    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
   </button>
 </header>
+
 
 <main class="container">
   <h1 class="page-title">Complaint Checking</h1>
   <p class="page-subtitle">
-    Complaints are categorized using predefined administrative domains. Voice complaints are transcribed and auto-classified using AI.
+    Complaints are categorized using predefined administrative domains.
   </p>
 
-  <!-- New Complaints Button -->
-  <div style="margin:18px 0 28px;">
-    <button class="pill-btn" id="notifBtn">
-      <i class="fas fa-bell"></i>
-      New Complaints
-      <span class="alert-badge" id="notifCount">0</span>
-    </button>
-  </div>
-
-  <section class="categories-grid">
-    <div class="category-card" data-category="Housing & Shelter">Housing & Shelter <span class="count"></span></div>
-    <div class="category-card" data-category="Electricity & Lighting">Electricity & Lighting <span class="count"></span></div>
-    <div class="category-card" data-category="Aid & Relief Services">Aid & Relief Services <span class="count"></span></div>
-    <div class="category-card" data-category="Safety & Security">Safety & Security <span class="count"></span></div>
-    <div class="category-card" data-category="Education & Child Welfare">Education & Child Welfare <span class="count"></span></div>
-    <div class="category-card" data-category="Environment & Disaster Issues">Environment & Disaster Issues <span class="count"></span></div>
+  <div class="categories-grid">
+    <div class="category-card" data-category="Water Supply">Water Supply <span class="count"></span></div>
+    <div class="category-card" data-category="Sanitation">Sanitation <span class="count"></span></div>
+    <div class="category-card" data-category="Electricity">Electricity <span class="count"></span></div>
+    <div class="category-card" data-category="Street Lighting">Street Lighting <span class="count"></span></div>
     <div class="category-card" data-category="Waste Management">Waste Management <span class="count"></span></div>
-    <div class="category-card" data-category="Health & Medical Services">Health & Medical Services <span class="count"></span></div>
-    <div class="category-card" data-category="Documentation & Registration Issues">Documentation & Registration Issues <span class="count"></span></div>
-    <div class="category-card" data-category="Roads, Bridges & Infrastructure">Roads, Bridges & Infrastructure <span class="count"></span></div>
-    <div class="category-card" data-category="Water & Sanitation">Water & Sanitation <span class="count"></span></div>
-    <div class="category-card" data-category="Vaccination & Public Health Programs">Vaccination & Public Health Programs <span class="count"></span></div>
-  </section>
+    <div class="category-card" data-category="Health Services">Health Services <span class="count"></span></div>
+    <div class="category-card" data-category="Education Facilities">Education Facilities <span class="count"></span></div>
+    <div class="category-card" data-category="Road Maintenance">Road Maintenance <span class="count"></span></div>
+    <div class="category-card" data-category="Safety & Security">Safety & Security <span class="count"></span></div>
+    <div class="category-card" data-category="Housing">Housing <span class="count"></span></div>
+    <div class="category-card" data-category="Flooding & Drainage">Flooding & Drainage <span class="count"></span></div>
+    <div class="category-card" data-category="Public Transport">Public Transport <span class="count"></span></div>
+    <div class="category-card" data-category="Others">Others <span class="count"></span></div>
+  </div>
 </main>
 
 <script>
-  brandBtn.onclick = () => window.location.href = "/";
-  backBtn.onclick = () => window.location.href = "./local-dashboard.html";
-  notifBtn.onclick = () => window.location.href = "./waiting-complaints.html";
+brandBtn.onclick = () => location.href = "/";
+document.getElementById("backBtn").onclick = () => location.href = "./local-dashboard.html";
 
-  // Full complaints data (same as in complaints.html)
-  const allComplaints = {
-    "Housing & Shelter":[
-      {text:"No nearby shelters for families.", status:"Waiting"},
-      {text:"Some houses are damaged and unsafe.", status:"InProgress"},
-      {text:"Temporary shelters provided.", status:"Solved"}
-    ],
-    "Electricity & Lighting":[
-      {text:"Frequent power outages in the area.", status:"InProgress"},
-      {text:"Streetlights not working at night.", status:"Waiting"},
-      {text:"Solar lamps installed.", status:"Solved"}
-    ],
-    "Aid & Relief Services":[
-      {text:"Food rations delayed.", status:"Waiting"},
-      {text:"Distribution of blankets incomplete.", status:"InProgress"},
-      {text:"Aid distributed successfully.", status:"Solved"}
-    ],
-    "Education & Child Welfare":[
-      {text:"Children travel far to reach school.", status:"Solved"},
-      {text:"Some children forced to work.", status:"InProgress"},
-      {text:"Lack of books and learning materials.", status:"InProgress"},
-      {text:"School building unsafe.", status:"Waiting"}
-    ],
-    "Safety & Security":[
-      {text:"Street violence reported.", status:"Waiting"},
-      {text:"Insufficient police patrol.", status:"InProgress"},
-      {text:"Community watch program implemented.", status:"Solved"}
-    ],
-    "Environment & Disaster Issues":[
-      {text:"Flooded areas affecting homes.", status:"Waiting"},
-      {text:"Air pollution causing health issues.", status:"InProgress"},
-      {text:"Community cleanup drive completed.", status:"Solved"}
-    ],
-    "Waste Management":[
-      {text:"Garbage collection irregular.", status:"Waiting"},
-      {text:"Overflowing bins in alleys.", status:"InProgress"},
-      {text:"Local composting initiative successful.", status:"Solved"}
-    ],
-    "Health & Medical Services":[
-      {text:"Clinic shortage of medicines.", status:"InProgress"},
-      {text:"Vaccination clinic organized.", status:"Solved"}
-    ],
-    "Documentation & Registration Issues":[
-      {text:"Birth certificates delayed.", status:"Waiting"},
-      {text:"National ID registration pending.", status:"InProgress"}
-    ],
-    "Roads, Bridges & Infrastructure":[
-      {text:"Potholes making travel unsafe.", status:"Waiting"},
-      {text:"Bridge repair ongoing.", status:"InProgress"},
-      {text:"New road completed.", status:"Solved"}
-    ],
-    "Water & Sanitation":[
-      {text:"Water supply intermittent.", status:"InProgress"},
-      {text:"Public toilets cleaned regularly.", status:"Solved"}
-    ],
-    "Vaccination & Public Health Programs":[
-      {text:"Flu vaccination drive scheduled.", status:"Waiting"},
-      {text:"Polio vaccination completed.", status:"Solved"}
-    ]
-  };
+async function fetchComplaintCounts(){
+  try{
+    // Get division from localStorage session
+    const sessionRaw = localStorage.getItem("SLUMLINK_SESSION");
+    const session = sessionRaw ? JSON.parse(sessionRaw) : {};
+    const division = session.division || "";
+    
+    // Build URL with division parameter
+    let url = "/api/complaints/counts";
+    if (division) {
+      url += `?division=${encodeURIComponent(division)}`;
+    }
+    
+    const res = await fetch(url);
+    const data = await res.json();
+    const categories = data.categories || {};
 
-  let waitingCount = 0;
+    // Collect all cards with their counts
+    const cards = [];
+    document.querySelectorAll(".category-card").forEach(card=>{
+      const cat = card.dataset.category;
+      const count = categories[cat] || 0;
+      cards.push({ card, category: cat, count });
+    });
 
-  document.querySelectorAll('.category-card').forEach(card=>{
-    const cat = card.dataset.category;
-    const count = allComplaints[cat]?.length || 0;  // use actual complaints length
-    card.querySelector('.count').textContent = `(${count})`;
-    waitingCount += count;
-    card.onclick = () => window.location.href = `./complaints.html?category=${encodeURIComponent(cat)}`;
-  });
+    // Sort: descending by count, then ascending by category name (alphabetically)
+    // Special case: "Others" always appears last when sorting alphabetically
+    cards.sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count; // Descending by count
+      }
+      // When counts are equal, sort alphabetically but put "Others" last
+      if (a.category === "Others") return 1; // a comes after
+      if (b.category === "Others") return -1; // b comes first
+      return a.category.localeCompare(b.category); // Ascending alphabetically
+    });
 
-  document.getElementById("notifCount").textContent = waitingCount;
+    // Reorder cards in the grid and set counts
+    const grid = document.querySelector(".categories-grid");
+    cards.forEach(({card, category, count}) => {
+      card.querySelector(".count").textContent = `(${count})`;
+      
+      // Re-append to grid to reorder
+      grid.appendChild(card);
+
+      // Go to complaints page for that category, passing division
+      card.onclick = () => {
+        const url = `/src/localauthority/complaints.html?category=${encodeURIComponent(category)}`;
+        window.location.href = url;
+      };
+    });
+  }catch(err){console.error(err);}
+}
+
+fetchComplaintCounts();
 </script>
-
 </body>
 </html>

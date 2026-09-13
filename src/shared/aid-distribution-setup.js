@@ -87,7 +87,11 @@ function fillAidTypeSelectGrouped(select, types) {
 }
 
 function updateStartState() {
-  startBtn.disabled = !(campaignSelect.value && typeSelect.value);
+  const ok = campaignSelect.value && typeSelect.value;
+  startBtn.classList.toggle('is-disabled', !ok);
+  startBtn.setAttribute('aria-disabled', String(!ok));
+  // Remove disabled attribute so click still fires
+  startBtn.disabled = false;
 }
 
 function escapeHtml(s) {
@@ -98,6 +102,159 @@ function escapeHtml(s) {
     '"': "&quot;",
     "'": "&#039;",
   }[ch]));
+}
+
+/**
+ * Show a toast notification
+ */
+function showToast(message, type = "error") {
+  // Remove any existing toast
+  const existing = document.getElementById("toast-notification");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.id = "toast-notification";
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: ${type === "error" ? "#D32F2F" : "#388E3C"};
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 14px;
+    font-weight: 500;
+    font-family: Poppins, sans-serif;
+    z-index: 10000;
+    animation: slideIn 0.3s ease-out;
+  `;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  // Auto remove after 5 seconds
+  setTimeout(() => {
+    toast.style.animation = "slideOut 0.3s ease-out";
+    setTimeout(() => toast.remove(), 300);
+  }, 5000);
+}
+
+// Add CSS animations for toast 
+if (!document.getElementById("toast-styles")) {
+  const style = document.createElement("style");
+  style.id = "toast-styles";
+  style.textContent = `
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+/**
+ * Show inline form validation error
+ */
+function showFormError(selectElement, message) {
+  if (!selectElement) {
+    console.error('showFormError: Select element not found');
+    return;
+  }
+  
+  console.log('showFormError called for:', selectElement.id, 'message:', message);
+  
+  // Add error class to select
+  selectElement.classList.add('form-error');
+  
+  // FORCE INLINE STYLES (highest priority)
+  selectElement.style.border = '3px solid #D32F2F';
+  selectElement.style.backgroundColor = '#FFEBEE';
+  selectElement.style.boxShadow = '0 0 8px rgba(211, 47, 47, 0.5)';
+  selectElement.style.outline = 'none';
+  
+  console.log('Inline styles applied to:', selectElement.id);
+  
+  // Get the parent field div
+  const fieldDiv = selectElement.closest('.field');
+  console.log('fieldDiv found:', !!fieldDiv);
+  
+  if (!fieldDiv) {
+    console.error('Field div not found for', selectElement.id);
+    return;
+  }
+  
+  // Remove any existing error message
+  const existingError = fieldDiv.querySelector('.form-error-message');
+  if (existingError) {
+    console.log('Removing existing error message');
+    existingError.remove();
+  }
+  
+  // Create and insert error message DIRECTLY AFTER SELECT
+  const errorMsg = document.createElement('div');
+  errorMsg.className = 'form-error-message';
+  errorMsg.textContent = '⚠ ' + message;
+  
+  // WEBSITE-THEMED STYLING (soft beige/terra colors, not harsh yellow/red)
+  errorMsg.style.color = '#613729';
+  errorMsg.style.fontSize = '13px';
+  errorMsg.style.fontWeight = '600';
+  errorMsg.style.marginTop = '8px';
+  errorMsg.style.display = 'block';
+  errorMsg.style.padding = '10px 12px';
+  errorMsg.style.backgroundColor = 'rgba(164, 98, 77, 0.08)';
+  errorMsg.style.border = '1px solid rgba(164, 98, 77, 0.22)';
+  errorMsg.style.borderRadius = '8px';
+  errorMsg.style.fontFamily = 'Poppins, sans-serif';
+  
+  // Insert immediately after select element
+  selectElement.insertAdjacentElement('afterend', errorMsg);
+  console.log('Error message inserted with website theme');
+}
+
+/**
+ * Clear form validation error
+ */
+function clearFormError(selectElement) {
+  if (!selectElement) {
+    console.log('clearFormError: Select element is null or undefined');
+    return;
+  }
+  
+  console.log('clearFormError called for:', selectElement.id);
+  
+  selectElement.classList.remove('form-error');
+  
+  // REMOVE inline styles
+  selectElement.style.border = '';
+  selectElement.style.backgroundColor = '';
+  selectElement.style.boxShadow = '';
+  selectElement.style.outline = '';
+  
+  const fieldDiv = selectElement.closest('.field');
+  if (fieldDiv) {
+    const errorMsg = fieldDiv.querySelector('.form-error-message');
+    if (errorMsg) {
+      errorMsg.remove();
+      console.log('Error message removed from', selectElement.id);
+    }
+  }
 }
 
 function renderPreview(camp, extraMsg = "") {
@@ -163,21 +320,69 @@ let isCreating = false;
 
 campaignSelect.addEventListener("change", () => {
   updateStartState();
+  clearFormError(campaignSelect);  // Clear error when user selects
   const opt = campaignSelect.selectedOptions[0];
   const camp = opt ? JSON.parse(opt.dataset.raw) : null;
   renderPreview(camp);
+  
+  // ✅ NEW: Load eligible families when campaign is selected
+  if (camp && camp.campaign_id) {
+    loadEligibleFamilies(camp.campaign_id);
+  } else {
+    document.getElementById("eligibleFamiliesContainer").innerHTML = "";
+  }
 });
-typeSelect.addEventListener("change", updateStartState);
+
+typeSelect.addEventListener("change", () => {
+  updateStartState();
+  clearFormError(typeSelect);  // Clear error when user selects
+});
 
 startBtn.addEventListener("click", async () => {
-  if (isCreating) return;
+  console.log('START BUTTON CLICKED');
+  
+  if (isCreating) {
+    console.log('Already creating, ignoring click');
+    return;
+  }
 
   const session = readSession();
   const org_id = session?.org_id;
 
+  // ✅ FIX: Check .value instead of selectedOptions[0]
+  const hasCampaign = !!campaignSelect.value;
+  const hasType = !!typeSelect.value;
+  
+  console.log('Campaign selected:', hasCampaign);
+  console.log('Aid type selected:', hasType);
+  
+  // Validation with inline error messages
+  let hasErrors = false;
+  
+  if (!hasCampaign) {
+    console.log('VALIDATION ERROR: No campaign selected');
+    showFormError(campaignSelect, "Please select a campaign");
+    hasErrors = true;
+  }
+  
+  if (!hasType) {
+    console.log('VALIDATION ERROR: No aid type selected');
+    showFormError(typeSelect, "Please select an aid type");
+    hasErrors = true;
+  }
+  
+  if (hasErrors) {
+    console.log('Form has errors - validation complete');
+    return;
+  }
+  
   const campOpt = campaignSelect.selectedOptions[0];
   const typeOpt = typeSelect.selectedOptions[0];
-  if (!campOpt || !typeOpt || !org_id) return;
+  
+  if (!org_id) {
+    showToast("No organization session found. Please sign in again.", "error");
+    return;
+  }
 
   const campaign = JSON.parse(campOpt.dataset.raw);
   const aidType = JSON.parse(typeOpt.dataset.raw);
@@ -211,12 +416,41 @@ startBtn.addEventListener("click", async () => {
   } catch (e) {
     console.error(e);
     renderPreview(campaign, e.message || "Failed to start distribution.");
+    showToast(e.message || "Failed to start distribution. Please try again.", "error");
     startBtn.disabled = false; // allow retry
   } finally {
     isCreating = false;
     updateStartState();
   }
 });
+
+/**
+ * ✅ NEW: Load and display eligible families for distribution setup
+ */
+async function loadEligibleFamilies(campaignId) {
+  const containerId = "eligibleFamiliesContainer";
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  try {
+    const table = new EligibleFamiliesTable(containerId);
+    await table.load(campaignId);
+    await table.loadCampaignDetails(campaignId);
+    table.render();
+    // Store globally so distribution session can access it
+    window.eligibleFamiliesTable = table;
+    // Also store in localStorage for persistence across page navigation
+    if (table.data?.families) {
+      localStorage.setItem(
+        "slumlink_eligible_families",
+        JSON.stringify(table.data.families)
+      );
+    }
+  } catch (err) {
+    console.error("Error loading eligible families:", err);
+    container.innerHTML = `<div class="families-section"><p style="color:red;">Error loading eligible families: ${err.message}</p></div>`;
+  }
+}
 
 (async function init() {
   try {

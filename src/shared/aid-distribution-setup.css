@@ -123,6 +123,22 @@ body{
   border-color: rgba(164,98,77,0.35);
   box-shadow: 0 0 0 4px rgba(164,98,77,0.12);
 }
+
+/* ERROR STATE - MUST USE HIGHEST SPECIFICITY */
+.field select.form-error {
+  border: 2px solid #D32F2F !important;
+  background-color: #FFEBEE !important;
+  box-shadow: 0 0 4px rgba(211, 47, 47, 0.3) !important;
+  outline: none !important;
+}
+
+.field select.form-error:hover,
+.field select.form-error:focus {
+  border-color: #D32F2F !important;
+  background-color: #FFEBEE !important;
+  box-shadow: 0 0 4px rgba(211, 47, 47, 0.3) !important;
+  outline: none !important;
+}
 .hint{
   display:block;
   margin-top: 7px;
@@ -162,8 +178,24 @@ body{
   font-weight: 700;
   transition: var(--t);
 }
-.btn:disabled{ opacity:.55; cursor:not-allowed; }
-.btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow2); }
+.btn:hover:not(.is-disabled){ transform: translateY(-1px); box-shadow: var(--shadow2); }
+.btn.is-disabled{
+  opacity:.55;
+  cursor:not-allowed;
+  transform:none !important;
+  box-shadow:none !important;
+}
+
+/* Form validation error message */
+.form-error-message {
+  color: #D32F2F;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  display: block;
+  margin-left: 0;
+  padding: 4px 0;
+}
 
 @media (max-width: 860px){
   .grid{ grid-template-columns: 1fr; }

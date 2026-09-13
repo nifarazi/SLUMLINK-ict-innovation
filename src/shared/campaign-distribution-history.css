@@ -1,0 +1,312 @@
+/**
+ * campaign-distribution-history.css
+ * Styles for the campaign distribution history component
+ * Uses SlumLink color theme: warm beige/peach/terracotta palette
+ */
+
+:root {
+  --sand: #CBB093;
+  --sand2: #DAC4AD;
+  --paper: #FFF4E6;
+  --terra: #A4624D;
+  --peach: #DFA477;
+  --ink: #613729;
+}
+
+.history-section {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--paper);
+  border-radius: 8px;
+  border-left: 4px solid var(--peach);
+}
+
+.history-section h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--ink);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.no-data {
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  color: #999;
+  text-align: center;
+  border: 1px solid var(--sand2);
+}
+
+.history-summary {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--sand2);
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 150px;
+}
+
+.summary-label {
+  font-size: 0.85rem;
+  color: var(--terra);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--peach);
+  margin-top: 0.5rem;
+}
+
+.history-timeline {
+  margin: 1.5rem 0;
+}
+
+.day-record {
+  margin-bottom: 1.5rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--sand2);
+  overflow: hidden;
+}
+
+.day-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--terra) 0%, var(--peach) 100%);
+  color: white;
+}
+
+.day-date {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.day-stats {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.day-stats .stat {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.day-stats strong {
+  font-size: 1.1rem;
+}
+
+.day-distributions {
+  padding: 1rem;
+}
+
+.distributions-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.distributions-table thead {
+  background: var(--sand2);
+  border-bottom: 2px solid var(--terra);
+}
+
+.distributions-table th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.distributions-table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--paper);
+}
+
+.distributions-table tbody tr:hover {
+  background-color: var(--paper);
+}
+
+.distributions-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.distributions-table td.code {
+  font-family: 'Courier New', monospace;
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.distributions-table td.quantity {
+  text-align: center;
+}
+
+.distributions-table td.org {
+  color: var(--terra);
+}
+
+.history-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid var(--sand2);
+}
+
+.footer-totals {
+  display: flex;
+  gap: 2rem;
+  font-size: 0.95rem;
+}
+
+.footer-totals span {
+  color: var(--ink);
+}
+
+.footer-totals strong {
+  color: var(--terra);
+}
+
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.5rem;
+  background: linear-gradient(135deg, var(--peach) 0%, var(--terra) 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, var(--terra) 0%, var(--peach) 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(164, 98, 77, 0.3);
+}
+
+.download-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(164, 98, 77, 0.2);
+}
+
+.download-btn i {
+  font-size: 0.85rem;
+}
+
+.download-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.4rem 0.8rem;
+  background: white;
+  color: var(--ink);
+  border: 1px solid var(--sand2);
+  border-radius: 3px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+.download-option:hover {
+  background: var(--paper);
+  border-color: var(--terra);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .history-summary {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .day-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .day-stats {
+    width: 100%;
+    justify-content: space-around;
+  }
+
+  .distributions-table {
+    font-size: 0.8rem;
+  }
+
+  .distributions-table th,
+  .distributions-table td {
+    padding: 0.4rem;
+  }
+
+  .history-footer {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .download-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-totals {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .history-section {
+    padding: 1rem;
+  }
+
+  .history-section h3 {
+    font-size: 1rem;
+  }
+
+  .summary-item {
+    min-width: 100px;
+  }
+
+  .summary-value {
+    font-size: 1.4rem;
+  }
+
+  .distributions-table {
+    font-size: 0.7rem;
+  }
+
+  .distributions-table th,
+  .distributions-table td {
+    padding: 0.3rem;
+  }
+
+  .day-stats {
+    font-size: 0.75rem;
+  }
+}

@@ -4,7 +4,9 @@ import {
   createDistributionSession,
   addDistributionEntry,
   finishDistributionSession,
-  getFamilySnapshotAllHistory
+  getFamilySnapshotAllHistory,
+  getCampaignDistributionHistory,  // ✅ NEW
+  getCampaignImpact                 // ✅ ADD THIS
 } from "../controllers/distribution.controller.js";
 
 const router = express.Router();
@@ -20,5 +22,11 @@ router.post("/distribution-sessions/:sessionId/finish", finishDistributionSessio
 
 // GET /api/distribution/families/:slum_code/snapshot
 router.get("/distribution/families/:slum_code/snapshot", getFamilySnapshotAllHistory);
+
+// ✅ NEW: GET /api/campaigns/:campaignId/distribution-history
+router.get("/campaigns/:campaignId/distribution-history", getCampaignDistributionHistory);
+
+// ✅ NEW: GET /api/campaigns/:campaignId/impact
+router.get("/campaigns/:campaignId/impact", getCampaignImpact);
 
 export default router;

@@ -42,16 +42,16 @@ const localAuthorityCredentials = {
   "mymensingh@gov.bd": "mymensinghslum123"
 };
 
-// For FK + correct creator tracking in DB
+// For FK + correct creator tracking in DB + division filtering
 const localAuthorityMeta = {
-  "dhaka@gov.bd":       { org_id: 1001, org_name: "Dhaka City Corporation" },
-  "chattogram@gov.bd":  { org_id: 1002, org_name: "Chattogram City Corporation" },
-  "khulna@gov.bd":      { org_id: 1003, org_name: "Khulna City Corporation" },
-  "rajshahi@gov.bd":    { org_id: 1004, org_name: "Rajshahi City Corporation" },
-  "barishal@gov.bd":    { org_id: 1005, org_name: "Barishal City Corporation" },
-  "sylhet@gov.bd":      { org_id: 1006, org_name: "Sylhet City Corporation" },
-  "rangpur@gov.bd":     { org_id: 1007, org_name: "Rangpur City Corporation" },
-  "mymensingh@gov.bd":  { org_id: 1008, org_name: "Mymensingh City Corporation" }
+  "dhaka@gov.bd":       { org_id: 1001, org_name: "Dhaka City Corporation", division: "Dhaka" },
+  "chattogram@gov.bd":  { org_id: 1002, org_name: "Chattogram City Corporation", division: "Chattogram" },
+  "khulna@gov.bd":      { org_id: 1003, org_name: "Khulna City Corporation", division: "Khulna" },
+  "rajshahi@gov.bd":    { org_id: 1004, org_name: "Rajshahi City Corporation", division: "Rajshahi" },
+  "barishal@gov.bd":    { org_id: 1005, org_name: "Barishal City Corporation", division: "Barishal" },
+  "sylhet@gov.bd":      { org_id: 1006, org_name: "Sylhet City Corporation", division: "Sylhet" },
+  "rangpur@gov.bd":     { org_id: 1007, org_name: "Rangpur City Corporation", division: "Rangpur" },
+  "mymensingh@gov.bd":  { org_id: 1008, org_name: "Mymensingh City Corporation", division: "Mymensingh" }
 };
 
 function setSession(sessionObj){
@@ -378,7 +378,8 @@ signinForm?.addEventListener("submit", (e) => {
         org_id: meta.org_id,
         org_type: "localauthority",
         org_name: meta.org_name,
-        email: identifier
+        email: identifier,
+        division: meta.division
       });
 
       // Success toast then redirect to Local Authority Dashboard

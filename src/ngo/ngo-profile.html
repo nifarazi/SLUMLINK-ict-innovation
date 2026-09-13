@@ -36,25 +36,25 @@
     <section class="hero" aria-label="NGO Profile">
       <div class="profile-card">
         <div class="avatar"><i class="fas fa-user"></i></div>
-        <h1 class="ngo-name">MASTUL FOUNDATION</h1>
+        <h1 class="ngo-name" id="ngoNameDisplay">Loading...</h1>
       </div>
 
       <!-- Content Card -->
       <section class="content-card">
         <div class="info-row">
           <h2 class="info-title">Foundation Information</h2>
-          <p class="info-text">E-mail ID: <a href="mailto:saveramomtaz123@gmail.com">saveramomtaz123@gmail.com</a></p>
+          <p class="info-text">E-mail ID: <a id="emailDisplay" href="mailto:">Loading...</a></p>
         </div>
 
         <div class="info-row">
           <h2 class="info-title">Contact Information</h2>
-          <p class="info-text">Address: House 1346, Road 13 A</p>
-          <p class="info-text">Phone: +8801305300454</p>
+          <p class="info-text">Phone: <span id="phoneDisplay">Loading...</span></p>
+          <p class="info-text">Status: <span id="statusDisplay">Loading...</span></p>
         </div>
 
         <div class="info-row">
-          <h2 class="info-title">Date of Account Creation</h2>
-          <p class="info-text">Jan 5, 2025</p>
+          <h2 class="info-title">Years in Operation</h2>
+          <p class="info-text" id="orgAgeDisplay">Loading...</p>
         </div>
       </section>
     </section>
@@ -87,12 +87,82 @@
   <script>
     const toastEl = document.getElementById("toast");
     let toastTimer;
+    
     function toast(msg){
       clearTimeout(toastTimer);
       toastEl.textContent = msg;
       toastEl.classList.add("show");
       toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
     }
+
+    function readSession() {
+      try {
+        return JSON.parse(localStorage.getItem("SLUMLINK_SESSION") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function formatDate(isoDate) {
+      if (!isoDate) return "N/A";
+      const date = new Date(isoDate);
+      return date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    }
+
+    async function loadNGOProfile() {
+      try {
+        const session = readSession();
+        
+        if (!session || !session.org_id) {
+          toast("Session expired. Please log in again.");
+          setTimeout(() => window.location.href = "/", 2000);
+          return;
+        }
+
+        const org_id = session.org_id;
+        
+        // Fetch NGO details from backend
+        const response = await fetch(`/api/ngo/${org_id}`);
+        const data = await response.json();
+
+        if (!response.ok || !data) {
+          throw new Error(data?.message || "Failed to load NGO profile");
+        }
+
+        const ngo = data.data || data;
+        
+        // Populate profile information with null checks
+        const ngoName = document.getElementById("ngoNameDisplay");
+        if (ngoName) ngoName.textContent = (ngo.org_name || "N/A").toUpperCase();
+        
+        const emailLink = document.getElementById("emailDisplay");
+        if (emailLink) {
+          emailLink.textContent = ngo.email || "N/A";
+          emailLink.href = `mailto:${ngo.email || ""}`;
+        }
+        
+        const phoneDisplay = document.getElementById("phoneDisplay");
+        if (phoneDisplay) phoneDisplay.textContent = ngo.phone || "N/A";
+        
+        const statusBadge = document.getElementById("statusDisplay");
+        if (statusBadge) {
+          statusBadge.textContent = ngo.status ? ngo.status.charAt(0).toUpperCase() + ngo.status.slice(1) : "N/A";
+          statusBadge.style.fontWeight = "600";
+          statusBadge.style.color = ngo.status === "accepted" ? "#27ae60" : ngo.status === "pending" ? "#f39c12" : "#e74c3c";
+        }
+        
+        const orgAge = document.getElementById("orgAgeDisplay");
+        if (orgAge) orgAge.textContent = (ngo.org_age || "N/A") + " years";
+
+      } catch (error) {
+        console.error("Error loading profile:", error);
+        toast("Error loading profile. " + error.message);
+        document.getElementById("ngoNameDisplay").textContent = "ERROR";
+      }
+    }
+
+    // Load profile on page load
+    document.addEventListener("DOMContentLoaded", loadNGOProfile);
 
     // Back to Dashboard
     document.getElementById("backBtn").addEventListener("click", ()=> {
@@ -128,6 +198,7 @@
 
     confirmBtn.addEventListener("click", ()=>{
       toast("Logging out...");
+      localStorage.removeItem("SLUMLINK_SESSION");
       setTimeout(()=> {
         window.location.href = "/index.html";
       }, 450);

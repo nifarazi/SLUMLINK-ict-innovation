@@ -32,23 +32,23 @@
     </section>
 
     <section class="stats-grid" aria-label="Stats">
-      <article class="stat-card clickable" data-toast="View detailed report: People Helped">
-        <div class="stat-num">10,248</div>
-        <div class="stat-label">People helped</div>
+      <article class="stat-card clickable" data-toast="View detailed report: Families Helped">
+        <div class="stat-num" id="familiesHelpedNum">—</div>
+        <div class="stat-label">Families helped</div>
       </article>
 
       <article class="stat-card clickable" data-toast="View detailed report: Areas Covered">
-        <div class="stat-num">28</div>
+        <div class="stat-num" id="areasCoveredNum">—</div>
         <div class="stat-label">Areas covered</div>
       </article>
 
       <article class="stat-card clickable" data-toast="View detailed report: Completed Campaigns">
-        <div class="stat-num">5</div>
+        <div class="stat-num" id="completedCampaignsNum">—</div>
         <div class="stat-label">Completed campaigns</div>
       </article>
 
       <article class="stat-card clickable" data-toast="View detailed report: Active Campaigns">
-        <div class="stat-num">3</div>
+        <div class="stat-num" id="activeCampaignsNum">—</div>
         <div class="stat-label">Active campaigns</div>
       </article>
     </section>
@@ -91,37 +91,7 @@
           </div>
         </div>
 
-        <div class="aid-list">
-          <div class="aid-item clickable" data-toast="Opening Winter Blanket Drive Details">
-            <div class="aid-title">Winter Blanket Drive</div>
-            <div class="aid-meta">Mirpur • 120 families assisted</div>
-            <div class="aid-date">Jan 15, 2025</div>
-          </div>
-
-          <div class="aid-item clickable" data-toast="Opening Medical Camp Support Details">
-            <div class="aid-title">Medical Camp Support</div>
-            <div class="aid-meta">Korail • 250+ beneficiaries</div>
-            <div class="aid-date">Jan 10, 2025</div>
-          </div>
-
-          <div class="aid-item clickable" data-toast="Opening Education Scholarship Details">
-            <div class="aid-title">Education Scholarship</div>
-            <div class="aid-meta">Kallyanpur • 45 students enrolled</div>
-            <div class="aid-date">Jan 5, 2025</div>
-          </div>
-
-          <div class="aid-item clickable" data-toast="Opening Food Pack Distribution Details">
-            <div class="aid-title">Food Pack Distribution</div>
-            <div class="aid-meta">Tejgaon • 180 households served</div>
-            <div class="aid-date">Dec 21, 2024</div>
-          </div>
-
-          <div class="aid-item clickable" data-toast="Opening Clean Water Support Details">
-            <div class="aid-title">Clean Water Support</div>
-            <div class="aid-meta">Shyamoli • 90 families supported</div>
-            <div class="aid-date">Nov 2, 2024</div>
-          </div>
-        </div>
+        <div class="aid-list" id="recentAidList"></div>
       </section>
     </section>
   </main>

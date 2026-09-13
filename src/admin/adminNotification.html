@@ -28,7 +28,10 @@
         </button>
       </div>
     </div>
-    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+    <div class="notification-bell-container">
+      <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+      <span class="notification-badge" id="notificationBadge">0</span>
+    </div>
   </div>
 </header>
 
@@ -43,6 +46,7 @@
         <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
         <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
+        <li><a href="adminviewcomplaints.html">📋 View Complaints</a></li>
       </ul>
     </aside>
 
@@ -150,6 +154,9 @@
       }
     }
 
+    // Clear all dismissed notifications on page load
+    localStorage.removeItem(dismissedKey);
+
     function makeNotificationKey(notif) {
       return [notif.type, notif.message, notif.link].join('|');
     }
@@ -191,6 +198,13 @@
       container.innerHTML = '';
       
       var sortedNotifications = sortNotifications();
+
+      // Update badge to match displayed notifications
+      var badgeElement = document.getElementById('notificationBadge');
+      if (badgeElement) {
+        badgeElement.textContent = sortedNotifications.length;
+        badgeElement.style.display = sortedNotifications.length > 0 ? 'flex' : 'none';
+      }
 
       if (sortedNotifications.length === 0) {
         var empty = document.createElement('div');

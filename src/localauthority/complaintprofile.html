@@ -1,230 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Complaint Profile | SlumLink</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Complaint Profile | SlumLink</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    :root{
-      --sand:#CBB093;
-      --paper:#FFF4E6;
-      --ink:#613729;
-      --radius-lg:26px;
-      --radius-md:16px;
-      --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    *{ box-sizing:border-box; margin:0; padding:0; }
-    body{
-      font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: linear-gradient(135deg, #E8F0D8, #F6DCC4);
-      color: var(--ink);
-      min-height: 100vh;
-      padding-bottom: 50px;
-    }
-    a{text-decoration:none; color: inherit;}
+<style>
+:root{
+  --sand:#CBB093;
+  --paper:#FFF4E6;
+  --ink:#613729;
+  --terra:#A4624D;
+  --success:#16C098;
+  --progress:#DFA477;
+  --pending:#D4D7D5;
+  --radius-lg:26px;
+  --radius-md:16px;
+  --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
 
-    /* ===== Header ===== */
-    .topbar{
-      position: fixed;
-      top: 0; left:0; right:0;
-      height: 56px;
-      background: var(--paper);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding: 0 40px;
-      z-index: 50;
-      box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-    }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-      cursor:pointer;
-      user-select: none;
-      transition: var(--transition);
-    }
-    .brand:hover{ transform: translateY(-1px); }
-    .brand-mark{
-      width: 36px; height: 36px;
-      border-radius: 14px;
-      background: linear-gradient(143.48deg, rgba(164,98,77,0.75) 38.34%, rgba(223,164,119,0.75) 78.43%);
-    }
-    .brand-text{
-      font-weight: 600;
-      font-size: 22px;
-      color: rgba(164,98,77,0.86);
-      text-transform: uppercase;
-      line-height: 1;
-      white-space: nowrap;
-      letter-spacing: 0.04em;
-    }
-    .pill-btn{
-      height: 36px;
-      padding: 0 16px;
-      border-radius: 16px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor:pointer;
-      border: 1px solid rgba(97,55,41,0.14);
-      background: rgba(255,244,230,0.85);
-      color: rgba(97,55,41,0.78);
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      white-space: nowrap;
-      transition: var(--transition);
-    }
-    .pill-btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(97,55,41,0.22);
-      color: rgba(97,55,41,0.92);
-      box-shadow: 0 10px 18px rgba(97,55,41,0.10);
-    }
+body{
+  font-family:"Poppins",sans-serif;
+  background: linear-gradient(135deg, #E8F0D8, #F6DCC4);
+  color:var(--ink);
+  min-height:100vh;
+}
 
-    /* ===== Main container ===== */
-    .container{
-      max-width: 1000px;
-      margin: 86px auto 40px;
-      padding: 0 24px;
-    }
-    .page-title{
-      font-size: 40px;
-      font-weight: 700;
-      margin-bottom: 30px;
-    }
-    .complaint-card{
-      background: var(--paper);
-      border-radius: var(--radius-lg);
-      padding: 36px 32px;
-      box-shadow: 5px 5px 15px rgba(173,117,98,0.25);
-    }
-    .complaint-section{
-      margin-bottom: 28px;
-    }
-    .section-title{
-      font-weight: 600;
-      font-size: 18px;
-      margin-bottom: 10px;
-      color: var(--sand);
-    }
-    .section-value{
-      font-size: 18px;
-      line-height: 1.6;
-      color: var(--ink);
-    }
+.topbar{
+  position:fixed;top:0;left:0;right:0;
+  height:56px;background:var(--paper);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;z-index:50;
+  box-shadow:0 3px 6px rgba(0,0,0,0.1);
+}
 
-    /* Evidence file */
-    .evidence-box{
-      margin-top: 8px;
-      padding: 14px;
-      background: #F0E5D8;
-      border-radius: var(--radius-md);
-      display: inline-block;
-      font-weight: 500;
-    }
+.brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.brand-mark{width:36px;height:36px;border-radius:14px;
+background:linear-gradient(143deg, rgba(164,98,77,.75), rgba(223,164,119,.75));}
+.brand-text{font-weight:600;font-size:22px;color:rgba(164,98,77,.86);}
 
-    /* Status */
-    .status-box{
-      display:inline-block;
-      margin-top: 12px;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-weight: 600;
-      font-size: 16px;
-      color:#fff;
-    }
-    .Waiting{ background: #D4D7D5; color:#000; }
-    .InProgress{ background: #DFA477; }
-    .Solved{ background: #16C098; }
+.pill-btn{
+  height:36px;padding:0 16px;border-radius:16px;
+  font-weight:600;font-size:14px;
+  border:1px solid rgba(97,55,41,0.14);
+  background:rgba(255,244,230,0.85);
+  color:rgba(97,55,41,0.78);
+  display:inline-flex;align-items:center;gap:8px;
+  cursor:pointer;
+}
 
-    @media(max-width:700px){
-      .page-title{ font-size:32px; }
-      .section-title{ font-size:16px; }
-      .section-value{ font-size:16px; }
-      .status-box{ font-size:14px; padding:6px 12px; }
-    }
-  </style>
+.container{
+  max-width:1000px;
+  margin:86px auto 40px;
+  padding:0 24px;
+}
+
+.page-title{
+  font-size:40px;
+  font-weight:700;
+  margin-bottom:30px;
+}
+
+.complaint-card{
+  background:var(--paper);
+  border-radius:var(--radius-lg);
+  padding:36px 32px;
+  box-shadow:5px 5px 15px rgba(173,117,98,0.25);
+}
+
+.complaint-section{margin-bottom:28px;}
+.section-title{font-weight:600;font-size:18px;margin-bottom:10px;color:var(--sand);}
+.section-value{font-size:18px;line-height:1.6;}
+
+.status-select{
+  margin-top:12px;
+  padding:8px 14px;
+  border-radius:20px;
+  font-weight:600;
+  border:1px solid var(--sand);
+  background:white;
+  cursor:pointer;
+}
+
+.save-btn{
+  margin-top:40px;
+  padding:14px 28px;
+  border-radius:18px;
+  font-size:16px;
+  font-weight:600;
+  border:none;
+  background:var(--terra);
+  color:white;
+  cursor:pointer;
+  transition:var(--transition);
+}
+.save-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 16px rgba(0,0,0,0.15);
+}
+
+.footer{
+  text-align:center;
+  padding:20px;
+  font-size:14px;
+  color:rgba(97,55,41,.7);
+}
+</style>
 </head>
+
 <body>
 
-  <!-- ===== Header ===== -->
-  <header class="topbar" aria-label="Header">
-    <div class="brand" id="brandBtn" role="button" tabindex="0">
-      <div class="brand-mark"></div>
-      <div class="brand-text">SLUMLINK</div>
+<header class="topbar">
+  <div class="brand" id="brandBtn">
+    <div class="brand-mark"></div>
+    <div class="brand-text">SLUMLINK</div>
+  </div>
+  <button class="pill-btn" id="backBtn">
+    <i class="fas fa-arrow-left"></i> Back to Complaints
+  </button>
+</header>
+
+<main class="container">
+  <h1 class="page-title">Complaint Details</h1>
+
+  <div class="complaint-card">
+
+    <div class="complaint-section">
+      <div class="section-title">Title</div>
+      <div class="section-value" id="complaintTitle">Loading...</div>
     </div>
-    <button class="pill-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Back to Categories</button>
-  </header>
 
-  <main class="container">
-    <h1 class="page-title">Complaint Details</h1>
-
-    <div class="complaint-card">
-      <div class="complaint-section">
-        <div class="section-title">Title</div>
-        <div class="section-value" id="complaintTitle">Loading...</div>
-      </div>
-
-      <div class="complaint-section">
-        <div class="section-title">Category</div>
-        <div class="section-value" id="complaintCategory">Loading...</div>
-      </div>
-
-      <div class="complaint-section">
-        <div class="section-title">Description</div>
-        <div class="section-value" id="complaintDescription">Loading...</div>
-      </div>
-
-      <div class="complaint-section">
-        <div class="section-title">Evidence</div>
-        <div class="evidence-box" id="complaintEvidence">No file attached</div>
-      </div>
-
-      <div class="complaint-section">
-        <div class="section-title">Status</div>
-        <div class="status-box" id="complaintStatus"></div>
-      </div>
+    <div class="complaint-section">
+      <div class="section-title">Category</div>
+      <div class="section-value" id="complaintCategory"></div>
     </div>
-  </main>
 
-  <script>
-    // Load selected complaint from localStorage
-    const complaint = JSON.parse(localStorage.getItem('selectedComplaint')) || {
-      title: "No complaint selected",
-      category: "N/A",
-      description: "No description available.",
-      evidence: "No file attached",
-      status: "Waiting"
-    };
+    <div class="complaint-section">
+      <div class="section-title">Description</div>
+      <div class="section-value" id="complaintDescription"></div>
+    </div>
 
-    // Populate fields
-    document.getElementById('complaintTitle').textContent = complaint.title;
-    document.getElementById('complaintCategory').textContent = complaint.category;
-    document.getElementById('complaintDescription').textContent = complaint.description;
-    document.getElementById('complaintEvidence').textContent = complaint.evidence;
+    <div class="complaint-section">
+      <div class="section-title">Status</div>
+      <select id="statusSelect" class="status-select">
+        <option value="pending">Pending</option>
+        <option value="in progress">In Progress</option>
+        <option value="resolved">Solved</option>
+      </select>
+    </div>
 
-    const statusBox = document.getElementById('complaintStatus');
-    statusBox.textContent = complaint.status;
-    statusBox.classList.add(complaint.status.replace(/\s+/g,''));
+    <button class="save-btn" id="saveBtn">Save Changes</button>
 
-    // Header buttons
-document.getElementById('brandBtn').addEventListener('click', ()=>{
-  window.location.href = './complaints.html'; // leave brandBtn as-is (optional)
+  </div>
+</main>
+
+<footer class="footer">
+  © 2026 SlumLink | Local Authority Portal
+</footer>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const complaintId = urlParams.get("id");
+
+const titleEl = document.getElementById("complaintTitle");
+const categoryEl = document.getElementById("complaintCategory");
+const descriptionEl = document.getElementById("complaintDescription");
+const statusSelect = document.getElementById("statusSelect");
+
+async function loadComplaint() {
+  try {
+    const res = await fetch(`/api/complaints/${complaintId}`);
+    const data = await res.json();
+
+    if (!data || data.error) {
+      titleEl.textContent = "Complaint not found";
+      return;
+    }
+
+    titleEl.textContent = data.title;
+    categoryEl.textContent = data.category;
+    descriptionEl.textContent = data.description;
+
+    statusSelect.value = data.status;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+document.getElementById("saveBtn").addEventListener("click", async () => {
+  const newStatus = statusSelect.value;
+
+  try {
+    const res = await fetch(`/api/complaints/${complaintId}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus })
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      alert("Status updated successfully!");
+      window.location.href = document.referrer;
+    } else {
+      alert("Update failed.");
+    }
+  } catch (err) {
+    console.error(err);
+  }
 });
 
-// Change backBtn to go to complaint categories
-document.getElementById('backBtn').addEventListener('click', ()=>{
-  window.location.href = './complaintcategory.html'; // updated path
-});
+document.getElementById("brandBtn").onclick = () => location.href = "/";
+document.getElementById("backBtn").onclick = () => history.back();
 
-   </script>
+loadComplaint();
+</script>
+
 
 </body>
 </html>

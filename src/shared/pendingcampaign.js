@@ -323,4 +323,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   applyDateConstraints();
   load();
+  
+  // ✅ NEW: Load eligible families table
+  const campaignId = qs().get("id");
+  if(campaignId) {
+    loadEligibleFamilies(campaignId);
+  }
 });
+
+/**
+ * ✅ NEW: Load and display eligible families
+ */
+async function loadEligibleFamilies(campaignId){
+  const containerId = "eligibleFamiliesContainer";
+  const container = document.getElementById(containerId);
+  if(!container) return;
+
+  try {
+    // Dynamic import the component
+    const script = document.createElement("script");
+    script.src = "./eligible-families-table.js";
+    script.onload = async () => {
+      try {
+        const table = new EligibleFamiliesTable(containerId);
+        await table.load(campaignId);
+        await table.loadCampaignDetails(campaignId);
+        table.render();
+      } catch(err) {
+        console.error("Error loading families:", err);
+        container.innerHTML = `<div class="families-section"><p style="color:red;">Error loading eligible families: ${err.message}</p></div>`;
+      }
+    };
+    document.head.appendChild(script);
+  } catch(err) {
+    console.error("Error initializing families table:", err);
+    container.innerHTML = `<div class="families-section"><p style="color:red;">Error: ${err.message}</p></div>`;
+  }
+}

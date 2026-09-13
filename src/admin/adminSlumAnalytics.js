@@ -231,3 +231,142 @@ document.addEventListener('DOMContentLoaded', function () {
     renderPage(currentPage);
   });
 });
+
+// ==================== Notification Badge Update Function ====================
+// This function is called by all admin pages to update the notification badge
+// with the correct count, accounting for dismissed notifications
+
+function makeNotificationKey(type, message, link) {
+  return [type, message, link].join('|');
+}
+
+function getDismissedNotifications() {
+  try {
+    var raw = localStorage.getItem('slumlink_dismissed_notifications');
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    console.warn('Failed to load dismissed notifications:', error);
+    return [];
+  }
+}
+
+function updateNotificationBadge() {
+  var badgeElement = document.getElementById('notificationBadge');
+  if (!badgeElement) return;
+
+  var dismissedNotifications = getDismissedNotifications();
+  var totalCount = 0;
+  var countsFetched = 0;
+  var totalRequests = 4;
+
+  function checkAllFetched() {
+    if (countsFetched === totalRequests) {
+      badgeElement.textContent = totalCount;
+      badgeElement.style.display = totalCount > 0 ? 'flex' : 'none';
+    }
+  }
+
+  // Fetch active residents with updates
+  fetch('/api/slum-dweller/active')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var updates = (data.data || [])
+        .filter(function(account) {
+          var updateCount = Number(account.spouse_updates || 0) + Number(account.child_updates || 0);
+          return updateCount > 0;
+        })
+        .map(function(account) {
+          return {
+            type: 'Active Resident',
+            message: 'Resident "' + (account.full_name || 'Unknown') + '" from "' + (account.area || '-') + '" has submitted family member updates for review.',
+            link: 'SlumResidentsInfo.html?id=' + account.id
+          };
+        });
+
+      var activeUpdates = updates.filter(function(notif) {
+        return dismissedNotifications.indexOf(makeNotificationKey(notif.type, notif.message, notif.link)) === -1;
+      });
+      totalCount += activeUpdates.length;
+      countsFetched++;
+      checkAllFetched();
+    })
+    .catch(function() { countsFetched++; checkAllFetched(); });
+
+  // Fetch pending NGOs
+  fetch('/api/ngo/pending')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var ngos = (data.data || []).map(function(ngo) {
+        return {
+          type: 'NGO Signup',
+          message: 'New NGO "' + (ngo.org_name || 'Unknown') + '" has signed up and is awaiting verification.',
+          link: 'adminVerifyNgo.html'
+        };
+      });
+      
+      var activeNgos = ngos.filter(function(notif) {
+        return dismissedNotifications.indexOf(makeNotificationKey(notif.type, notif.message, notif.link)) === -1;
+      });
+      totalCount += activeNgos.length;
+      countsFetched++;
+      checkAllFetched();
+    })
+    .catch(function() { countsFetched++; checkAllFetched(); });
+
+  // Fetch pending slum dwellers
+  fetch('/api/slum-dweller/pending')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var dwellers = (data.data || []).map(function(account) {
+        return {
+          type: 'Slum Resident',
+          message: 'New pending account "' + (account.full_name || 'Unknown') + '" from slum "' + (account.area || '-') + '" awaiting verification.',
+          link: 'SlumPendingAccounts.html?slum=' + encodeURIComponent(account.area || '')
+        };
+      });
+      
+      var activeDwellers = dwellers.filter(function(notif) {
+        return dismissedNotifications.indexOf(makeNotificationKey(notif.type, notif.message, notif.link)) === -1;
+      });
+      totalCount += activeDwellers.length;
+      countsFetched++;
+      checkAllFetched();
+    })
+    .catch(function() { countsFetched++; checkAllFetched(); });
+
+  // Fetch recent campaigns
+  fetch('/api/campaigns')
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var campaigns = (data.data || []).slice(0, 10).map(function(campaign) {
+        var isLocal = String(campaign.org_type || '').toLowerCase() === 'localauthority';
+        var typeLabel = isLocal ? 'Local Authority Campaign' : 'NGO Campaign';
+        var orgName = campaign.org_name || 'Organization';
+        var link = isLocal
+          ? 'adminlocalcampaigninfo.html?org=' + encodeURIComponent(orgName)
+          : 'adminactivengoinfo.html?ngo=' + encodeURIComponent(orgName);
+
+        return {
+          type: typeLabel,
+          message: 'New campaign "' + (campaign.title || 'Untitled') + '" created by ' + orgName + ' in "' + (campaign.slum_area || '-') + '".',
+          link: link
+        };
+      });
+
+      var activeCampaigns = campaigns.filter(function(notif) {
+        return dismissedNotifications.indexOf(makeNotificationKey(notif.type, notif.message, notif.link)) === -1;
+      });
+      totalCount += activeCampaigns.length;
+      countsFetched++;
+      checkAllFetched();
+    })
+    .catch(function() { countsFetched++; checkAllFetched(); });
+}
+
+// Update badge on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateNotificationBadge);
+} else {
+  updateNotificationBadge();
+}
+

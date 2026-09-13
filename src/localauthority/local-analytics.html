@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlumLink | Local Authority Analytics</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="./local-analytics.css" />
+</head>
+
+<body>
+  <header class="topbar" aria-label="Header">
+    <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home">
+      <img src="src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <button class="logout-btn" id="backBtn" type="button" aria-label="Back to dashboard">
+      <i class="fas fa-arrow-left" aria-hidden="true"></i>
+      <span>Back to Dashboard</span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="hero" aria-label="Analytics intro">
+      <h1>Analytics Dashboard</h1>
+      <p>Track complaints, campaigns, and impact across your division.</p>
+    </section>
+
+    <section class="stats-grid" aria-label="Key Statistics">
+      <div class="stat-card">
+        <div class="stat-label">Total Complaints</div>
+        <div class="stat-value" id="totalComplaints">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Pending Complaints</div>
+        <div class="stat-value" id="pendingComplaints">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">In Progress</div>
+        <div class="stat-value" id="inProgressComplaints">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Resolved Complaints</div>
+        <div class="stat-value" id="resolvedComplaints">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Total Campaigns</div>
+        <div class="stat-value" id="totalCampaigns">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Active Campaigns</div>
+        <div class="stat-value" id="activeCampaigns">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Completed Campaigns</div>
+        <div class="stat-value" id="completedCampaigns">—</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Areas Covered</div>
+        <div class="stat-value" id="areasCovered">—</div>
+      </div>
+    </section>
+
+    <section class="analytics-grid" aria-label="Analytics Charts">
+      <!-- Complaints by Status -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Complaints by Status</h3>
+          <span class="chip">Overview</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="complaintStatusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Complaints by Category -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Complaints by Category</h3>
+          <span class="chip">Distribution</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="complaintCategoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Campaigns by Status -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Campaigns by Status</h3>
+          <span class="chip">Overview</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="campaignStatusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Campaigns by Target Gender -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Campaigns by Target Gender</h3>
+          <span class="chip">Distribution</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="campaignGenderChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Areas with Complaints -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Top Areas with Complaints</h3>
+          <span class="chip">Top 5</span>
+        </div>
+        <div id="topAreasContainer" class="chart-list"></div>
+      </div>
+
+      <!-- Top Complaint Categories -->
+      <div class="chart-card">
+        <div class="chart-head">
+          <h3>Top Complaint Categories</h3>
+          <span class="chip">Top 5</span>
+        </div>
+        <div id="topCategoriesContainer" class="chart-list"></div>
+      </div>
+
+      <!-- Complaints Timeline -->
+      <div class="chart-card full-width">
+        <div class="chart-head">
+          <h3>Complaints Over Time (Last 12 Months)</h3>
+          <span class="chip">Trend</span>
+        </div>
+        <div class="chart-wrap-tall">
+          <canvas id="complaintTimelineChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Campaign Timeline -->
+      <div class="chart-card full-width">
+        <div class="chart-head">
+          <h3>Campaign Timeline (Last 12 Months)</h3>
+          <span class="chip">Trend</span>
+        </div>
+        <div class="chart-wrap-tall">
+          <canvas id="campaignTimelineChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <div class="action-footer">
+      <button class="btn btn-primary" id="exportBtn">
+        <i class="fas fa-download"></i> Export Report
+      </button>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="./local-analytics.js"></script>
+</body>
+</html>

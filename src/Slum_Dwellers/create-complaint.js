@@ -156,7 +156,7 @@
         };
 
         // Submit to backend API
-        const response = await fetch('/api/complaints', {
+        const response = await fetch('/api/complaint', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

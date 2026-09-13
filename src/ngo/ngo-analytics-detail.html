@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlumLink | NGO Analytics - Detailed Report</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- PDF export library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    :root {
+      --sand: #CBB093;
+      --sand2: #DAC4AD;
+      --paper: #FFF4E6;
+      --terra: #A4624D;
+      --peach: #DFA477;
+      --ink: #613729;
+      --mint: #C0E0D0;
+
+      --header-h: 56px;
+      --radius-lg: 26px;
+      --radius-md: 18px;
+
+      --border: rgba(97, 55, 41, 0.18);
+      --shadowCard: 0 10px 24px rgba(97, 55, 41, 0.10);
+      --shadowHover: 0 16px 36px rgba(97, 55, 41, 0.14);
+      --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(to bottom right, var(--sand) 0%, var(--sand) 22%, var(--sand2) 45%, var(--mint) 76%, var(--mint) 100%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+      padding-bottom: 72px;
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: var(--header-h);
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 73px 0 70px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadowCard);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .brand:hover {
+      transform: translateY(-1px);
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 14px;
+      object-fit: cover;
+    }
+
+    .brand-text {
+      font-weight: 500;
+      font-size: 20px;
+      color: rgba(164, 98, 77, 0.86);
+      text-transform: uppercase;
+      line-height: 1;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadowHover);
+    }
+
+    .btn-primary {
+      background: var(--terra);
+      color: var(--paper);
+      border-color: var(--terra);
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: calc(var(--header-h) + 26px) auto 52px;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .page-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+      margin-top: 24px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .card {
+      background: rgba(255, 244, 230, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadowCard);
+      padding: 20px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(97, 55, 41, 0.7);
+      margin-bottom: 12px;
+    }
+
+    .card-value {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--terra);
+      line-height: 1;
+    }
+
+    .chart-card {
+      background: rgba(255, 244, 230, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadowCard);
+      padding: 20px;
+    }
+
+    .chart-wrap {
+      height: 280px;
+      width: 100%;
+      position: relative;
+      margin-top: 12px;
+    }
+
+    .chart-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    thead {
+      background: rgba(164, 98, 77, 0.08);
+      border-bottom: 2px solid var(--border);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 700;
+      color: rgba(97, 55, 41, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: rgba(97, 55, 41, 0.7);
+    }
+
+    tbody tr:hover {
+      background: rgba(164, 98, 77, 0.04);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .status-pending {
+      background: rgba(223, 164, 119, 0.2);
+      color: #A4624D;
+    }
+
+    .status-in_progress {
+      background: rgba(192, 224, 208, 0.3);
+      color: #45876A;
+    }
+
+    .status-completed {
+      background: rgba(164, 98, 77, 0.2);
+      color: #613729;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: center;
+    }
+
+    .no-data {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      color: rgba(97, 55, 41, 0.6);
+      font-weight: 600;
+      text-align: center;
+      gap: 12px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1180px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        padding: 0 20px;
+      }
+
+      .container {
+        padding: 0 16px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .page-title {
+        font-size: 24px;
+      }
+
+      .card-value {
+        font-size: 24px;
+      }
+
+      .topbar {
+        padding: 0 12px;
+      }
+
+      .header-right {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      th, td {
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="topbar" aria-label="Header">
+    <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <div class="header-right">
+      <button class="btn" id="exportBtn" type="button" aria-label="Export report">
+        <i class="fas fa-download"></i>
+        <span>Export Report</span>
+      </button>
+      <button class="btn" id="backBtn" type="button" aria-label="Back to dashboard">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <h1 class="page-title" id="reportTitle">Analytics Report</h1>
+
+    <!-- Key Metrics -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Total Campaigns</div>
+        <div class="card-value" id="cardTotalCampaigns">—</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Families Helped</div>
+        <div class="card-value" id="cardDwellersHelped">—</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Aids Distributed</div>
+        <div class="card-value" id="cardAidsDistributed">—</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Active Projects</div>
+        <div class="card-value" id="cardActiveProjects">—</div>
+      </div>
+    </div>
+
+    <!-- Campaign Analysis -->
+    <div class="section-title">Campaign Analysis</div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="card-title">Campaign Status Distribution</div>
+        <div class="chart-wrap">
+          <canvas id="campaignStatusChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Top Categories</div>
+        <div class="chart-wrap">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaigns Table -->
+    <div class="section-title">Recent Campaigns</div>
+    <div class="card">
+      <table id="campaignsTable">
+        <thead>
+          <tr>
+            <th>Campaign Title</th>
+            <th>Category</th>
+            <th>Location</th>
+            <th>Duration</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="campaignsTableBody">
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 20px;">Loading campaigns...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Aid Distribution Analysis -->
+    <div class="section-title">Aid Distribution</div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="card-title">Distribution by Aid Type</div>
+        <div class="chart-wrap">
+          <canvas id="aidTypeChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="card-title">Monthly Trend</div>
+        <div class="chart-wrap">
+          <canvas id="monthlyChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribution Details Table -->
+    <div class="section-title">Distribution Summary</div>
+    <div class="card">
+      <table id="aidSummaryTable">
+        <thead>
+          <tr>
+            <th>Aid Type</th>
+            <th>Quantity Distributed</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody id="aidSummaryTableBody">
+          <tr>
+            <td colspan="3" style="text-align: center; padding: 20px;">Loading distribution data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="btn btn-primary" id="exportBtn2" type="button" aria-label="Export as PDF">
+        <i class="fas fa-file-pdf"></i>
+        <span>Export as PDF</span>
+      </button>
+      <button class="btn" id="goBackBtn" type="button" aria-label="Return to overview">
+        <i class="fas fa-arrow-left"></i>
+        <span>Go Back</span>
+      </button>
+    </div>
+  </main>
+
+  <script src="./ngo-analytics-detail.js"></script>
+</body>
+</html>

@@ -3124,3 +3124,97 @@ export const verifySpouseAddOTP = async (req, res) => {
     });
   }
 };
+
+// Get spouses by slum area
+export const getSpousesByArea = async (req, res) => {
+  try {
+    const area = (req.query.area || '').trim();
+
+    if (!area) {
+      return res.status(400).json({
+        status: "error",
+        message: "Area name is required."
+      });
+    }
+
+    const [spouses] = await pool.query(
+      `SELECT 
+         s.id,
+         s.slum_id,
+         s.name,
+         s.dob,
+         s.gender,
+         s.nid,
+         s.education,
+         s.job,
+         s.income,
+         s.mobile,
+         s.status
+       FROM spouses s
+       JOIN slum_dwellers sd ON s.slum_id = sd.slum_code
+       WHERE sd.area = ? AND s.status IN ('active', 'pending_add')
+       ORDER BY s.created_at DESC`,
+      [area]
+    );
+
+    console.log('📋 Retrieved spouses for area:', area, '- Count:', spouses.length);
+    return res.json({
+      status: "success",
+      data: spouses || []
+    });
+  } catch (error) {
+    console.error("❌ Error fetching spouses by area:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch spouses.",
+      error: error.message
+    });
+  }
+};
+
+// Get children by slum area
+export const getChildrenByArea = async (req, res) => {
+  try {
+    const area = (req.query.area || '').trim();
+
+    if (!area) {
+      return res.status(400).json({
+        status: "error",
+        message: "Area name is required."
+      });
+    }
+
+    const [children] = await pool.query(
+      `SELECT 
+         c.id,
+         c.slum_id,
+         c.name,
+         c.dob,
+         c.gender,
+         c.education,
+         c.job,
+         c.income,
+         c.preferred_job,
+         c.status,
+         c.age_group
+       FROM children c
+       JOIN slum_dwellers sd ON c.slum_id = sd.slum_code
+       WHERE sd.area = ? AND c.status IN ('active', 'pending_add')
+       ORDER BY c.created_at DESC`,
+      [area]
+    );
+
+    console.log('📋 Retrieved children for area:', area, '- Count:', children.length);
+    return res.json({
+      status: "success",
+      data: children || []
+    });
+  } catch (error) {
+    console.error("❌ Error fetching children by area:", error);
+    return res.status(500).json({
+      status: "error",
+      message: "Failed to fetch children.",
+      error: error.message
+    });
+  }
+};

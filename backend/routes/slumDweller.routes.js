@@ -35,7 +35,9 @@ import {
   prepareSpouseAdd,
   addChild,
   sendSpouseAddOTP,
-  verifySpouseAddOTP
+  verifySpouseAddOTP,
+  getSpousesByArea,
+  getChildrenByArea
 } from "../controllers/slumDweller.controller.js";
 
 const router = express.Router();
@@ -64,17 +66,23 @@ router.get("/profile/:id", getCurrentUserProfile);
 // GET /api/slum-dweller/analytics?slum=Name
 router.get("/analytics", getSlumAnalytics);
 
-// GET /api/slum-dweller/:id (full details with spouse and children)
-router.get("/:id", getSlumDwellerById);
+// GET /api/spouses?area=Name
+router.get("/spouses", getSpousesByArea);
 
-// PATCH /api/slum-dweller/:id/approve
-router.patch("/:id/approve", approveSlumDweller);
+// GET /api/children?area=Name
+router.get("/children", getChildrenByArea);
 
 // PUT /api/slum-dweller/:slumId/personal - Update personal information
 router.put("/:slumId/personal", updatePersonalInfo);
 
 // PUT /api/slum-dweller/:slumId/spouse/:spouseId - Update spouse information
 router.put("/:slumId/spouse/:spouseId", updateSpouseInfo);
+
+// PATCH /api/slum-dweller/:id/approve
+router.patch("/:id/approve", approveSlumDweller);
+
+// GET /api/slum-dweller/:id (full details with spouse and children)
+router.get("/:id", getSlumDwellerById);
 
 // PATCH /api/slum-dweller/:slumId/spouse/:spouseId/status - Update spouse status
 router.patch("/:slumId/spouse/:spouseId/status", upload.single('divorce_certificate'), updateSpouseStatus);

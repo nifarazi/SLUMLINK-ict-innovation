@@ -150,4 +150,28 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   load();
+  
+  // ✅ NEW: Load distribution history
+  const campaignId = qs().get("id");
+  if(campaignId) {
+    loadDistributionHistory(campaignId);
+  }
 });
+
+/**
+ * ✅ NEW: Load and display campaign distribution history
+ */
+async function loadDistributionHistory(campaignId){
+  const containerId = "distributionHistoryContainer";
+  const container = document.getElementById(containerId);
+  if(!container) return;
+
+  try {
+    const history = new CampaignDistributionHistory(containerId);
+    await history.load(campaignId);
+    history.render();
+  } catch(err) {
+    console.error("Error loading distribution history:", err);
+    container.innerHTML = `<div class="history-section"><p style="color:red;">Error loading distribution history: ${err.message}</p></div>`;
+  }
+}

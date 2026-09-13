@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlumLink | NGO Analytics</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- Chart.js for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root {
+      --sand: #CBB093;
+      --sand2: #DAC4AD;
+      --paper: #FFF4E6;
+      --terra: #A4624D;
+      --peach: #DFA477;
+      --ink: #613729;
+      --mint: #C0E0D0;
+
+      --header-h: 56px;
+      --radius-lg: 26px;
+      --radius-md: 18px;
+
+      --border: rgba(97, 55, 41, 0.18);
+      --shadowCard: 0 10px 24px rgba(97, 55, 41, 0.10);
+      --shadowHover: 0 16px 36px rgba(97, 55, 41, 0.14);
+
+      --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    html, body {
+      height: 100%;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(to bottom right, var(--sand) 0%, var(--sand) 22%, var(--sand2) 45%, var(--mint) 76%, var(--mint) 100%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+      padding-bottom: 72px;
+    }
+
+    /* ===== Header ===== */
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: var(--header-h);
+      z-index: 50;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 73px 0 70px;
+
+      background: var(--paper);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadowCard);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      user-select: none;
+    }
+
+    .brand:hover {
+      transform: translateY(-1px);
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 14px;
+      object-fit: cover;
+    }
+
+    .brand-text {
+      font-weight: 500;
+      font-size: 20px;
+      color: rgba(164, 98, 77, 0.86);
+      text-transform: uppercase;
+      line-height: 1;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadowHover);
+      border-color: rgba(97, 55, 41, 0.22);
+    }
+
+    /* ===== Layout ===== */
+    .container {
+      max-width: 1400px;
+      margin: calc(var(--header-h) + 26px) auto 52px;
+      padding: 0 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .hero {
+      background: rgba(255, 244, 230, 0.94);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadowCard);
+      padding: 26px 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero h1 {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 8px;
+      line-height: 1.1;
+    }
+
+    .hero p {
+      font-size: 16px;
+      font-weight: 500;
+      color: rgba(97, 55, 41, 0.72);
+      max-width: 760px;
+    }
+
+    /* ===== Stats Grid ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .stat-card {
+      background: rgba(255, 244, 230, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadowCard);
+      padding: 20px;
+      text-align: center;
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadowHover);
+    }
+
+    .stat-num {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--terra);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: rgba(97, 55, 41, 0.64);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* ===== Charts Panel ===== */
+    .charts-panel {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+    }
+
+    .chart-card {
+      background: rgba(255, 244, 230, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadowCard);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chart-wrap {
+      height: 280px;
+      width: 100%;
+      position: relative;
+    }
+
+    .chart-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .no-data {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 280px;
+      color: rgba(97, 55, 41, 0.6);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ===== Tables ===== */
+    .table-section {
+      background: rgba(255, 244, 230, 0.92);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadowCard);
+      padding: 20px;
+      overflow-x: auto;
+    }
+
+    .table-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead {
+      background: rgba(164, 98, 77, 0.08);
+      border-bottom: 2px solid var(--border);
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 700;
+      color: rgba(97, 55, 41, 0.8);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: rgba(97, 55, 41, 0.7);
+    }
+
+    tbody tr:hover {
+      background: rgba(164, 98, 77, 0.04);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .status-pending {
+      background: rgba(223, 164, 119, 0.2);
+      color: #A4624D;
+    }
+
+    .status-in_progress {
+      background: rgba(192, 224, 208, 0.3);
+      color: #45876A;
+    }
+
+    .status-completed {
+      background: rgba(164, 98, 77, 0.2);
+      color: #613729;
+    }
+
+    .status-not_executed {
+      background: rgba(173, 117, 98, 0.15);
+      color: #8B6F5A;
+    }
+
+    .status-cancelled {
+      background: rgba(200, 100, 90, 0.2);
+      color: #A4624D;
+    }
+
+    /* Responsive */
+    @media (max-width: 1180px) {
+      .hero h1 {
+        font-size: 36px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .charts-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        padding: 0 20px;
+      }
+
+      .container {
+        padding: 0 16px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .hero {
+        padding: 16px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .hero p {
+        font-size: 14px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .stat-num {
+        font-size: 28px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+      }
+
+      .charts-panel {
+        gap: 12px;
+      }
+
+      .chart-card {
+        padding: 16px;
+      }
+
+      .chart-wrap {
+        height: 220px;
+      }
+
+      table {
+        font-size: 12px;
+      }
+
+      th, td {
+        padding: 8px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="topbar" aria-label="Header">
+    <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <div class="header-right">
+      <button class="back-btn" id="backBtn" type="button" aria-label="Back to dashboard">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+    <section class="hero" aria-label="Analytics intro">
+      <h1 id="ngoTitle">Your Analytics</h1>
+      <p id="ngoSubtitle">Track your campaigns, aid distribution impact, and community reach.</p>
+    </section>
+
+    <!-- Stats Grid -->
+    <section class="stats-grid" id="statsGrid" aria-label="Analytics statistics">
+      <div class="stat-card">
+        <div class="stat-num" id="totalCampaigns">—</div>
+        <div class="stat-label">Total Campaigns</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="activeCampaigns">—</div>
+        <div class="stat-label">Active Campaigns</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="totalDwellers">—</div>
+        <div class="stat-label">Dwellers Helped</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="totalAids">—</div>
+        <div class="stat-label">Aids Distributed</div>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <section class="charts-panel" aria-label="Analytics charts">
+      <div class="chart-card">
+        <div class="chart-title">Campaign Status Distribution</div>
+        <div class="chart-wrap">
+          <canvas id="campaignStatusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Campaigns by Category</div>
+        <div class="chart-wrap">
+          <canvas id="campaignCategoryChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Aid Distribution by Type</div>
+        <div class="chart-wrap">
+          <canvas id="aidDistributionChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-title">Monthly Aid Distribution Trend</div>
+        <div class="chart-wrap">
+          <canvas id="monthlyTrendChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Campaigns Table -->
+    <section class="table-section" id="campaignsSection" style="display: none;" aria-label="Campaign details">
+      <div class="table-title">Active & Pending Campaigns</div>
+      <table id="campaignsTable">
+        <thead>
+          <tr>
+            <th>Campaign Title</th>
+            <th>Category</th>
+            <th>Location</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="campaignsTableBody">
+          <tr>
+            <td colspan="6" style="text-align: center; color: rgba(97, 55, 41, 0.6);">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <script src="./ngo-analytics-overview.js"></script>
+</body>
+</html>

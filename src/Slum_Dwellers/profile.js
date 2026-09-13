@@ -112,8 +112,7 @@ function getCurrentUser() {
 
 const API_BASES = Array.from(new Set([
   `${window.location.origin}/api`,
-  'http://localhost:5001/api',
-  'http://localhost:5002/api'
+  'http://localhost:5001/api'
 ])).filter(Boolean);
 
 async function fetchWithFallback(path, options) {
@@ -489,12 +488,12 @@ function formatDate(dateStr) {
     })
     .then((data) => {
       const resident = data.resident || {};
-      // Filter spouses and children to only show those with 'active' or 'pending_delete' status
+      // Filter spouses and children to only show those with 'active' or 'pending_remove' status
       const spouses = (data.spouses || []).filter(s => 
-        s.status === 'active' || s.status === 'pending_delete'
+        s.status === 'active' || s.status === 'pending_remove'
       );
       const children = (data.children || []).filter(c => 
-        c.status === 'active' || c.status === 'pending_delete'
+        c.status === 'active' || c.status === 'pending_remove'
       );
 
       // Render Personal Information
@@ -3413,7 +3412,7 @@ function showToast(title, message, type = 'success') {
   }
 
   // API Base URL
-  const API_BASE = 'http://localhost:5002/api';
+  const API_BASE = 'http://localhost:5001/api';
 
   // Step 1: Initial confirmation
   changePhoneBtn.addEventListener('click', showModal);
@@ -3760,7 +3759,7 @@ function showToast(title, message, type = 'success') {
   }
 
   // API Base URL
-  const API_BASE = 'http://localhost:5002/api';
+  const API_BASE = 'http://localhost:5001/api';
 
   // Event delegation for change spouse phone buttons
   document.addEventListener('click', (e) => {

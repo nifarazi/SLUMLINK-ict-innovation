@@ -93,7 +93,10 @@
           <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">Logout</button>
         </div>
       </div>
-      <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+      <div class="notification-bell-container">
+        <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+        <span class="notification-badge" id="notificationBadge">0</span>
+      </div>
     </div>
   </header>
 
@@ -107,6 +110,7 @@
         <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
         <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
+        <li><a href="adminviewcomplaints.html">📋 View Complaints</a></li>
       </ul>
     </aside>
 
@@ -393,6 +397,26 @@
 
       // Initial fetch
       fetchActiveAccounts();
+
+      // Refresh data when page is shown (including from back button)
+      window.addEventListener('pageshow', function(event) {
+        console.log('pageshow event fired, refreshing data');
+        fetchActiveAccounts();
+      });
+
+      // Mark that we're leaving the page
+      window.addEventListener('beforeunload', function() {
+        sessionStorage.setItem('leftSlumActiveAccounts', 'true');
+      });
+
+      // Check if we just returned from another page
+      if (sessionStorage.getItem('leftSlumActiveAccounts') === 'true') {
+        sessionStorage.removeItem('leftSlumActiveAccounts');
+        setTimeout(function() {
+          console.log('Returned from details page, refreshing');
+          fetchActiveAccounts();
+        }, 500);
+      }
     });
   </script>
 </body>

@@ -284,7 +284,7 @@
     if (!listEl) return;
 
     // Fetch complaints from backend
-    fetch(`/api/complaints/slum/${current.slum_code}`)
+    fetch(`/api/complaint/slum/${current.slum_code}`)
       .then(async (r) => {
         if (!r.ok) {
           throw new Error('Failed to fetch complaints');
@@ -326,7 +326,7 @@
 
             card.addEventListener('click', () => {
               // Fetch full complaint details with attachment
-              fetch(`/api/complaints/${c.complaint_id}`)
+              fetch(`/api/complaint/${c.complaint_id}`)
                 .then(async (r) => {
                   if (!r.ok) throw new Error('Failed to fetch complaint details');
                   const res = await r.json();

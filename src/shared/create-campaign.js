@@ -42,7 +42,6 @@ function toast(msg){
 }
 
 // ===== Date Rules =====
-// Start date min = tomorrow
 const startDateEl = $("startDate");
 const endDateEl = $("endDate");
 
@@ -63,7 +62,6 @@ function toISODate(d){
   // End date cannot be before start date; initially min = start min
   endDateEl.min = minStart;
 
-  // If existing values are invalid, clear them
   if(startDateEl.value && startDateEl.value < minStart) startDateEl.value = "";
   if(endDateEl.value && endDateEl.value < endDateEl.min) endDateEl.value = "";
 })();
@@ -72,24 +70,20 @@ startDateEl.addEventListener("change", () => {
   const v = (startDateEl.value || "").trim();
 
   if(!v){
-    // reset end min to today
     const now = new Date();
     now.setHours(0,0,0,0);
     endDateEl.min = toISODate(now);
     return;
   }
 
-  // end min = start date
   endDateEl.min = v;
 
-  // If endDate is now before startDate, clear it
   if(endDateEl.value && endDateEl.value < v){
     endDateEl.value = "";
   }
 });
 
 // ===== Division -> District -> Slum Data =====
-// Keep it client-side for now; later you can load from DB
 const AREA_DATA = {
   "Dhaka": {
     "Dhaka (North)": [
@@ -105,20 +99,17 @@ const AREA_DATA = {
       "Basbari",
       "Molla"
     ],
-
     "Dhaka (South)": [
       "Nama Para",
       "Pura",
       "Nubur",
       "Mannan"
     ],
-
     "Narayanganj": [
       "Bhuigar",
       "Chashara",
       "Fatullah Cluster"
     ],
-
     "Gazipur": [
       "Tongi Cluster",
       "Board Bazar Cluster"
@@ -200,7 +191,7 @@ districtEl.addEventListener("change", () => {
   slumAreaEl.disabled = false;
 });
 
-// ===== Conditional fields (Employment/Workshop) =====
+// ===== Conditional fields (Employment/Workshop/Skill Training) =====
 const categoryEl = $("category");
 const eduField = $("eduField");
 const skillsField = $("skillsField");
@@ -209,7 +200,9 @@ const skillsEl = $("skills");
 
 function toggleExtraFields(){
   const v = categoryEl.value;
-  const show = (v === "workshop" || v === "employment");
+
+  // ✅ Show for employment, workshop, AND skill_training
+  const show = (v === "workshop" || v === "employment" || v === "skill_training");
 
   eduField.classList.toggle("hidden", !show);
   skillsField.classList.toggle("hidden", !show);
@@ -269,8 +262,9 @@ function isValid(){
   const desc = ($("description").value || "").trim();
   if(!desc) { $("description").setCustomValidity("Please fill out this field."); return false; }
 
+  // ✅ Require education + skills for workshop/employment/skill_training
   const cat = getValue("category");
-  if(cat === "workshop" || cat === "employment"){
+  if(cat === "workshop" || cat === "employment" || cat === "skill_training"){
     if(!getValue("education")) { $("education").setCustomValidity("Please fill out this field."); return false; }
     if(!getValue("skills")) { $("skills").setCustomValidity("Please fill out this field."); return false; }
   }
@@ -325,7 +319,6 @@ confirmCreate.addEventListener("click", ()=>{
     return;
   }
 
-  // enforce correct role match (simple, not “auth”)
   if (role === "ngo" && session.role !== "ngo") {
     toast("Please sign in as NGO.");
     return;
@@ -369,7 +362,7 @@ confirmCreate.addEventListener("click", ()=>{
     .catch(() => toast("Network error. Please try again."));
 });
 
-$("goDashboard").addEventListener("click", ()=> {
+goDashboard.addEventListener("click", ()=> {
   window.location.href = getBackLink();
 });
 

@@ -785,3 +785,151 @@ export async function getMyActiveCampaignsToday(req, res) {
     if (connection) connection.release();
   }
 }
+
+/**
+ * ✅ NEW: GET /api/campaigns/:campaignId/eligible-families
+ * Returns eligible families for a campaign with:
+ * - slum_code, family_head_name
+ * - family_members (count of dweller + spouse + children)
+ * - eligible_members_count (count of people matching criteria)
+ * - eligible_member_names (comma-separated list)
+ */
+export async function getEligibleFamilies(req, res) {
+  let connection;
+  try {
+    const campaignId = Number(req.params.campaignId);
+    if (!Number.isInteger(campaignId) || campaignId <= 0) {
+      return res.status(400).json({ success: false, message: "Invalid campaignId" });
+    }
+
+    connection = await db.getConnection();
+
+    // Get campaign details
+    const [campRows] = await connection.execute(
+      `SELECT * FROM campaigns WHERE campaign_id = ? LIMIT 1`,
+      [campaignId]
+    );
+
+    if (!campRows.length) {
+      return res.status(404).json({ success: false, message: "Campaign not found" });
+    }
+
+    const campaign = campRows[0];
+
+    // Get eligible families using existing getRecipients logic with additional details
+    let sql = `
+      SELECT
+        sd.slum_code,
+        sd.full_name AS family_head_name,
+        sd.family_members AS total_family_members,
+        COUNT(DISTINCT eligible.person_name) AS eligible_members_count,
+        GROUP_CONCAT(DISTINCT eligible.person_name SEPARATOR ', ') AS eligible_member_names
+      FROM slum_dwellers sd
+      INNER JOIN (
+        SELECT
+          sd2.slum_code,
+          sd2.full_name AS person_name,
+          sd2.dob AS dob,
+          sd2.gender AS gender,
+          sd2.education AS education,
+          sd2.skills_1 AS skills_1,
+          sd2.skills_2 AS skills_2
+        FROM slum_dwellers sd2
+        WHERE sd2.status = 'accepted'
+
+        UNION ALL
+
+        SELECT
+          sp.slum_id AS slum_code,
+          sp.name AS person_name,
+          sp.dob AS dob,
+          sp.gender AS gender,
+          sp.education AS education,
+          sp.skills_1 AS skills_1,
+          sp.skills_2 AS skills_2
+        FROM spouses sp
+        WHERE sp.status = 'active'
+
+        UNION ALL
+
+        SELECT
+          ch.slum_id AS slum_code,
+          ch.name AS person_name,
+          ch.dob AS dob,
+          ch.gender AS gender,
+          ch.education AS education,
+          ch.skills_1 AS skills_1,
+          ch.skills_2 AS skills_2
+        FROM children ch
+        WHERE ch.status = 'active'
+      ) eligible ON eligible.slum_code = sd.slum_code
+
+      WHERE sd.slum_code IS NOT NULL
+        AND sd.status = 'accepted'
+        AND sd.division = ?
+        AND sd.area = ?
+    `;
+
+    const params = [String(campaign.division), String(campaign.slum_area)];
+
+    // Apply member-based filters
+    const tg = String(campaign.target_gender || "all").toLowerCase();
+    if (tg !== "all") {
+      sql += ` AND LOWER(eligible.gender) = ? `;
+      params.push(tg);
+    }
+
+    const ag = String(campaign.age_group || "both").toLowerCase();
+    if (ag === "child") {
+      sql += ` AND eligible.dob IS NOT NULL AND TIMESTAMPDIFF(YEAR, eligible.dob, CURDATE()) < 18 `;
+    } else if (ag === "adult") {
+      sql += ` AND eligible.dob IS NOT NULL AND TIMESTAMPDIFF(YEAR, eligible.dob, CURDATE()) >= 18 `;
+    }
+
+    const edu = String(campaign.education_required || "").trim();
+    if (edu && edu.toLowerCase() !== "none") {
+      sql += ` AND (eligible.education = ? OR eligible.education LIKE ?) `;
+      params.push(edu, `%${edu}%`);
+    }
+
+    const skill = String(campaign.skills_required || "").trim();
+    if (skill) {
+      const like = `%${skill}%`;
+      sql += ` AND (eligible.skills_1 LIKE ? OR eligible.skills_2 LIKE ?) `;
+      params.push(like, like);
+    }
+
+    sql += `
+      GROUP BY sd.slum_code, sd.full_name
+      HAVING COUNT(*) > 0
+      ORDER BY sd.slum_code ASC
+    `;
+
+    const [families] = await connection.execute(sql, params);
+
+    // Calculate totals
+    const totalFamilies = families.length;
+    const totalIndividuals = families.reduce((sum, f) => sum + (f.eligible_members_count || 0), 0);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        campaign_id: campaignId,
+        families: families,
+        summary: {
+          total_families: totalFamilies,
+          total_eligible_individuals: totalIndividuals
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error retrieving eligible families:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve eligible families",
+      error: error.message,
+    });
+  } finally {
+    if (connection) connection.release();
+  }
+}
