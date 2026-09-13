@@ -21,38 +21,44 @@
     crossorigin="anonymous"
     referrerpolicy="no-referrer"
   />
+
+  <script src="signup.js" defer></script>
 </head>
 
 <body>
-  <a href="javascript:history.back()" class="back-btn" aria-label="Back">
+  <!-- Back -> SLUMLINK/index.html (root) -->
+  <a onclick="window.history.back()" class="back-btn" aria-label="Back to Home" style="cursor:pointer">
     <i class="fas fa-arrow-left"></i>
   </a>
+
   <div class="layout-frame">
     <div class="layout-wrapper">
+  <!-- LEFT -->
+  <aside class="hero" aria-label="Registration message">
+    <div class="hero__logo-brand">
+      <img
+        src="/src/images/slum Logo.png"
+        alt="SlumLink Logo"
+        class="hero__logo-mark"
+      />
+      <span class="hero__logo-text">SLUMLINK</span>
+    </div>
 
-      <!-- LEFT: Brand / Message panel -->
-      <aside class="hero" aria-label="Registration message">
-        <div class="hero__logo-brand">
-          <span class="hero__logo-mark" aria-hidden="true"></span>
-          <span class="hero__logo-text">SLUMLINK</span>
-        </div>
+    <h1 class="hero__title">Register New Organization</h1>
 
-        <h1 class="hero__title">Register New Organization</h1>
+    <p class="hero__lead">
+      Register your organization, and stand with the unseen—uplift vulnerable slum communities.
+    </p>
 
-        <p class="hero__lead">
-          Register your organization, and stand with the unseen—uplift vulnerable slum communities.
-        </p>
+    <p class="hero__sub">
+      Trusted onboarding, transparent histories, and real accountability for every family you support.
+    </p>
 
-        <p class="hero__sub">
-          Trusted onboarding, transparent histories, and real accountability for every family you support.
-        </p>
+    <div class="blob blob--one" aria-hidden="true"></div>
+    <div class="blob blob--two" aria-hidden="true"></div>
+  </aside>
 
-        <!-- Decorative blobs -->
-        <div class="blob blob--one" aria-hidden="true"></div>
-        <div class="blob blob--two" aria-hidden="true"></div>
-      </aside>
-
-      <!-- RIGHT: Form panel -->
+      <!-- RIGHT -->
       <section class="card" aria-label="Organization sign up form">
         <header class="card__head">
           <h2>Create Account</h2>
@@ -63,48 +69,103 @@
           <div class="field">
             <label for="orgName">Organization Name</label>
             <input id="orgName" name="orgName" type="text" placeholder="e.g., SHODESH Foundation" required />
+            <div class="error" id="err-orgName" aria-live="polite"></div>
           </div>
 
           <div class="grid2">
             <div class="field">
               <label for="email">Email Address</label>
               <input id="email" name="email" type="email" placeholder="org@email.com" required />
+              <div class="error" id="err-email" aria-live="polite"></div>
             </div>
 
             <div class="field">
               <label for="phone">Contact Number</label>
-              <input id="phone" name="phone" type="tel" placeholder="01XXXXXXXXX"
-                     inputmode="numeric" pattern="^(?:\\+?88)?01[3-9]\\d{8}$" required />
-              <div class="hint">Example: 017XXXXXXXX or +88017XXXXXXXX</div>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                placeholder="01XXXXXXXXX"
+                inputmode="numeric"
+                required
+              />
+              <div class="hint">Accepted: 01XXXXXXXXX / 8801XXXXXXXXX / +8801XXXXXXXXX</div>
+              <div class="error" id="err-phone" aria-live="polite"></div>
             </div>
           </div>
 
           <div class="grid2">
             <div class="field">
               <label for="license">Organization License</label>
-              <input id="license" name="license" type="file" accept=".pdf,.png,.jpg,.jpeg" required />
-              <div class="hint">Upload PDF / JPG / PNG</div>
+              <input id="license" name="license" type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" required />
+              <div class="hint">Upload PDF / JPG / PNG / DOC / DOCX</div>
+              <div class="error" id="err-license" aria-live="polite"></div>
             </div>
 
             <div class="field">
               <label for="orgAge">Organization Age (years)</label>
               <input id="orgAge" name="orgAge" type="number" min="0" max="200" placeholder="e.g., 5" required />
+              <div class="error" id="err-orgAge" aria-live="polite"></div>
             </div>
           </div>
 
           <div class="grid2">
             <div class="field">
               <label for="password">Password</label>
-              <input id="password" name="password" type="password" minlength="8"
-                     placeholder="Minimum 8 characters" required />
+
+              <div class="pw-wrap">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  minlength="8"
+                  placeholder="Minimum 8 characters"
+                  required
+                />
+                <!-- ✅ default: slashed eye -->
+                <button
+                  class="pw-toggle"
+                  type="button"
+                  data-target="password"
+                  aria-label="Show password"
+                  aria-pressed="false"
+                  title="Show password"
+                >
+                  <i class="fa-regular fa-eye-slash" aria-hidden="true"></i>
+                </button>
+              </div>
+
               <div class="hint">Use 8+ characters. Mix letters & numbers.</div>
+              <div class="error" id="err-password" aria-live="polite"></div>
             </div>
 
             <div class="field">
               <label for="confirmPassword">Confirm Password</label>
-              <input id="confirmPassword" name="confirmPassword" type="password" minlength="8"
-                     placeholder="Re-type password" required />
+
+              <div class="pw-wrap">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  minlength="8"
+                  placeholder="Re-type password"
+                  required
+                />
+                <!-- ✅ default: slashed eye -->
+                <button
+                  class="pw-toggle"
+                  type="button"
+                  data-target="confirmPassword"
+                  aria-label="Show password"
+                  aria-pressed="false"
+                  title="Show password"
+                >
+                  <i class="fa-regular fa-eye-slash" aria-hidden="true"></i>
+                </button>
+              </div>
+
               <div class="hint">Must match the password.</div>
+              <div class="error" id="err-confirmPassword" aria-live="polite"></div>
             </div>
           </div>
 
@@ -113,11 +174,25 @@
           <button class="btn" type="submit">Register Account</button>
 
           <div class="alt">
-            Already registered? <a href="/src/signin.html">Sign In</a>
+            Already registered? <span onclick="window.location='/src/signin.html'" style="cursor:pointer;text-decoration:underline">Sign In</span>
           </div>
         </form>
       </section>
 
+    </div>
+  </div>
+
+  <!-- Success Popup -->
+  <div class="modal" id="successModal" hidden>
+    <div class="modal__overlay" id="modalOverlay" aria-hidden="true"></div>
+
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <h3 class="modal__title" id="successTitle">Registration received ✅</h3>
+      <p class="modal__text">
+        Thank you for registering. Your information will be reviewed by the admin team.
+        We’ll notify you at the email address you provided.
+      </p>
+      <button class="btn modal__btn" type="button" id="goHomeBtn">Back to Home</button>
     </div>
   </div>
 </body>

@@ -8,21 +8,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./signup.css" />
+    <link rel="stylesheet" href="./otp-popup.css" />
   </head>
   <body class="signup-body">
     <div class="signup-shell">
       <!-- Left visual column -->
       <aside class="visual" aria-hidden="false">
-        <div class="visual-content">
-          <div class="brand">
-            <span class="logo-mark" aria-hidden="true"></span>
-            <span class="logo-text">SLUMLINK</span>
-          </div>
-          <h1 class="headline">
-            <span class="rise">Together We Rise.</span>
-            <span class="heard">Sign Up To Be Heard.</span>
-          </h1>
-        </div>
+       <div class="visual-content">
+  <div class="brand">
+    <img
+      src="/src/images/slum Logo.png"
+      alt="SlumLink Logo"
+      class="logo-mark"
+    />
+    <span class="logo-text">SLUMLINK</span>
+  </div>
+
+  <h1 class="headline">
+    <span class="rise">Together We Rise.</span>
+    <span class="heard">Sign Up To Be Heard.</span>
+  </h1>
+</div>
         <img class="visual-bg" src="images/Slum_signUp.jpg" alt="Background: slum settlement" />
       </aside>
 
@@ -54,10 +60,6 @@
             <!-- Account Information (always present) -->
             <h3 class="segment-title">Account Information</h3>
             <div class="fields">
-              <label class="field span-2">
-                <span>Create Username</span>
-                <input type="text" name="account_username" placeholder="Choose a username" required />
-              </label>
               <label class="field span-2">
                 <span>Create Password</span>
                 <div class="pwd-wrap">
@@ -93,5 +95,25 @@
     </div>
 
     <script src="./children.js" type="module"></script>
+    <!-- OTP modal markup (integrated preview) -->
+    <div id="otpModal" class="otp-modal" aria-hidden="true">
+      <div class="otp-backdrop"></div>
+      <div class="otp-panel" role="dialog" aria-modal="true" aria-labelledby="otpTitle">
+        <header class="otp-head">
+          <h2 id="otpTitle">Enter OTP codes</h2>
+          <p class="otp-sub">We sent a one-time code to each mobile number. Enter the codes below to continue.</p>
+        </header>
+        <main class="otp-body">
+          <div id="otpInputs" class="otp-inputs" data-count="1"></div>
+          <div class="otp-actions">
+            <button id="verifyOtpBtn" class="btn primary">Verify</button>
+            <button id="cancelOtpBtn" class="btn ghost">Cancel</button>
+          </div>
+          <div class="otp-footer">
+            <a id="resendOtpLink" href="#">Resend codes</a>
+          </div>
+        </main>
+      </div>
+    </div>
   </body>
 </html>

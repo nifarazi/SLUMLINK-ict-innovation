@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SlumLink | Distribution Session</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./aid-distribution-session.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" id="brandBtn">
+      <img src="/src/images/slum Logo.png" class="brand-mark" alt="SlumLink" />
+      <div>
+        <div class="brand-text">SLUMLINK</div>
+        <div class="subtitle" id="sessionMeta">Loading session…</div>
+      </div>
+    </div>
+
+    <button class="header-pill" id="finishBtn" type="button">Finish Distribution</button>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row">
+        <div>
+          <h1>Enter Family</h1>
+          <p class="muted">Record one family at a time. Only targeted families will be allowed for this campaign.</p>
+        </div>
+        <div class="pill" id="aidTypePill">—</div>
+      </div>
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="familyCode">Slum Code</label>
+          <input id="familyCode" placeholder="e.g., SR000123" autocomplete="off" />
+          <small class="hint" id="familyHint">Enter a valid slum code, then confirm.</small>
+        </div>
+
+        <div class="field hidden" id="qtyFieldWrap">
+          <label for="quantity">Quantity</label>
+          <input id="quantity" type="number" min="0" step="1" placeholder="Enter quantity" />
+          <small class="hint" id="qtyHint"></small>
+        </div>
+      </div>
+
+      <div class="snapshot">
+        <button class="btn btn-ghost" id="toggleSnapshotBtn" disabled type="button">
+          View Family Snapshot (Optional)
+        </button>
+
+        <div class="snapshot-panel hidden" id="snapshotPanel">
+          <div class="snapshot-grid">
+            <div class="snap-card">
+              <div class="snap-title">Family Summary</div>
+              <div class="snap-body" id="familySummary">
+                <span class="muted">No data yet.</span>
+              </div>
+            </div>
+
+            <div class="snap-card">
+              <div class="snap-title">All Aid History</div>
+              <div class="snap-body" id="orgHistory">
+                <span class="muted">No data yet.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
+        <label for="comment">Comment (optional)</label>
+        <textarea id="comment" rows="3" placeholder="Short note (optional)"></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" id="clearBtn" type="button">Clear</button>
+        <button class="btn btn-primary" id="confirmBtn" type="button">Confirm Entry</button>
+      </div>
+
+      <div class="status" id="statusBox" aria-live="polite"></div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <h2>Session Entries</h2>
+        <div class="muted" id="entryCount">0 recorded</div>
+      </div>
+
+      <div class="table" id="entriesTable">
+        <div class="table-head">
+          <div>Time</div>
+          <div>Family Code</div>
+          <div>Quantity</div>
+          <div>Comment</div>
+        </div>
+        <div class="table-body" id="entriesBody">
+          <div class="empty muted">No entries yet.</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="finishModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="finishTitle">
+      <div class="modal-title" id="finishTitle">Finish distribution?</div>
+      <div class="modal-body">
+        Are you sure you want to finish this distribution session?
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancelFinish" type="button">Cancel</button>
+        <button class="btn btn-primary" id="confirmFinish" type="button">Back to Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="./aid-distribution-session.js"></script>
+</body>
+</html>

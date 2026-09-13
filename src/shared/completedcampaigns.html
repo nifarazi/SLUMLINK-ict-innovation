@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlumLink | Completed Campaign</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="./campaign-details.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand" id="brandBtn" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <button class="pill-btn" id="backBtn" type="button">
+      <i class="fas fa-arrow-left"></i>
+      <span>Back to View Campaigns</span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Completed Campaign</h1>
+      <p>Everything is locked. Shows beneficiaries/people helped.</p>
+    </section>
+
+    <section class="panel">
+      <div class="panel-inner">
+        <form novalidate>
+          <div class="form-grid">
+            <div class="field"><label>Title</label><div class="control"><input id="title" disabled></div></div>
+            <div class="field"><label>Category</label><div class="control"><input id="category" disabled></div></div>
+            <div class="field"><label>Status</label><div class="control"><input id="status" value="completed" disabled></div></div>
+
+            <div class="field"><label>Division</label><div class="control"><input id="division" disabled></div></div>
+            <div class="field"><label>District</label><div class="control"><input id="district" disabled></div></div>
+            <div class="field"><label>Slum Area</label><div class="control"><input id="slumArea" disabled></div></div>
+
+            <div class="field"><label>Start Date</label><div class="control"><input id="startDate" type="date" disabled></div></div>
+            <div class="field"><label>End Date</label><div class="control"><input id="endDate" type="date" disabled></div></div>
+            <div class="field"><label>Time</label><div class="control"><input id="time" type="time" disabled></div></div>
+
+            <div class="field"><label>Target Gender</label><div class="control"><input id="gender" disabled></div></div>
+            <div class="field"><label>Age Group</label><div class="control"><input id="ageGroup" disabled></div></div>
+
+            <div class="field hidden" id="eduField"><label>Required Education</label><div class="control"><input id="education" disabled></div></div>
+            <div class="field hidden" id="skillsField"><label>Skills Required</label><div class="control"><input id="skills" disabled></div></div>
+
+            <div class="field span-2"><label>Description</label><div class="control"><textarea id="description" disabled></textarea></div></div>
+
+            <div class="field">
+              <label>People Helped (Beneficiaries)</label>
+              <div class="control"><input id="peopleHelped" disabled value="—"></div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <script src="./completedcampaigns.js"></script>
+</body>
+</html>

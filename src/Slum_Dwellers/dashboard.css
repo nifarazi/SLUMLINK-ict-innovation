@@ -126,7 +126,7 @@ html, body {
 .complaint-title { grid-column: 1 / 2; font-weight: 600; color: #A4624D; font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 .complaint-category { grid-column: 1 / 2; font-size: 13px; color: #555; font-weight: 400;}
 .status-badge { grid-column: 2 / 3; grid-row: 1 / span 2; align-self: center; padding: 6px 10px; border-radius: 8px; font-weight: 700; color: #fff; font-size: 12px; text-transform: capitalize; font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; width: 120px; display: inline-flex; justify-content: center; }
-.status-badge.pending { background: #FF0000; }
+.status-badge.pending { background: rgb(255, 0, 0); }
 .status-badge.in-progress { background: #FF8400; }
 .status-badge.resolved { background: #349357; }
 .tips-text { font-size: 15px; color: #444; }

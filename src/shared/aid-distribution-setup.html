@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SlumLink | Aid Distribution</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="./aid-distribution-setup.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand" id="brandBtn">
+      <img src="/src/images/slum Logo.png" class="brand-mark" alt="SlumLink" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <button class="back-pill" id="backBtn" type="button">← Back to Dashboard</button>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Aid Distribution</h1>
+      <p>Select a campaign and one aid type (chosen once). Then start distributing family-by-family.</p>
+    </section>
+
+    <section class="card">
+      <div class="grid">
+        <div class="field">
+          <label for="campaignSelect">Campaign</label>
+          <select id="campaignSelect">
+            <option value="" selected disabled>Loading campaigns...</option>
+          </select>
+          <small class="hint">Only your organization’s campaigns should appear here.</small>
+        </div>
+
+        <div class="field">
+          <label for="typeSelect">Aid Type</label>
+          <select id="typeSelect">
+            <option value="" selected disabled>Loading aid types...</option>
+          </select>
+          <small class="hint">Grouped by quantity requirement. Quantity field will appear automatically if needed.</small>
+        </div>
+      </div>
+
+      <!-- ✅ Campaign preview -->
+      <div class="preview" id="campaignPreview" aria-live="polite">
+        <div class="preview-title">Campaign Preview</div>
+        <div class="preview-body muted">Select a campaign to see basic details (title + target area).</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="startBtn" disabled>Start Distribution</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="./aid-distribution-setup.js"></script>
+</body>
+</html>

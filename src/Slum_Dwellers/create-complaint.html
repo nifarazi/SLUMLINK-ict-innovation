@@ -16,21 +16,56 @@
 </head>
 <body>
   <div class="dashboard-layout">
-    <aside class="sidebar">
-      <div class="brand" aria-label="SLUMLINK Brand">
-        <span class="logo-mark" aria-hidden="true"></span>
-        <span class="logo-text">SLUMLINK</span>
-      </div>
-      <nav class="nav">
-        <button class="nav-btn" data-target="#dashboard" onclick="window.location.href='./dashboard.html'">Dashboard</button>
-        <button class="nav-btn" data-target="#profile" onclick="window.location.href='./profile.html'">Profile</button>
-        <button class="nav-btn active" data-target="#submit-complaint" aria-current="page">Submit Complaint</button>
-        <button class="nav-btn" data-target="#complaint-status">Complaint Status</button>
-        <button class="nav-btn" data-target="#aid-services">Aid and Services</button>
-        <button class="nav-btn" data-target="#qr-code">QR Code</button>
-        <button class="nav-btn" data-target="#logout">Logout</button>
-      </nav>
-    </aside>
+ <aside class="sidebar">
+  <div class="brand" aria-label="SLUMLINK Brand">
+    <img
+      src="/src/images/slum Logo.png"
+      alt="SlumLink Logo"
+      class="logo-mark"
+    />
+    <span class="logo-text">SLUMLINK</span>
+  </div>
+
+  <nav class="nav">
+    <button
+      class="nav-btn"
+      data-target="#dashboard"
+      onclick="window.location.href='./dashboard.html'">
+      Dashboard
+    </button>
+
+    <button
+      class="nav-btn"
+      data-target="#profile"
+      onclick="window.location.href='./profile.html'">
+      Profile
+    </button>
+
+    <button
+      class="nav-btn active"
+      data-target="#submit-complaint"
+      aria-current="page">
+      Submit Complaint
+    </button>
+
+    <button class="nav-btn" data-target="#complaint-status">
+      Complaint Status
+    </button>
+
+    <button class="nav-btn" data-target="#aid-services">
+      Aid and Services
+    </button>
+
+    <button class="nav-btn" data-target="#qr-code">
+      QR Code
+    </button>
+
+    <button class="nav-btn" data-target="#logout">
+      Logout
+    </button>
+  </nav>
+</aside>
+
 
     <main class="content">
       <section class="content-body">
@@ -72,8 +107,8 @@
 
             <div class="form-field">
               <label for="complaintEvidence">Evidence Attachment</label>
-              <input id="complaintEvidence" name="evidence" type="file" accept=".pdf,image/*" />
-              <small class="hint">Optional: attach a photo or PDF as evidence.</small>
+              <input id="complaintEvidence" name="evidence" type="file" accept=".pdf,image/*" required />
+              <small class="hint">Attach a photo or PDF as evidence.</small>
             </div>
 
             <div class="form-actions">

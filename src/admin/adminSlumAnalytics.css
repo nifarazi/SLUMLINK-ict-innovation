@@ -28,6 +28,31 @@ body {
   border-bottom: 2px solid #AD7562;
 }
 
+/* Brand (logo + name) to match homepage sizing */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.brand .logo-mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 14px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.brand .brand-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: rgba(164, 98, 77, 0.86);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .logo {
   transition: background 160ms ease, box-shadow 160ms ease, transform 120ms ease;
   font-size: 22px;
@@ -73,7 +98,7 @@ body {
   margin-bottom: 20px;
   font-size: 16px;
   color: #AD7562;
-  font-weight: 700;
+  font-weight: 400;
   cursor: pointer;
 }
 
@@ -84,6 +109,7 @@ body {
   border-radius: 10px;
   padding: 8px 10px;
   position: relative;
+  font-weight: 700;
 }
 
 /* Optional left accent bar to indicate active state */
@@ -121,6 +147,13 @@ body {
 .content {
   flex: 1;
   padding: 40px;
+}
+
+#selectedDistrictTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #8b6f5a;
+  margin-top: -6px;
 }
 
 /* Cards */

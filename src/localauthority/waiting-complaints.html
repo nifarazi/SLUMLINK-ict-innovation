@@ -139,16 +139,21 @@
 
   <!-- ===== Header ===== -->
   <header class="topbar" aria-label="Header">
-    <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <div class="brand-text">SLUMLINK</div>
-    </div>
+  <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+    <img 
+      src="/src/images/slum Logo.png" 
+      alt="SlumLink Logo" 
+      class="brand-mark"
+    />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
 
-    <button class="pill-btn" id="backBtn" type="button" aria-label="Back to categories">
-      <i class="fas fa-arrow-left" aria-hidden="true"></i>
-      <span>Back to Categories</span>
-    </button>
-  </header>
+  <button class="pill-btn" id="backBtn" type="button" aria-label="Back to categories">
+    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+    <span>Back to Categories</span>
+  </button>
+</header>
+
 
   <main class="container">
     <h1 class="page-title">Waiting Complaints</h1>
@@ -158,8 +163,8 @@
   <script>
     const brandBtn = document.getElementById("brandBtn");
     const backBtn = document.getElementById("backBtn");
-    brandBtn.addEventListener("click", ()=>{ window.location.href = "./complaintcategory.html"; });
-    backBtn.addEventListener("click", ()=>{ window.location.href = "./complaintcategory.html"; });
+    brandBtn.addEventListener("click", ()=>{ window.location.href = "../localauthority/complaintcategory.html"; });
+    backBtn.addEventListener("click", ()=>{ window.location.href = "../localauthority/complaintcategory.html"; });
 
     // Dummy complaints data (only Waiting ones)
     const allComplaints = {

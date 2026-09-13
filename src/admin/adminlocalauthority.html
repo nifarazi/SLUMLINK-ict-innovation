@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>SLUMLINK · Local Authorities</title>
+	<link rel="stylesheet" href="adminSlumAnalytics.css" />
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+	<header class="topbar" aria-label="Header">
+		<div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+			<img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+			<div class="brand-text">SLUMLINK</div>
+		</div>
+
+		<input type="text" placeholder="Search" class="search" />
+
+		<div class="top-right">
+			<div class="admin">
+				<span>Admin ▾</span>
+				<div class="admin-dropdown">
+					<button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">Logout</button>
+				</div>
+			</div>
+			<a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+		</div>
+	</header>
+
+	<div class="container">
+		<aside class="sidebar">
+			<ul>
+				<li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
+				<li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
+				<li><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
+				<li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+				<li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+				<li class="active"><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
+				<li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
+			</ul>
+		</aside>
+
+		<main class="content">
+			<div class="page-header">
+				<div>
+					<h2>Local Authorities</h2>
+				</div>
+			</div>
+
+			<div class="card-grid" id="authorityGrid">
+				<div class="card" style="pointer-events:none;">Loading...</div>
+			</div>
+		</main>
+	</div>
+
+	<div class="modal-overlay" id="logoutModal" aria-hidden="true">
+		<div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+			<div class="modal-header" id="logoutTitle">Log out</div>
+			<div class="modal-body">You're currently signed in as Admin. Do you want to log out and return to the home page?</div>
+			<div class="modal-actions">
+				<button class="btn btn-secondary" id="cancelLogout">Cancel</button>
+				<button class="btn btn-primary" id="confirmLogout">Log out</button>
+			</div>
+		</div>
+	</div>
+
+	<script src="adminSlumAnalytics.js"></script>
+	<script>
+		function renderAuthorities(authorities) {
+			var grid = document.getElementById('authorityGrid');
+			if (!grid) return;
+
+			if (!authorities.length) {
+				grid.innerHTML = '<div class="card" style="pointer-events:none;">No local authorities found.</div>';
+				return;
+			}
+
+			grid.innerHTML = '';
+			authorities.forEach(function (authority) {
+				var button = document.createElement('button');
+				button.className = 'card';
+				button.type = 'button';
+				button.textContent = authority.org_name || 'Unnamed Authority';
+				button.addEventListener('click', function () {
+					sessionStorage.setItem('selectedAuthority', JSON.stringify(authority));
+					window.location.href = 'adminlocalcampaignsinfo.html';
+				});
+				grid.appendChild(button);
+			});
+		}
+
+		document.addEventListener('DOMContentLoaded', async function () {
+			try {
+				var response = await fetch('/api/ngo/local-authorities');
+				var result = await response.json();
+				if (result.status === 'success') {
+					renderAuthorities(Array.isArray(result.data) ? result.data : []);
+				} else {
+					renderAuthorities([]);
+				}
+			} catch (err) {
+				console.error('Error loading local authorities:', err);
+				renderAuthorities([]);
+			}
+		});
+	</script>
+</body>
+</html>

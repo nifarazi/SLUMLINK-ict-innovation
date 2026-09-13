@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OTP Verification Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./otp-popup.css" />
+</head>
+<body>
+  <div class="demo-wrap">
+    <button id="openBtn" class="btn">Open OTP Popup (demo)</button>
+    <div class="hint">Use query param <code>?count=3</code> to change number of boxes.</div>
+  </div>
+
+  <div id="otpModal" class="otp-modal" aria-hidden="true">
+    <div class="otp-backdrop"></div>
+    <div class="otp-panel" role="dialog" aria-modal="true" aria-labelledby="otpTitle">
+      <header class="otp-head">
+        <h2 id="otpTitle">Enter OTP codes</h2>
+        <p class="otp-sub">We sent a one-time code to each mobile number. Enter the codes below to continue.</p>
+      </header>
+      <main class="otp-body">
+        <div id="otpInputs" class="otp-inputs" data-count="3"></div>
+        <div class="otp-actions">
+          <button id="verifyBtn" class="btn primary">Verify</button>
+          <button id="cancelBtn" class="btn ghost">Cancel</button>
+        </div>
+        <div class="otp-footer">
+          <a id="resendLink" href="#">Resend codes</a>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // Read count from query string ?count= or use data-count
+    function qsCount(){
+      try{
+        const p = new URLSearchParams(location.search);
+        const v = Number(p.get('count'));
+        if (Number.isFinite(v) && v>0) return Math.min(8, Math.max(1, v));
+      }catch(e){}
+      return null;
+    }
+
+    function openModal(){
+      const modal = document.getElementById('otpModal');
+      modal.setAttribute('aria-hidden','false');
+      modal.classList.add('open');
+    }
+    function closeModal(){
+      const modal = document.getElementById('otpModal');
+      modal.setAttribute('aria-hidden','true');
+      modal.classList.remove('open');
+    }
+
+    function makeInputs(count){
+      const container = document.getElementById('otpInputs');
+      container.innerHTML = '';
+      for(let i=0;i<count;i++){
+        const wrap = document.createElement('div');
+        wrap.className = 'otp-item';
+        wrap.innerHTML = `
+          <label class="otp-label">Mobile ${i+1}</label>
+          <div class="otp-row"><input inputmode="numeric" maxlength="6" class="otp-box" aria-label="OTP code ${i+1}"/></div>
+        `;
+        container.appendChild(wrap);
+      }
+      // wire auto-advance for each input within its group (single 6-digit input here)
+      container.querySelectorAll('.otp-box').forEach((el,idx,arr)=>{
+        el.addEventListener('input', (e)=>{
+          const v = el.value.replace(/[^0-9]/g,''); el.value = v;
+          if (v.length >= el.maxLength && idx < arr.length-1) arr[idx+1].focus();
+        });
+      });
+      // focus first
+      const first = container.querySelector('.otp-box'); if(first) first.focus();
+    }
+
+    document.getElementById('openBtn').addEventListener('click', ()=>{
+      const count = qsCount() || Number(document.getElementById('otpInputs').dataset.count) || 3;
+      makeInputs(count);
+      openModal();
+    });
+    document.getElementById('cancelBtn').addEventListener('click', closeModal);
+    document.getElementById('verifyBtn').addEventListener('click', ()=>{
+      // Demo: collect codes
+      const codes = Array.from(document.querySelectorAll('.otp-box')).map(i=>i.value);
+      alert('Collected codes: ' + JSON.stringify(codes));
+    });
+
+    // Auto-open when visiting the preview file (for convenience)
+    window.addEventListener('load', ()=>{
+      const c = qsCount();
+      const desired = c || Number(document.getElementById('otpInputs').dataset.count) || 3;
+      makeInputs(desired);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlumLink | NGO Profile</title>
+
+  <!-- Google Fonts & FontAwesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="ngo-profile.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="topbar" aria-label="Header">
+    <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <!-- ✅ Back to Dashboard button (pill style) -->
+    <button class="pill-btn" id="backBtn" type="button" aria-label="Back to dashboard">
+      <i class="fas fa-arrow-left" aria-hidden="true"></i>
+      <span>Back to Dashboard</span>
+    </button>
+  </header>
+
+  <main class="container">
+
+    <!-- Profile Card -->
+    <section class="hero" aria-label="NGO Profile">
+      <div class="profile-card">
+        <div class="avatar"><i class="fas fa-user"></i></div>
+        <h1 class="ngo-name">MASTUL FOUNDATION</h1>
+      </div>
+
+      <!-- Content Card -->
+      <section class="content-card">
+        <div class="info-row">
+          <h2 class="info-title">Foundation Information</h2>
+          <p class="info-text">E-mail ID: <a href="mailto:saveramomtaz123@gmail.com">saveramomtaz123@gmail.com</a></p>
+        </div>
+
+        <div class="info-row">
+          <h2 class="info-title">Contact Information</h2>
+          <p class="info-text">Address: House 1346, Road 13 A</p>
+          <p class="info-text">Phone: +8801305300454</p>
+        </div>
+
+        <div class="info-row">
+          <h2 class="info-title">Date of Account Creation</h2>
+          <p class="info-text">Jan 5, 2025</p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <!-- Logout Button at Bottom Center (like create button) -->
+  <button class="create-btn bottom-logout" id="logoutBtn" type="button">
+    <i class="fas fa-right-from-bracket"></i> Log Out
+  </button>
+
+  <!-- Logout Modal -->
+  <div class="modal-backdrop" id="logoutModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+      <div class="modal-head">
+        <div class="modal-ic"><i class="fas fa-right-from-bracket"></i></div>
+        <div class="modal-title" id="logoutTitle">Log out?</div>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to log out from SlumLink?
+      </div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelLogout" type="button">Cancel</button>
+        <button class="btn btn-danger" id="confirmLogout" type="button">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const toastEl = document.getElementById("toast");
+    let toastTimer;
+    function toast(msg){
+      clearTimeout(toastTimer);
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+    }
+
+    // Back to Dashboard
+    document.getElementById("backBtn").addEventListener("click", ()=> {
+      window.location.href = "ngo-dashboard.html";
+    });
+
+    // Brand click
+    document.getElementById("brandBtn").addEventListener("click", ()=> {
+      window.location.href = "/";
+    });
+
+    // Logout modal logic
+    const logoutBtn = document.getElementById("logoutBtn");
+    const modal = document.getElementById("logoutModal");
+    const cancelBtn = document.getElementById("cancelLogout");
+    const confirmBtn = document.getElementById("confirmLogout");
+
+    function openModal(){
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden","false");
+      cancelBtn.focus();
+    }
+    function closeModal(){
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden","true");
+      logoutBtn.focus();
+    }
+
+    logoutBtn.addEventListener("click", openModal);
+    cancelBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", e=> { if(e.target === modal) closeModal(); });
+    document.addEventListener("keydown", e=> { if(modal.classList.contains("show") && e.key==="Escape") closeModal(); });
+
+    confirmBtn.addEventListener("click", ()=>{
+      toast("Logging out...");
+      setTimeout(()=> {
+        window.location.href = "/index.html";
+      }, 450);
+    });
+  </script>
+</body>
+</html>

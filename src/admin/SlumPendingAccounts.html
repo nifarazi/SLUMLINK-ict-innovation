@@ -2,16 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>SLUMLINK · Slum Residents</title>
+  <title>SLUMLINK · Pending Slum Residents</title>
   <link rel="stylesheet" href="adminSlumAnalytics.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    .pending-table th:last-child,
+    .pending-table td:last-child {
+      text-align: left;
+      padding-right: 0;
+    }
+
+    .pending-table th:last-child {
+      text-align: right;
+      padding-right: 120px;
+    }
+
+    .pending-actions {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-approve {
+      background-color: rgba(45, 122, 61, 0.15) !important;
+      color: #2d7a3d !important;
+      border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-approve:hover {
+      background-color: rgba(45, 122, 61, 0.25) !important;
+    }
+
+    .btn-reject {
+      background-color: rgba(180, 80, 80, 0.2) !important;
+      color: #a83e3e !important;
+      border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-reject:hover {
+      background-color: rgba(180, 80, 80, 0.3) !important;
+    }
+
+    .btn-view {
+      background-color: #8b6f5a !important;
+      color: white !important;
+      border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .btn-view:hover {
+      background-color: #6b5744 !important;
+    }
+
+    .card-header h2 {
+      color: #8b6f5a;
+    }
+
+    .btn-approve-primary {
+      background-color: #8b6f5a !important;
+      color: white !important;
+      border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-approve-secondary {
+      background-color: rgba(139, 111, 90, 0.18) !important;
+      color: #6b5744 !important;
+      border: 1px solid rgba(139, 111, 90, 0.35) !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
+  <header class="topbar" aria-label="Header">
+    <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
     <input type="text" placeholder="Search" class="search" />
+
     <div class="top-right">
-      <span class="admin">Admin ▾</span>
+      <div class="admin">
+        <span>Admin ▾</span>
+        <div class="admin-dropdown">
+          <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">Logout</button>
+        </div>
+      </div>
       <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
     </div>
   </header>
@@ -21,44 +117,45 @@
       <ul>
         <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
         <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-        <li class="active"><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+        <li class="active"><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
         <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
       </ul>
     </aside>
 
     <main class="content">
       <div class="page-header">
-        <div>
-        </div>
+        
       </div>
 
       <div class="table-card">
         <div class="card-header">
-          <h2>Accounts awaiting verification</h2>
-          <p>Approve or reject after reviewing submitted documents.</p>
+          <h2>Pending Accounts</h2>
         </div>
-        <div class="table-wrapper">
-          <table class="pending-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Slum</th>
-                <th>NID</th>
-                <th>Marriage Certificate</th>
-                <th>Birth Certificate</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="pendingTableBody"><!-- rows injected by script --></tbody>
-          </table>
+        <table class="pending-table">
+          <thead>
+            <tr>
+              <th>Full Name</th>
+              <th>Slum Code</th>
+              <th>NID</th>
+              <th>Mobile</th>
+              <th>Area</th>
+              <th>District</th>
+              <th>Division</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pendingTableBody">
+            <tr><td colspan="9" style="text-align: center; color: #999;">Loading...</td></tr>
+          </tbody>
+        </table>
+        <div class="footer">
+          <span>Showing data</span>
+          <div class="pagination" id="pagination"></div>
         </div>
-      </div>
-      
-      <div style="margin-top: 20px; text-align: center;">
-        <a href="adminSlumResidents.html" class="btn btn-secondary" style="text-decoration: none; padding: 8px 16px;">
-          ← Go Back
-        </a>
       </div>
     </main>
   </div>
@@ -69,8 +166,8 @@
       <div class="modal-header">Approve Account</div>
       <div class="modal-body" id="approveModalBody">Are you sure you want to approve this account?</div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelApprove">Cancel</button>
-        <button class="btn btn-primary" id="confirmApprove">Approve</button>
+        <button id="cancelApprove" type="button" class="btn-approve-secondary">Cancel</button>
+        <button id="confirmApprove" type="button" class="btn-approve-primary">Approve</button>
       </div>
     </div>
   </div>
@@ -79,10 +176,10 @@
   <div class="modal-overlay" id="rejectModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">Reject Account</div>
-      <div class="modal-body" id="rejectModalBody">Are you sure you want to reject this account?</div>
+      <div class="modal-body" id="rejectModalBody">Are you sure you want to reject and delete this account?</div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelReject">Cancel</button>
-        <button class="btn btn-secondary" id="confirmReject">Reject</button>
+        <button id="cancelReject" type="button" class="btn-approve-secondary">Cancel</button>
+        <button id="confirmReject" type="button" class="btn-approve-primary">Reject</button>
       </div>
     </div>
   </div>
@@ -93,506 +190,279 @@
       <div class="modal-header">Success</div>
       <div class="modal-body" id="successModalBody"></div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="closeSuccess">OK</button>
+        <button id="closeSuccess" type="button" style="background-color: #2d7a3d; color: white;">Close</button>
       </div>
     </div>
   </div>
 
+  <!-- Logout Modal -->
   <div class="modal-overlay" id="logoutModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
       <div class="modal-header" id="logoutTitle">Log out</div>
       <div class="modal-body">You're currently signed in as Admin. Do you want to log out and return to the home page?</div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelLogout">Cancel</button>
-        <button class="btn btn-primary" id="confirmLogout">Log out</button>
+        <button id="cancelLogout" type="button">Cancel</button>
+        <button id="confirmLogout" type="button" style="background-color: #8b6f5a; color: white;">Log out</button>
       </div>
     </div>
   </div>
 
-  <div class="modal-overlay" id="imageModal" aria-hidden="true">
-    <div class="image-modal" role="dialog" aria-modal="true">
-      <button class="close-image-modal" id="closeImageModal" aria-label="Close">&times;</button>
-      <img id="modalImage" src="" alt="Document preview">
-      <div class="image-caption" id="imageCaption"></div>
-      <button class="btn btn-primary" id="downloadImage" style="margin-top: 15px;">
-        📥 Download Image
-      </button>
-    </div>
-  </div>
-
   <script src="adminSlumAnalytics.js"></script>
-  <!-- Load jsPDF (UMD). Remove SRI to avoid blocking if hash mismatches. -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    function safeJsonParse(raw, fb){ try { return JSON.parse(raw); } catch { return fb; } }
-    const LIST_KEY = 'SLUMLINK_APPLICATIONS';
-    let applications = safeJsonParse(localStorage.getItem(LIST_KEY), []);
+    let pendingAccounts = [];
+    let currentApproveId = -1;
+    let currentRejectId = -1;
 
-    var currentApproveIdx = -1;
-    var currentRejectIdx = -1;
+    document.addEventListener('DOMContentLoaded', async function () {
+      const tableBody = document.getElementById('pendingTableBody');
+      const params = new URLSearchParams(window.location.search);
+      const slumParam = (params.get('slum') || '').trim();
+      const districtParam = (params.get('district') || '').trim();
+      const divisionParam = (params.get('division') || '').trim();
 
-    document.addEventListener('DOMContentLoaded', function () {
-      var params = new URLSearchParams(window.location.search);
-      var slumFilter = params.get('slum');
-      var label = document.getElementById('pendingSlumLabel');
-      if (label) {
-        label.textContent = slumFilter ? ('Reviewing pending accounts for ' + slumFilter) : 'Review and verify resident documents.';
+      function normalize(value) {
+        return String(value || '').trim().toLowerCase();
       }
-      var tableBody = document.getElementById('pendingTableBody');
+
+      // Fetch pending accounts from database
+      async function fetchPendingAccounts() {
+        try {
+          const response = await fetch('/api/slum-dweller/pending');
+          const result = await response.json();
+          if (result.status === 'success') {
+            pendingAccounts = result.data || [];
+            renderRows();
+          } else {
+            tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: red;">Failed to load accounts: ' + result.message + '</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error fetching pending accounts:', error);
+          tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: red;">Error loading accounts. Please try again.</td></tr>';
+        }
+      }
 
       function renderRows() {
         tableBody.innerHTML = '';
-        var filtered = applications.filter(function (app) {
-          return app.status === 'pending' && (!slumFilter || (app.slum || '').toLowerCase() === slumFilter.toLowerCase());
+
+        const filtered = (pendingAccounts || []).filter((account) => {
+          if (account.status && normalize(account.status) !== 'pending') return false;
+          if (slumParam && normalize(account.area) !== normalize(slumParam)) return false;
+          if (districtParam && normalize(account.district) !== normalize(districtParam)) return false;
+          if (divisionParam && normalize(account.division) !== normalize(divisionParam)) return false;
+          return true;
         });
 
-        filtered.forEach(function (app, idx) {
-          var personName = (app.data && app.data.personal && app.data.personal.fullName) || 'Unknown';
-          var nidText = (app.data && app.data.personal && app.data.personal.nidNumber) || '—';
-          var spouses = (app.data && app.data.marital && app.data.marital.spouses) || [];
-          var children = (app.data && app.data.children && app.data.children.children) || [];
-          // Build table row
-          var row = document.createElement('tr');
+        if (filtered.length === 0) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = document.createElement('td');
+          emptyCell.colSpan = 9;
+          emptyCell.style.textAlign = 'center';
+          emptyCell.style.color = '#8b6f5a';
+          emptyCell.textContent = 'No pending accounts.';
+          emptyRow.appendChild(emptyCell);
+          tableBody.appendChild(emptyRow);
+          return;
+        }
+
+        filtered.forEach(function (account) {
+          const row = document.createElement('tr');
 
           // Name
-          var nameCell = document.createElement('td');
-          nameCell.textContent = personName;
+          const nameCell = document.createElement('td');
+          nameCell.textContent = account.full_name || 'Unknown';
           row.appendChild(nameCell);
 
-          // Slum
-          var slumCell = document.createElement('td');
-          slumCell.textContent = app.slum || '—';
+          // Slum Code
+          const slumCell = document.createElement('td');
+          slumCell.textContent = account.slum_code || '—';
           row.appendChild(slumCell);
 
           // NID
-          var nidCell = document.createElement('td');
-          nidCell.textContent = nidText;
+          const nidCell = document.createElement('td');
+          nidCell.textContent = account.nid || '—';
           row.appendChild(nidCell);
 
-          // Marriage Certificates (show labeled thumbnails)
-          var marriageCell = document.createElement('td');
-          if (spouses.length) {
-            var hasAny = false;
-            spouses.forEach(function(s, i){
-              if (s.marriageCertificate) {
-                hasAny = true;
-                var block = document.createElement('div');
-                block.className = 'doc-block';
-                var label = document.createElement('div');
-                label.className = 'doc-label';
-                label.textContent = 'Spouse ' + (i+1);
-                var img = document.createElement('img');
-                img.src = s.marriageCertificate;
-                img.alt = 'Marriage Certificate - Spouse ' + (i+1);
-                img.className = 'doc-thumb';
-                img.style.cursor = 'pointer';
-                img.setAttribute('data-caption', 'Marriage Certificate - Spouse ' + (i+1));
-                block.appendChild(label);
-                block.appendChild(img);
-                marriageCell.appendChild(block);
-              }
-            });
-            if (!hasAny) marriageCell.textContent = '—';
-          } else {
-            marriageCell.textContent = '—';
-          }
-          row.appendChild(marriageCell);
+          // Mobile
+          const mobileCell = document.createElement('td');
+          mobileCell.textContent = account.mobile || '—';
+          row.appendChild(mobileCell);
 
-          // Birth Certificates (show labeled thumbnails)
-          var birthCell = document.createElement('td');
-          if (children.length) {
-            var hasBirth = false;
-            children.forEach(function(c, i){
-              if (c.birthCertificate) {
-                hasBirth = true;
-                var block = document.createElement('div');
-                block.className = 'doc-block';
-                var label = document.createElement('div');
-                label.className = 'doc-label';
-                label.textContent = 'Child ' + (i+1);
-                var img = document.createElement('img');
-                img.src = c.birthCertificate;
-                img.alt = 'Birth Certificate - Child ' + (i+1);
-                img.className = 'doc-thumb';
-                img.style.cursor = 'pointer';
-                img.setAttribute('data-caption', 'Birth Certificate - Child ' + (i+1));
-                block.appendChild(label);
-                block.appendChild(img);
-                birthCell.appendChild(block);
-              }
-            });
-            if (!hasBirth) birthCell.textContent = '—';
-          } else {
-            birthCell.textContent = '—';
-          }
-          row.appendChild(birthCell);
+          // Area
+          const areaCell = document.createElement('td');
+          areaCell.textContent = account.area || '—';
+          row.appendChild(areaCell);
+
+          // District
+          const districtCell = document.createElement('td');
+          districtCell.textContent = account.district || '—';
+          row.appendChild(districtCell);
+
+          // Division
+          const divisionCell = document.createElement('td');
+          divisionCell.textContent = account.division || '—';
+          row.appendChild(divisionCell);
+
+          // Status
+          const statusCell = document.createElement('td');
+          statusCell.textContent = 'Pending';
+          statusCell.style.color = '#d9a574';
+          statusCell.style.fontWeight = 'bold';
+          row.appendChild(statusCell);
 
           // Actions
-          var actionsCell = document.createElement('td');
+          const actionsCell = document.createElement('td');
           actionsCell.className = 'pending-actions';
-          var actionsWrap = document.createElement('div');
 
-          var pdfBtn = document.createElement('button');
-          pdfBtn.textContent = 'Download PDF';
-          pdfBtn.setAttribute('data-action', 'pdf');
-          pdfBtn.setAttribute('data-idx', String(idx));
+          const viewBtn = document.createElement('button');
+          viewBtn.textContent = 'View';
+          viewBtn.className = 'btn-approve';
+          viewBtn.style.background = 'rgba(139, 111, 90, 0.3)';
+          viewBtn.style.color = '#8b6f5a';
+          viewBtn.onclick = () => {
+            sessionStorage.setItem('selectedSlumDweller', JSON.stringify(account));
+            window.location.href = 'SlumResidentsInfo.html?id=' + account.id;
+          };
 
-          var approveBtn = document.createElement('button');
+          const approveBtn = document.createElement('button');
           approveBtn.textContent = 'Approve';
-          approveBtn.setAttribute('data-action', 'approve');
-          approveBtn.setAttribute('data-idx', String(idx));
+          approveBtn.className = 'btn-approve';
+          approveBtn.onclick = () => {
+            currentApproveId = account.id;
+            openApproveModal(account.full_name || 'resident');
+          };
 
-          var rejectBtn = document.createElement('button');
+          const rejectBtn = document.createElement('button');
           rejectBtn.textContent = 'Reject';
-          rejectBtn.setAttribute('data-action', 'reject');
-          rejectBtn.setAttribute('data-idx', String(idx));
+          rejectBtn.className = 'btn-reject';
+          rejectBtn.onclick = () => {
+            currentRejectId = account.id;
+            openRejectModal(account.full_name || 'resident');
+          };
 
-          actionsWrap.appendChild(pdfBtn);
-          actionsWrap.appendChild(approveBtn);
-          actionsWrap.appendChild(rejectBtn);
-          actionsCell.appendChild(actionsWrap);
+          actionsCell.appendChild(viewBtn);
+          actionsCell.appendChild(approveBtn);
+          actionsCell.appendChild(rejectBtn);
           row.appendChild(actionsCell);
 
           tableBody.appendChild(row);
         });
-
-        if (!filtered.length) {
-          var emptyRow = document.createElement('tr');
-          var emptyCell = document.createElement('td');
-          emptyCell.colSpan = 6;
-          emptyCell.style.textAlign = 'center';
-          emptyCell.style.color = '#8b6f5a';
-          emptyCell.textContent = 'No pending accounts for this slum.';
-          emptyRow.appendChild(emptyCell);
-          tableBody.appendChild(emptyRow);
-        }
-      }
-
-      // Delegate button actions to table body
-      tableBody.addEventListener('click', function (e) {
-        var btn = e.target;
-        if (btn.tagName === 'BUTTON') {
-          var idx = parseInt(btn.getAttribute('data-idx'), 10);
-          var action = btn.getAttribute('data-action');
-          var filtered = applications.filter(function (app) {
-            return app.status === 'pending' && (!slumFilter || (app.slum || '').toLowerCase() === slumFilter.toLowerCase());
-          });
-          var app = filtered[idx];
-          if (!app) return;
-          
-          if (action === 'approve') {
-            currentApproveIdx = applications.indexOf(app);
-            openApproveModal((app.data && app.data.personal && app.data.personal.fullName) || 'resident');
-          } else if (action === 'reject') {
-            currentRejectIdx = applications.indexOf(app);
-            openRejectModal((app.data && app.data.personal && app.data.personal.fullName) || 'resident');
-          } else if (action === 'pdf') {
-            downloadPdf(app);
-          }
-        }
-      });
-
-      renderRows();
-
-      // Image modal functionality
-      var imageModal = document.getElementById('imageModal');
-      var modalImage = document.getElementById('modalImage');
-      var imageCaption = document.getElementById('imageCaption');
-      var closeImageModal = document.getElementById('closeImageModal');
-
-      tableBody.addEventListener('click', function (e) {
-        if (e.target.classList && e.target.classList.contains('doc-thumb')) {
-          imageModal.classList.add('show');
-          imageModal.setAttribute('aria-hidden', 'false');
-          modalImage.src = e.target.src;
-          imageCaption.textContent = e.target.getAttribute('data-caption') || e.target.alt;
-        }
-      });
-
-      closeImageModal.addEventListener('click', function () {
-        imageModal.classList.remove('show');
-        imageModal.setAttribute('aria-hidden', 'true');
-      });
-
-      imageModal.addEventListener('click', function (e) {
-        if (e.target === imageModal) {
-          imageModal.classList.remove('show');
-          imageModal.setAttribute('aria-hidden', 'true');
-        }
-      });
-
-      // Download image functionality (modal)
-      var downloadBtn = document.getElementById('downloadImage');
-      downloadBtn.addEventListener('click', function () {
-        var imageSrc = modalImage.src;
-        var fileName = imageCaption.textContent.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.jpg';
-        
-        fetch(imageSrc)
-          .then(response => response.blob())
-          .then(blob => {
-            var url = window.URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-          })
-          .catch(() => alert('Failed to download image'));
-      });
-
-      // PDF generation
-      function downloadPdf(app){
-        // Support both UMD (window.jspdf.jsPDF) and global (window.jsPDF)
-        var jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-        if (!jsPDFCtor) { alert('PDF library not loaded'); return; }
-        const doc = new jsPDFCtor({ unit: 'pt', format: 'a4' });
-        let y = 40;
-
-        function addGap(amount){ y += amount; if (y > 780) { doc.addPage(); y = 40; } }
-        function addLine(text){
-          const maxWidth = 520;
-          const lines = doc.splitTextToSize(String(text || ''), maxWidth);
-          lines.forEach(line => { doc.text(line, 40, y); y += 18; });
-          if (y > 780) { doc.addPage(); y = 40; }
-        }
-        function addSection(title){
-          // Gap before heading
-          addGap(16);
-          // Heading
-          doc.setFontSize(14); doc.setFont('helvetica','bold');
-          doc.text(String(title || ''), 40, y);
-          // Gap after heading before content starts
-          addGap(16);
-          // Reset font for content
-          doc.setFontSize(12); doc.setFont('helvetica','normal');
-        }
-        function addLabelValue(label, value){
-          const maxWidth = 520;
-          const labelText = String(label || '') + ': ';
-          doc.setFont('helvetica','bold');
-          doc.setFontSize(12);
-          doc.text(labelText, 40, y);
-          const labelWidth = doc.getTextWidth(labelText);
-          const remainingWidth = Math.max(0, maxWidth - labelWidth);
-          doc.setFont('helvetica','normal');
-          const valueLines = doc.splitTextToSize(String(value || ''), remainingWidth);
-          if (valueLines.length){
-            // First line on same row, starting after label
-            doc.text(valueLines[0], 40 + labelWidth, y);
-            // Additional lines on new rows
-            for (let i = 1; i < valueLines.length; i++){
-              y += 18;
-              doc.text(valueLines[i], 40, y);
-            }
-          }
-          y += 18;
-          if (y > 780) { doc.addPage(); y = 40; }
-        }
-        function addImage(dataUrl, caption){
-          if (!dataUrl) return;
-          const typeMatch = (dataUrl.match(/^data:(image\/(png|jpeg|jpg))/i) || []);
-          const fmt = (typeMatch[1] || 'image/jpeg');
-          try {
-            // Optional caption above image
-            if (caption){ doc.setFont('helvetica','bold'); doc.text(String(caption), 40, y); y += 16; }
-            doc.addImage(dataUrl, fmt.toUpperCase().includes('PNG') ? 'PNG' : 'JPEG', 40, y, 180, 120);
-            y += 130;
-          } catch (e){ /* ignore addImage errors */ }
-        }
-
-        // Title centered and layout vars
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const marginLeft = 40; const marginRight = 40; const contentWidth = pageWidth - marginLeft - marginRight; const gutter = 16; const colWidth = (contentWidth - gutter) / 2;
-        doc.setFontSize(18); doc.setFont('helvetica','bold');
-        doc.text('SLUMLINK Resident Application', pageWidth / 2, y, { align: 'center' });
-        y += 22;
-        doc.setFontSize(12); doc.setFont('helvetica','normal');
-        addLabelValue('Created', app.createdAt || '');
-
-        function addLabelValueColumn(label, value, x, yStart, width){
-          const labelText = String(label || '') + ': ';
-          doc.setFont('helvetica','bold'); doc.setFontSize(12);
-          doc.text(labelText, x, yStart);
-          const labelWidth = doc.getTextWidth(labelText);
-          const remainingWidth = Math.max(40, width - labelWidth - 6);
-          doc.setFont('helvetica','normal');
-          const lines = doc.splitTextToSize(String(value || ''), remainingWidth);
-          if (lines.length){
-            // first line continues on same baseline
-            doc.text(lines[0], x + labelWidth, yStart);
-            // subsequent lines go to next rows
-            for (let i=1;i<lines.length;i++){
-              const yLine = yStart + 18*i;
-              doc.text(lines[i], x, yLine);
-            }
-          }
-          const used = 18 * Math.max(1, lines.length) + 6;
-          return used;
-        }
-        function addLabelValueRows(items){
-          // items: array of {label, value}
-          for (let i=0; i<items.length; i+=2){
-            if (y > 760) { doc.addPage(); y = 40; }
-            const left = items[i];
-            const right = items[i+1];
-            const xLeft = marginLeft; const xRight = marginLeft + colWidth + gutter;
-            const usedLeft = left ? addLabelValueColumn(left.label, left.value, xLeft, y, colWidth) : 0;
-            const usedRight = right ? addLabelValueColumn(right.label, right.value, xRight, y, colWidth) : 0;
-            const rowHeight = Math.max(usedLeft, usedRight);
-            y += rowHeight;
-          }
-        }
-
-        addSection('Personal Information');
-        const p = app.data && app.data.personal || {};
-        addLabelValueRows([
-          { label: 'Full Name', value: p.fullName || '' },
-          { label: 'Date of Birth', value: p.dob || '' },
-          { label: 'Gender', value: p.gender || '' },
-          { label: 'Education', value: p.education || '' },
-          { label: 'Occupation', value: p.occupation || '' },
-          { label: 'Income', value: p.income || '' },
-          { label: 'Area', value: p.area || '' },
-          { label: 'District', value: p.district || '' },
-          { label: 'Division', value: p.division || '' },
-          { label: 'Mobile', value: p.mobile || '' },
-          { label: 'Family Members', value: p.members || '' },
-          { label: 'NID', value: p.nidNumber || '' },
-        ]);
-
-        addSection('Marital Information');
-        const m = app.data && app.data.marital || { spouses: [] };
-        addLabelValueRows([{ label: 'Status', value: m.maritalStatus || '' }]);
-        (m.spouses || []).forEach((s, i) => {
-          addSection('Spouse ' + (i+1));
-          addLabelValueRows([
-            { label: 'Name', value: s.name || '' },
-            { label: 'Date of Birth', value: s.dob || '' },
-            { label: 'Gender', value: s.gender || '' },
-            { label: 'NID', value: s.nid || '' },
-            { label: 'Education', value: s.education || '' },
-            { label: 'Job', value: s.job || '' },
-            { label: 'Income', value: s.income || '' },
-            { label: 'Mobile', value: s.mobile || '' },
-          ]);
-          addImage(s.marriageCertificate, 'Marriage Certificate');
-        });
-
-        addSection('Child Information');
-        const c = app.data && app.data.children || { children: [] };
-        (c.children || []).forEach((k, i) => {
-          addSection('Child ' + (i+1));
-          addLabelValueRows([
-            { label: 'Name', value: k.name || '' },
-            { label: 'Date of Birth', value: k.dob || '' },
-            { label: 'Gender', value: k.gender || '' },
-            { label: 'Education', value: k.education || '' },
-            { label: 'Job', value: k.job || '' },
-            { label: 'Income', value: k.income || '' },
-            { label: 'Preferred Job', value: k.preferredJob || '' },
-          ]);
-          addImage(k.birthCertificate, 'Birth Certificate');
-        });
-
-        const filename = ((p.fullName || 'resident').replace(/[^a-z0-9]+/gi,'_').toLowerCase()) + '_application.pdf';
-        doc.save(filename);
       }
 
       // Modal functions
       function openApproveModal(name) {
-        var modal = document.getElementById('approveModal');
-        var body = document.getElementById('approveModalBody');
-        body.textContent = 'Are you sure you want to approve ' + name + '?';
+        const modal = document.getElementById('approveModal');
+        const body = document.getElementById('approveModalBody');
+        body.textContent = 'Are you sure you want to approve ' + name + '\'s account? They will be moved to active accounts.';
         modal.setAttribute('aria-hidden', 'false');
         modal.classList.add('show');
       }
 
       function closeApproveModal() {
-        var modal = document.getElementById('approveModal');
+        const modal = document.getElementById('approveModal');
         modal.setAttribute('aria-hidden', 'true');
         modal.classList.remove('show');
-        currentApproveIdx = -1;
+        currentApproveId = -1;
       }
 
       function openRejectModal(name) {
-        var modal = document.getElementById('rejectModal');
-        var body = document.getElementById('rejectModalBody');
-        body.textContent = 'Are you sure you want to reject ' + name + '?';
+        const modal = document.getElementById('rejectModal');
+        const body = document.getElementById('rejectModalBody');
+        body.textContent = 'Are you sure you want to reject and delete ' + name + '\'s account and all associated records?';
         modal.setAttribute('aria-hidden', 'false');
         modal.classList.add('show');
       }
 
       function closeRejectModal() {
-        var modal = document.getElementById('rejectModal');
+        const modal = document.getElementById('rejectModal');
         modal.setAttribute('aria-hidden', 'true');
         modal.classList.remove('show');
-        currentRejectIdx = -1;
+        currentRejectId = -1;
       }
 
       function showSuccessModal(message) {
-        var modal = document.getElementById('successModal');
-        var body = document.getElementById('successModalBody');
+        const modal = document.getElementById('successModal');
+        const body = document.getElementById('successModalBody');
         body.textContent = message;
         modal.setAttribute('aria-hidden', 'false');
         modal.classList.add('show');
       }
 
       function closeSuccessModal() {
-        var modal = document.getElementById('successModal');
+        const modal = document.getElementById('successModal');
         modal.setAttribute('aria-hidden', 'true');
         modal.classList.remove('show');
       }
 
-      document.getElementById('cancelApprove').addEventListener('click', closeApproveModal);
-      
-      document.getElementById('confirmApprove').addEventListener('click', function() {
-        if (currentApproveIdx >= 0) {
-          var app = applications[currentApproveIdx];
-          applications[currentApproveIdx] = Object.assign({}, app, { status: 'approved' });
-          localStorage.setItem(LIST_KEY, JSON.stringify(applications));
-          closeApproveModal();
-          showSuccessModal('Account approved for ' + ((app.data && app.data.personal && app.data.personal.fullName) || 'resident') + '. Added to active accounts.');
-          applications = safeJsonParse(localStorage.getItem(LIST_KEY), []);
-          renderRows();
+      // Approve button handler
+      document.getElementById('confirmApprove').addEventListener('click', async function() {
+        if (currentApproveId < 0) return;
+        
+        try {
+          const response = await fetch(`/api/slum-dweller/${currentApproveId}/approve`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' }
+          });
+          const result = await response.json();
+          
+          if (result.status === 'success') {
+            closeApproveModal();
+            showSuccessModal('Account approved successfully! Account moved to Active Accounts.');
+            setTimeout(() => {
+              closeSuccessModal();
+              fetchPendingAccounts(); // Refresh the list
+            }, 2000);
+          } else {
+            alert('Failed to approve: ' + result.message);
+          }
+        } catch (error) {
+          console.error('Error approving account:', error);
+          alert('Error approving account. Please try again.');
         }
       });
 
-      document.getElementById('approveModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-          closeApproveModal();
+      // Reject button handler
+      document.getElementById('confirmReject').addEventListener('click', async function() {
+        if (currentRejectId < 0) return;
+        
+        try {
+          const response = await fetch(`/api/slum-dweller/${currentRejectId}`, {
+            method: 'DELETE'
+          });
+          const result = await response.json();
+          
+          if (result.status === 'success') {
+            closeRejectModal();
+            showSuccessModal('Account rejected and deleted successfully.');
+            setTimeout(() => {
+              closeSuccessModal();
+              fetchPendingAccounts(); // Refresh the list
+            }, 2000);
+          } else {
+            alert('Failed to reject: ' + result.message);
+          }
+        } catch (error) {
+          console.error('Error rejecting account:', error);
+          alert('Error rejecting account. Please try again.');
         }
+      });
+
+      document.getElementById('cancelApprove').addEventListener('click', closeApproveModal);
+      document.getElementById('approveModal').addEventListener('click', function(e) {
+        if (e.target === this) closeApproveModal();
       });
 
       document.getElementById('cancelReject').addEventListener('click', closeRejectModal);
-      
-      document.getElementById('confirmReject').addEventListener('click', function() {
-        if (currentRejectIdx >= 0) {
-          var app = applications[currentRejectIdx];
-          applications[currentRejectIdx] = Object.assign({}, app, { status: 'rejected' });
-          localStorage.setItem(LIST_KEY, JSON.stringify(applications));
-          closeRejectModal();
-          showSuccessModal('Account rejected for ' + ((app.data && app.data.personal && app.data.personal.fullName) || 'resident'));
-          applications = safeJsonParse(localStorage.getItem(LIST_KEY), []);
-          renderRows();
-        }
-      });
-
       document.getElementById('rejectModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-          closeRejectModal();
-        }
+        if (e.target === this) closeRejectModal();
       });
 
       document.getElementById('closeSuccess').addEventListener('click', closeSuccessModal);
-
       document.getElementById('successModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-          closeSuccessModal();
-        }
+        if (e.target === this) closeSuccessModal();
       });
+
+      // Initial fetch
+      fetchPendingAccounts();
     });
   </script>
 </body>

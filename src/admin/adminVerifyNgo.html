@@ -26,27 +26,39 @@
     }  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
-    <input type="text" placeholder="Search" class="search" />
-    <div class="top-right">
-      <div class="admin">
-        <span>Admin ▾</span>
-        <div class="admin-dropdown">
-          <button class="admin-logout">Logout</button>
-        </div>
+<header class="topbar" aria-label="Header">
+  <!-- Brand / Logo -->
+  <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
+
+  <!-- Search input -->
+  <input type="text" placeholder="Search" class="search" />
+
+  <!-- Admin & Notifications -->
+  <div class="top-right">
+    <div class="admin">
+      <span>Admin ▾</span>
+      <div class="admin-dropdown">
+        <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">
+          Logout
+        </button>
       </div>
-      <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
     </div>
-  </header>
+    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+  </div>
+</header>
 
   <div class="container">
     <aside class="sidebar">
       <ul>
         <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
         <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-        <li><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+        <li><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
         <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li class="active"><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
       </ul>
     </aside>
@@ -67,7 +79,7 @@
             <thead>
               <tr>
                 <th>Foundation Name</th>
-                <th>Location</th>
+                <th>Email</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -141,51 +153,27 @@
 
   <script src="adminSlumAnalytics.js"></script>
   <script>
-    var pendingNGOs = [
-      { 
-        name: 'Hope Foundation Bangladesh', 
-        email: 'info@hopefoundation.bd',
-        phone: '+88-01700-123456',
-        location: 'Dhaka, Bangladesh', 
-        year: 2015,
-        registrationDoc: 'profilepic/registrationCertificateNGO.jpg'
-      },
-      { 
-        name: 'Green Earth Initiative', 
-        email: 'contact@greenearthbd.org',
-        phone: '+88-01800-234567',
-        location: 'Chittagong, Bangladesh', 
-        year: 2018,
-        registrationDoc: 'profilepic/registrationCertificateNGO.jpg'
-      },
-      { 
-        name: 'Women Empowerment Trust', 
-        email: 'support@womenempowerbd.org',
-        phone: '+88-01900-345678',
-        location: 'Dhaka, Bangladesh', 
-        year: 2012,
-        registrationDoc: 'profilepic/registrationCertificateNGO.jpg'
-      },
-      { 
-        name: 'Child Development Society', 
-        email: 'hello@childdevbd.org',
-        phone: '+88-01600-456789',
-        location: 'Sylhet, Bangladesh', 
-        year: 2016,
-        registrationDoc: 'profilepic/registrationCertificateNGO.jpg'
-      },
-      { 
-        name: 'Community Health Network', 
-        email: 'health@communitynetwork.bd',
-        phone: '+88-01700-567890',
-        location: 'Dhaka, Bangladesh', 
-        year: 2014,
-        registrationDoc: 'profilepic/registrationCertificateNGO.jpg'
-      }
-    ];
-
+    var pendingNGOs = [];
     var currentApproveIndex = -1;
     var currentRejectIndex = -1;
+
+    // Fetch pending NGOs from backend
+    async function fetchPendingNGOs() {
+      try {
+        const response = await fetch("/api/ngo/pending");
+        const result = await response.json();
+
+        if (result.status === "success") {
+          pendingNGOs = result.data;
+          renderRows();
+        } else {
+          alert("Failed to fetch pending NGOs");
+        }
+      } catch (err) {
+        console.error("Error fetching pending NGOs:", err);
+        alert("Server error while fetching pending NGOs");
+      }
+    }
 
     function renderRows() {
       var tbody = document.getElementById('ngoTableBody');
@@ -197,7 +185,7 @@
         // Foundation Name (clickable)
         var nameCell = document.createElement('td');
         var nameLink = document.createElement('a');
-        nameLink.textContent = ngo.name;
+        nameLink.textContent = ngo.org_name;
         nameLink.style.cursor = 'pointer';
         nameLink.style.color = '#0066cc';
         nameLink.style.textDecoration = 'underline';
@@ -208,10 +196,10 @@
         nameCell.appendChild(nameLink);
         row.appendChild(nameCell);
 
-        // Location
-        var locationCell = document.createElement('td');
-        locationCell.textContent = ngo.location;
-        row.appendChild(locationCell);
+        // Email
+        var emailCell = document.createElement('td');
+        emailCell.textContent = ngo.email;
+        row.appendChild(emailCell);
 
         // Actions
         var actionsCell = document.createElement('td');
@@ -231,7 +219,7 @@
         approveBtn.onclick = function(e) { 
           e.stopPropagation();
           currentApproveIndex = index;
-          openApproveModal(ngo.name);
+          openApproveModal(ngo.org_name);
         };
         
         var rejectBtn = document.createElement('button');
@@ -241,7 +229,7 @@
         rejectBtn.onclick = function(e) { 
           e.stopPropagation();
           currentRejectIndex = index;
-          openRejectModal(ngo.name);
+          openRejectModal(ngo.org_name);
         };
         
         actionsContainer.appendChild(approveBtn);
@@ -257,22 +245,6 @@
         empty.innerHTML = '<td colspan="3" style="text-align:center;color:#8b6f5a;">No pending NGO verifications.</td>';
         tbody.appendChild(empty);
       }
-    }
-
-    function openImageModal(src, caption) {
-      var modal = document.getElementById('imageModal');
-      var img = document.getElementById('modalImage');
-      var captionEl = document.getElementById('imageCaption');
-      img.src = src;
-      captionEl.textContent = caption || '';
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeImageModal() {
-      var modal = document.getElementById('imageModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
     }
 
     function openApproveModal(name) {
@@ -319,45 +291,27 @@
       modal.classList.remove('show');
     }
 
-    document.getElementById('closeImageModal').addEventListener('click', closeImageModal);
-    
-    document.getElementById('imageModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeImageModal();
-      }
-    });
-
-    document.getElementById('downloadImage').addEventListener('click', function() {
-      var img = document.getElementById('modalImage');
-      var caption = document.getElementById('imageCaption');
-      var src = img.src;
-      var fileName = caption.textContent.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.jpg';
-      
-      fetch(src)
-        .then(function(response) { return response.blob(); })
-        .then(function(blob) {
-          var url = window.URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        })
-        .catch(function() { alert('Failed to download image'); });
-    });
-
     document.getElementById('cancelApprove').addEventListener('click', closeApproveModal);
     
-    document.getElementById('confirmApprove').addEventListener('click', function() {
+    document.getElementById('confirmApprove').addEventListener('click', async function() {
       if (currentApproveIndex >= 0) {
-        var approvedNGO = pendingNGOs[currentApproveIndex];
-        pendingNGOs.splice(currentApproveIndex, 1);
-        closeApproveModal();
-        showSuccessModal(approvedNGO.name + ' has been approved successfully!');
-        renderRows();
+        var ngo = pendingNGOs[currentApproveIndex];
+        try {
+          const response = await fetch(`/api/ngo/${ngo.org_id}/approve`, { method: "PUT" });
+          const result = await response.json();
+
+          if (result.status === "success") {
+            pendingNGOs.splice(currentApproveIndex, 1);
+            closeApproveModal();
+            showSuccessModal(ngo.org_name + ' has been approved successfully! Email sent to ' + ngo.email);
+            renderRows();
+          } else {
+            alert("Error: " + (result.message || "Failed to approve NGO"));
+          }
+        } catch (err) {
+          console.error("Error approving NGO:", err);
+          alert("Server error while approving NGO");
+        }
       }
     });
 
@@ -369,13 +323,25 @@
 
     document.getElementById('cancelReject').addEventListener('click', closeRejectModal);
     
-    document.getElementById('confirmReject').addEventListener('click', function() {
+    document.getElementById('confirmReject').addEventListener('click', async function() {
       if (currentRejectIndex >= 0) {
-        var rejectedNGO = pendingNGOs[currentRejectIndex];
-        pendingNGOs.splice(currentRejectIndex, 1);
-        closeRejectModal();
-        showSuccessModal(rejectedNGO.name + ' has been rejected.');
-        renderRows();
+        var ngo = pendingNGOs[currentRejectIndex];
+        try {
+          const response = await fetch(`/api/ngo/${ngo.org_id}/reject`, { method: "PUT" });
+          const result = await response.json();
+
+          if (result.status === "success") {
+            pendingNGOs.splice(currentRejectIndex, 1);
+            closeRejectModal();
+            showSuccessModal(ngo.org_name + ' has been rejected. Email sent to ' + ngo.email);
+            renderRows();
+          } else {
+            alert("Error: " + (result.message || "Failed to reject NGO"));
+          }
+        } catch (err) {
+          console.error("Error rejecting NGO:", err);
+          alert("Server error while rejecting NGO");
+        }
       }
     });
 
@@ -393,7 +359,8 @@
       }
     });
 
-    renderRows();
+    // Load pending NGOs on page load
+    document.addEventListener('DOMContentLoaded', fetchPendingNGOs);
   </script>
 </body>
 </html>

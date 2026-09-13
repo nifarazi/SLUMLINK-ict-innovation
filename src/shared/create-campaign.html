@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SlumLink | Create Campaign</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <!-- ✅ External CSS -->
+  <link rel="stylesheet" href="./create-campaign.css" />
+</head>
+
+<body>
+  <header class="topbar" aria-label="Header">
+    <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
+    <button class="pill-btn" id="backBtn" type="button" aria-label="Back to dashboard">
+      <i class="fas fa-arrow-left" aria-hidden="true"></i>
+      <span>Back to Dashboard</span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="hero" aria-label="Create campaign intro">
+      <h1>Create a Campaign</h1>
+      <p>Create campaigns and target the right audience.</p>
+    </section>
+
+    <section class="panel" aria-label="Create campaign form panel">
+      <div class="panel-inner">
+        <form id="campaignForm" novalidate>
+          <div class="form-grid">
+            <!-- TITLE -->
+            <div class="field">
+              <label for="title">Title</label>
+              <div class="control">
+                <input id="title" name="title" type="text" placeholder="e.g., Winter Blanket Drive" autocomplete="off" required />
+              </div>
+            </div>
+
+            <!-- CATEGORY -->
+            <div class="field">
+              <label for="category">Category</label>
+              <div class="control">
+                <select id="category" name="category" required>
+                  <option value="">Select</option>
+                  <option value="food_distribution">Food Distribution</option>
+                  <option value="medical_checkup">Medical Checkup</option>
+                  <option value="medicine_support">Medicine Support</option>
+                  <option value="education_support">Education Support</option>
+                  <option value="school_supplies">School Supplies</option>
+                  <option value="skill_training">Skill Training</option>
+                  <option value="workshop">Workshop</option>
+                  <option value="employment">Employment</option>
+                  <option value="winter_relief">Winter Relief</option>
+                  <option value="shelter_support">Shelter Support</option>
+                  <option value="water_sanitation">Water & Sanitation</option>
+                  <option value="hygiene_kits">Hygiene Kits</option>
+                  <option value="nutrition_program">Nutrition Program</option>
+                  <option value="women_empowerment">Women Empowerment</option>
+                  <option value="child_protection">Child Protection</option>
+                  <option value="disaster_relief">Disaster Relief</option>
+                  <option value="community_awareness">Community Awareness</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- DIVISION -->
+            <div class="field">
+              <label for="division">Division</label>
+              <div class="control">
+                <select id="division" name="division" required>
+                  <option value="">Select</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- DISTRICT -->
+            <div class="field">
+              <label for="district">District</label>
+              <div class="control">
+                <select id="district" name="district" required disabled>
+                  <option value="">Select</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- SLUM AREA -->
+            <div class="field">
+              <label for="slumArea">Slum Area</label>
+              <div class="control">
+                <select id="slumArea" name="slumArea" required disabled>
+                  <option value="">Select</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- START DATE -->
+            <div class="field">
+              <label for="startDate">Start Date</label>
+              <div class="control">
+                <input id="startDate" name="startDate" type="date" required />
+              </div>
+            </div>
+
+            <!-- END DATE -->
+            <div class="field">
+              <label for="endDate">End Date</label>
+              <div class="control">
+                <input id="endDate" name="endDate" type="date" required />
+              </div>
+            </div>
+
+            <!-- TIME -->
+            <div class="field">
+              <label for="time">Time</label>
+              <div class="control">
+                <input id="time" name="time" type="time" required />
+              </div>
+            </div>
+
+            <!-- TARGET GENDER -->
+            <div class="field">
+              <label for="gender">Target Gender</label>
+              <div class="control">
+                <select id="gender" name="gender" required>
+                  <option value="">Select</option>
+                  <option value="all">All</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="others">Others</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- AGE GROUP -->
+            <div class="field">
+              <label for="ageGroup">Age Group</label>
+              <div class="control">
+                <select id="ageGroup" name="ageGroup" required>
+                  <option value="">Select</option>
+                  <option value="child">Child</option>
+                  <option value="adult">Adult</option>
+                  <option value="both">Both</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- REQUIRED EDUCATION (conditional) -->
+            <div class="field hidden" id="eduField">
+              <label for="education">Required Education</label>
+              <div class="control">
+                <select id="education" name="education">
+                  <option value="">Select</option>
+                  <option value="none">No requirement</option>
+                  <option value="primary">Primary</option>
+                  <option value="secondary">Secondary</option>
+                  <option value="hsc">Higher Secondary</option>
+                  <option value="diploma">Diploma / Vocational</option>
+                  <option value="graduate">Graduate</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- SKILLS REQUIRED (conditional) -->
+            <div class="field hidden" id="skillsField">
+              <label for="skills">Skills Required</label>
+              <div class="control">
+                <select id="skills" name="skills">
+                  <option value="">Select</option>
+                  <option value="tailoring">Tailoring / Sewing</option>
+                  <option value="embroidery">Embroidery / Handicraft</option>
+                  <option value="housekeeping">Housekeeping / Cleaning</option>
+                  <option value="cooking">Cooking / Kitchen Assistant</option>
+                  <option value="caregiving">Caregiving / Childcare</option>
+                  <option value="delivery">Delivery (Bicycle/Motorbike)</option>
+                  <option value="driver">Driving (Car/Van)</option>
+                  <option value="rickshaw">Rickshaw / Van Driving</option>
+                  <option value="electric_helper">Electrical Helper (Basic Wiring)</option>
+                  <option value="electrician">Electrician (Experienced)</option>
+                  <option value="plumbing_helper">Plumbing Helper</option>
+                  <option value="plumber">Plumber (Experienced)</option>
+                  <option value="masonry_helper">Masonry / Construction Helper</option>
+                  <option value="welding_helper">Welding Helper</option>
+                  <option value="welding">Welding (Experienced)</option>
+                  <option value="carpentry">Carpentry</option>
+                  <option value="barbering">Barbering</option>
+                  <option value="beauty_parlor">Beauty Parlor / Salon</option>
+                  <option value="mobile_servicing">Mobile Servicing (Basic)</option>
+                  <option value="electronics_repair">Electronics Repair</option>
+                  <option value="sales">Sales / Customer Handling</option>
+                  <option value="typing">Basic Computer / Typing</option>
+                  <option value="ms_office">MS Office</option>
+                  <option value="data_entry">Data Entry</option>
+                  <option value="tutoring">Tutoring (Basic)</option>
+                  <option value="security_guard">Security Guard</option>
+                </select>
+                <i class="fas fa-chevron-down ic-right" aria-hidden="true"></i>
+              </div>
+            </div>
+
+            <!-- DESCRIPTION -->
+            <div class="field span-2">
+              <label for="description">Description</label>
+              <div class="control">
+                <textarea id="description" name="description" placeholder="Write a short description..." required></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="create-btn" id="createBtn" type="button">Create</button>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <!-- Confirm modal -->
+  <div class="modal-backdrop" id="confirmModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-head">
+        <div class="modal-ic"><i class="fas fa-circle-check"></i></div>
+        <div class="modal-title" id="confirmTitle">Confirm campaign creation</div>
+      </div>
+      <div class="modal-body" id="confirmBody">Are you sure you want to create this campaign?</div>
+      <div class="modal-actions">
+        <button class="btn" id="cancelConfirm" type="button">Cancel</button>
+        <button class="btn btn-primary" id="confirmCreate" type="button">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success modal -->
+  <div class="modal-backdrop" id="successModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="modal-head">
+        <div class="modal-ic"><i class="fas fa-hands-holding-heart"></i></div>
+        <div class="modal-title" id="successTitle">Campaign created</div>
+      </div>
+      <div class="modal-body">Thank you for helping others. You'll be taken back to the dashboard.</div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="goDashboard" type="button">Back to Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ✅ External JS -->
+  <script src="./create-campaign.js"></script>
+</body>
+</html>

@@ -12,6 +12,7 @@
       rel="stylesheet"
     />
 
+    <link rel="preload" as="image" href="/src/images/slumimagefinal.jpeg" />
     <link rel="stylesheet" href="/src/slumhometheme.css" />
   </head>
 
@@ -19,72 +20,64 @@
     <div class="canvas">
       <div class="frame" aria-label="SlumLink Home">
         <header class="header" aria-label="Header">
-          <a class="brand-wrap" href="/" aria-label="SlumLink">
-            <span class="logo-mark" aria-hidden="true"></span>
+          <a class="brand-wrap" onclick="window.location='/'" style="cursor:pointer" aria-label="SlumLink">
+            <img
+              src="/src/images/slum Logo.png"
+              alt="SlumLink Logo"
+              class="logo-mark"
+            />
             <span class="logo-text">SLUMLINK</span>
           </a>
 
           <nav class="nav" aria-label="Primary">
-            <a class="nav-link" href="/src/about.html">About</a>
-            <a class="nav-link" href="/src/impact.html">Impact</a>
+            <a class="nav-link" onclick="window.location='/src/about.html'" style="cursor:pointer">About</a>
+            <a class="nav-link" onclick="window.location='/src/impact.html'" style="cursor:pointer">Impact</a>
           </nav>
 
-          <a class="signin-btn" href="/src/signin.html">Sign In</a>
+          <a class="signin-btn" onclick="window.location='/src/signin.html'" style="cursor:pointer">Sign In</a>
         </header>
 
         <main class="stage" id="main">
           <section class="hero" aria-label="Introduction">
-            <div class="container hero__grid">
-              <div class="hero__copy">
-                <p class="kicker">Transparent support that reaches the right people.</p>
+            <!-- FULL SCREEN CAROUSEL -->
+            <div class="hero__carousel" data-carousel="hero">
+              <div class="carousel-track"></div>
+            </div>
 
-                <h1>Visibility. Dignity. Progress — for every slum family.</h1>
+            <!-- TEXT CONTENT OVERLAY -->
+            <div class="hero__overlay">
+              <div class="container hero__content">
+                <div class="hero__copy">
+                  <p class="kicker">Transparent support that reaches the right people.</p>
 
-                <p class="lead">
-                  SlumLink connects households, NGOs, and local authorities to track aid, resolve complaints,
-                  and measure real-world outcomes.
-                </p>
+                  <h1>Visibility. Dignity. Progress — for every slum family.</h1>
 
-                <div class="quick-stats" aria-label="Highlights">
-                  <div class="stat">
-                    <div class="stat-num">10k+</div>
-                    <div class="stat-label">Families visible</div>
+                  <p class="lead">
+                    SlumLink connects households, NGOs, and local authorities to track aid, resolve complaints,
+                    and measure real-world outcomes.
+                  </p>
+
+                  <div class="quick-stats" aria-label="Highlights">
+                    <div class="stat">
+                      <div class="stat-num">10k+</div>
+                      <div class="stat-label">Families visible</div>
+                    </div>
+                    <div class="stat">
+                      <div class="stat-num">500+</div>
+                      <div class="stat-label">Aid events tracked</div>
+                    </div>
+                    <div class="stat">
+                      <div class="stat-num">2K+</div>
+                      <div class="stat-label">Complaints resolved</div>
+                    </div>
                   </div>
-                  <div class="stat">
-                    <div class="stat-num">500+</div>
-                    <div class="stat-label">Aid events tracked</div>
-                  </div>
-                  <div class="stat">
-                    <div class="stat-num">2K+</div>
-                    <div class="stat-label">Complaints resolved</div>
-                  </div>
-                </div>
 
-                <div class="cta-row" aria-label="Sign up options">
-                  <a href="#register-household" class="btn btn-primary">Register Household</a>
-                  <a href="#register-organization" class="btn btn-soft">Register Organization</a>
+                  <div class="cta-row" aria-label="Sign up options">
+                    <a onclick="document.getElementById('register-household').scrollIntoView({behavior:'smooth'})" class="btn btn-primary" style="cursor:pointer">Register Household</a>
+                    <a onclick="document.getElementById('register-organization').scrollIntoView({behavior:'smooth'})" class="btn btn-soft" style="cursor:pointer">Register Organization</a>
+                  </div>
                 </div>
               </div>
-
-              <aside class="hero__media" aria-label="Hero images">
-                <div class="media-grid">
-                  <figure class="media-card">
-                    <img
-                      src="/src/images/slumimagefinal.jpeg"
-                      alt="Community support and outreach"
-                      class="media-img"
-                    />
-                  </figure>
-
-                  <figure class="media-card media-card--small">
-                    <img
-                      src="/src/images/slumtwo.png"
-                      alt="A neighborhood view"
-                      class="media-img"
-                    />
-                  </figure>
-                </div>
-              </aside>
             </div>
           </section>
 
@@ -159,7 +152,7 @@
                   </ul>
 
                   <div class="cta-row">
-                    <a class="btn btn-primary" href="/src/Slum_SignUp/signup.html">Register Household</a>
+                    <a class="btn btn-primary" onclick="window.location='/src/Slum_SignUp/signup.html'" style="cursor:pointer">Register Household</a>
                   </div>
                 </div>
 
@@ -196,7 +189,7 @@
                   </ul>
 
                   <div class="cta-row">
-                    <a class="btn btn-primary" href="/src/ngo/signup.html">Register Organization</a>
+                    <a class="btn btn-primary" onclick="window.location='/src/ngo/signup.html'" style="cursor:pointer">Register Organization</a>
                   </div>
                 </div>
 
@@ -217,10 +210,15 @@
 
           <footer class="footer" aria-label="Footer">
             <div class="footer-inner">
-              <div class="footer-brand">
-                <span class="logo-mark" aria-hidden="true"></span>
-                <span class="logo-text">SLUMLINK</span>
-              </div>
+           <div class="footer-brand">
+  <img
+    src="/src/images/slum Logo.png"
+    alt="SlumLink Logo"
+    class="logo-mark"
+  />
+  <span class="logo-text">SLUMLINK</span>
+</div>
+
             </div>
           </footer>
         </main>

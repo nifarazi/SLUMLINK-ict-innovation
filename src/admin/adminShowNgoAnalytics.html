@@ -51,19 +51,31 @@
 </head>
 <body>
   <!-- Top Bar -->
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
-    <input type="text" placeholder="Search" class="search" />
-    <div class="top-right">
-          <div class="admin">
-            <span>Admin ▾</span>
-            <div class="admin-dropdown">
-              <button class="admin-logout">Logout</button>
-            </div>
-          </div>
-          <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+  <header class="topbar" aria-label="Header">
+  <!-- Brand / Logo -->
+  <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
+
+  <!-- Search input -->
+  <input type="text" placeholder="Search" class="search" />
+
+  <!-- Admin & Notifications -->
+  <div class="top-right">
+    <div class="admin">
+      <span>Admin ▾</span>
+      <div class="admin-dropdown">
+        <!-- Logout button -->
+        <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">
+          Logout
+        </button>
+      </div>
     </div>
-  </header>
+    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+  </div>
+</header>
+
 
   <div class="container">
     <!-- Sidebar -->
@@ -71,8 +83,10 @@
         <ul>
           <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
           <li class="active"><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-          <li><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+          <li><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
           <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+          <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+          <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
           <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
         </ul>
     </aside>

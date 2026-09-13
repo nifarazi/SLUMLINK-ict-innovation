@@ -166,84 +166,97 @@
     };
   };
 
-  // Load submitted complaints from localStorage; fallback to lastSubmittedComplaint
-  let complaints = [];
-  try {
-    const rawArr = localStorage.getItem('submittedComplaints');
-    if (rawArr) complaints = JSON.parse(rawArr) || [];
-  } catch (err) {
-    console.warn('Failed to parse submittedComplaints:', err);
-  }
-  if (!complaints.length) {
-    try {
-      const rawLast = localStorage.getItem('lastSubmittedComplaint');
-      if (rawLast) {
-        const submitted = JSON.parse(rawLast);
-        complaints = [{
-          title: submitted.title || 'Complaint',
-          category: submitted.category || 'General',
-          status: submitted.status || 'Pending',
-          description: submitted.description || '—',
-          attachment: submitted.attachmentDataUrl || '',
-          attachmentName: submitted.attachmentName || ''
-        }];
+  // Load complaints for the signed-in user from database
+  (function loadComplaints() {
+    const currentRaw = localStorage.getItem('SLUMLINK_CURRENT_USER');
+    const current = currentRaw ? JSON.parse(currentRaw) : null;
+    
+    if (!current || !current.slum_code) {
+      // No user logged in, show empty state
+      const listEl = document.getElementById('statusComplaintList');
+      if (listEl) {
+        listEl.innerHTML = '<div style="color: #444;">Please sign in to view complaints.</div>';
       }
-    } catch (err) {
-      console.warn('Failed to parse lastSubmittedComplaint:', err);
+      return;
     }
-  }
 
-  // Ensure newest complaints appear at the top
-  try {
-    complaints.sort((a, b) => {
-      const ta = a && a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tb = b && b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return tb - ta; // descending by createdAt
-    });
-  } catch (err) {
-    console.warn('Failed to sort complaints:', err);
-  }
+    const listEl = document.getElementById('statusComplaintList');
+    if (listEl) {
+      listEl.innerHTML = '<div style="color: #666;">Loading complaints...</div>';
+    }
 
-  // Render list
-  const listEl = document.getElementById('statusComplaintList');
-  if (listEl) {
-    listEl.innerHTML = '';
-    if (!complaints.length) {
-      const empty = document.createElement('div');
-      empty.textContent = 'No complaints submitted yet.';
-      empty.style.color = '#444';
-      listEl.appendChild(empty);
-    } else {
-      complaints.forEach((c) => {
-        const card = document.createElement('div');
-        card.className = 'complaint-card';
+    // Fetch complaints from backend
+    fetch(`/api/complaints/slum/${current.slum_code}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          throw new Error('Failed to fetch complaints');
+        }
+        const response = await r.json();
+        if (response.status === 'success' && Array.isArray(response.data)) {
+          return response.data;
+        }
+        throw new Error('Invalid response format');
+      })
+      .then((complaints) => {
+        // Render list
+        if (listEl) {
+          listEl.innerHTML = '';
+          if (!complaints.length) {
+            const empty = document.createElement('div');
+            empty.textContent = 'No complaints submitted yet.';
+            empty.style.color = '#444';
+            listEl.appendChild(empty);
+          } else {
+            complaints.forEach((c) => {
+              const card = document.createElement('div');
+              card.className = 'complaint-card';
 
-        const title = document.createElement('div');
-        title.className = 'complaint-title';
-        title.textContent = c.title;
+              const title = document.createElement('div');
+              title.className = 'complaint-title';
+              title.textContent = c.title;
 
-        const cat = document.createElement('div');
-        cat.className = 'complaint-category';
-        cat.textContent = c.category;
+              const cat = document.createElement('div');
+              cat.className = 'complaint-category';
+              cat.textContent = c.category;
 
-        const status = document.createElement('div');
-        const sClass = 'status-badge ' + statusClassFor(c.status);
-        status.className = sClass;
-        status.textContent = c.status;
+              const status = document.createElement('div');
+              const sClass = 'status-badge ' + statusClassFor(c.status);
+              status.className = sClass;
+              status.textContent = c.status;
 
-        card.appendChild(title);
-        card.appendChild(cat);
-        card.appendChild(status);
+              card.appendChild(title);
+              card.appendChild(cat);
+              card.appendChild(status);
 
-        card.addEventListener('click', () => {
-          populateModal(c);
-          openModal();
-        });
+              card.addEventListener('click', () => {
+                // Fetch full complaint details with attachment
+                fetch(`/api/complaints/${c.complaint_id}`)
+                  .then(async (r) => {
+                    if (!r.ok) throw new Error('Failed to fetch complaint details');
+                    const res = await r.json();
+                    if (res.status === 'success' && res.data) {
+                      populateModal(res.data);
+                      openModal();
+                    }
+                  })
+                  .catch((err) => {
+                    console.error('Failed to load complaint details:', err);
+                    alert('Failed to load complaint details');
+                  });
+              });
 
-        listEl.appendChild(card);
+              listEl.appendChild(card);
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load complaints:', err);
+        if (listEl) {
+          listEl.innerHTML = '<div style="color: #d32f2f;">Failed to load complaints. Please try again later.</div>';
+        }
       });
-    }
-  }
+  })();
 
   // Modal close interactions
   if (modal) {

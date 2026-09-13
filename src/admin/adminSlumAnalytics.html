@@ -9,50 +9,144 @@
 </head>
 <body>
   <!-- Top Bar -->
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
-    <input type="text" placeholder="Search" class="search" />
-    <div class="top-right">
-          <div class="admin">
-            <span>Admin ▾</span>
-            <div class="admin-dropdown">
-              <button class="admin-logout">Logout</button>
-            </div>
-          </div>
-          <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
-    </div>
-  </header>
+ <header class="topbar" aria-label="Header">
+  <!-- Brand / Logo -->
+  <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
 
+  <!-- Search input -->
+  <input type="text" placeholder="Search" class="search" />
+
+  <!-- Admin & Notifications -->
+  <div class="top-right">
+    <div class="admin">
+      <span>Admin ▾</span>
+      <div class="admin-dropdown">
+        <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">
+          Logout
+        </button>
+      </div>
+    </div>
+    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+  </div>
+</header>
   <div class="container">
     <!-- Sidebar -->
     <aside class="sidebar">
         <ul>
           <li class="active"><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
           <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-          <li><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+          <li><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
           <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+          <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+          <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
           <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
         </ul>
     </aside>
 
     <!-- Main Content -->
     <main class="content">
-      <div class="card-grid">
-        <button class="card" type="button">Molla</button>
-        <button class="card" type="button">Korail</button>
-        <button class="card" type="button">Begun Bari</button>
+      <div class="page-header">
+        <div>
 
-        <button class="card" type="button">DuariPara</button>
-        <button class="card" type="button">Kallyanpur</button>
-        <button class="card" type="button">Pora Basti</button>
+        </div>
+      </div>
 
-        <button class="card" type="button">Pura</button>
-        <button class="card" type="button">Nubur</button>
-        <button class="card" type="button">Mannan</button>
+      <div class="card-grid" id="divisionGrid">
+        <div class="card-container">
+          <button class="card division-card" type="button">Dhaka Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Dhaka (North)">Dhaka (North)</a>
+            <a href="#" class="dropdown-item" data-district="Dhaka (South)">Dhaka (South)</a>
+            
+            <a href="#" class="dropdown-item" data-district="Gazipur">Gazipur</a>
+            <a href="#" class="dropdown-item" data-district="Narayanganj">Narayanganj</a>
+          </div>
+        </div>
 
-        <button class="card" type="button">Basbari</button>
-        <button class="card" type="button">Chalantika</button>
-        <button class="card" type="button">Nama Para</button>
+        <div class="card-container">
+          <button class="card division-card" type="button">Chattogram Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Chattogram">Chattogram (City)</a>
+            <a href="#" class="dropdown-item" data-district="Cox's Bazar">Cox's Bazar</a>
+            
+          </div>
+        </div>
+
+        <div class="card-container">
+          <button class="card division-card" type="button">Rajshahi Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Rajshahi">Rajshahi</a>
+            
+          </div>
+        </div>
+
+        <div class="card-container">
+          <button class="card division-card" type="button">Khulna Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Khulna">Khulna</a>
+            
+          </div>
+        </div>
+
+        <div class="card-container">
+          <button class="card division-card" type="button">Barishal Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Barishal">Barishal</a>
+           
+          </div>
+        </div>
+
+        <div class="card-container">
+          <button class="card division-card" type="button">Sylhet Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Sylhet">Sylhet</a>
+           
+          </div>
+        </div>
+
+        <div class="card-container">
+          <button class="card division-card" type="button">Rangpur Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Rangpur">Rangpur</a>
+           
+          </div>
+        </div>
+
+        <div class="card-container">
+          <button class="card division-card" type="button">Mymensingh Division</button>
+          <div class="dropdown-menu">
+            <a href="#" class="dropdown-item" data-district="Mymensingh">Mymensingh</a>
+           
+          </div>
+        </div>
+      </div>
+
+      <div id="slumSection" style="display: none; margin-top: 30px;">
+        <div class="page-header">
+          <div>
+            <h2 id="selectedDistrictTitle">Slum Areas</h2>
+          </div>
+        </div>
+        <div class="card-grid" id="slumGrid">
+          <button class="card slum-card" type="button">Molla</button>
+          <button class="card slum-card" type="button">Korail</button>
+          <button class="card slum-card" type="button">Begun Bari</button>
+
+          <button class="card slum-card" type="button">DuariPara</button>
+          <button class="card slum-card" type="button">Kallyanpur</button>
+          <button class="card slum-card" type="button">Pora Basti</button>
+
+          <button class="card slum-card" type="button">Pura</button>
+          <button class="card slum-card" type="button">Nubur</button>
+          <button class="card slum-card" type="button">Mannan</button>
+
+          <button class="card slum-card" type="button">Basbari</button>
+          <button class="card slum-card" type="button">Chalantika</button>
+          <button class="card slum-card" type="button">Nama Para</button>
+        </div>
       </div>
     </main>
   </div>
@@ -70,11 +164,79 @@
 
   <script src="adminSlumAnalytics.js"></script>
   <script>
-    // Make each .card button navigate to the show page for that slum.
-    // Adds ?slum=Name so the show page can read which slum to display.
     document.addEventListener('DOMContentLoaded', function () {
-      var cards = document.querySelectorAll('.card');
-      cards.forEach(function (card) {
+      var AREA_DATA = {
+        "Dhaka": {
+          "Dhaka (North)": [
+            "Korail",
+            "Begun Bari",
+            "Duaripara",
+            "Kallyanpur",
+            "Pora Basti",
+            "Chalantika",
+            "Agargaon",
+            "Sattola (Mohakhali)",
+            "Mohammadpur",
+            "Basbari",
+            "Molla"
+          ],
+          "Dhaka (South)": [
+            "Nama Para",
+            "Pura",
+            "Nubur",
+            "Mannan"
+          ],
+          "Narayanganj": [
+            "Bhuigar",
+            "Chashara",
+            "Fatullah Cluster"
+          ],
+          "Gazipur": [
+            "Tongi Cluster",
+            "Board Bazar Cluster"
+          ]
+        },
+        "Chattogram": {
+          "Chattogram (City)": ["Halishahar", "Pahartali", "Agrabad Cluster"],
+          "Cox's Bazar": ["Teknaf Cluster", "Kutupalong (Nearby)"]
+        },
+        "Khulna": { "Khulna": ["Rupsha Ghat Cluster", "Khalishpur Cluster"] },
+        "Rajshahi": { "Rajshahi": ["Kazla Cluster", "Bornali Cluster"] },
+        "Barishal": { "Barishal": ["Nathullabad Cluster", "Battala Cluster"] },
+        "Sylhet": { "Sylhet": ["Ambarkhana Cluster", "Subidbazar Cluster"] },
+        "Rangpur": { "Rangpur": ["Jahaj Company Cluster", "Modern Mor Cluster"] },
+        "Mymensingh": { "Mymensingh": ["Town Hall Cluster", "Charpara Cluster"] }
+      };
+
+      var slumSection = document.getElementById('slumSection');
+      var selectedDistrictTitle = document.getElementById('selectedDistrictTitle');
+      var divisionGrid = document.getElementById('divisionGrid');
+      var slumGrid = document.getElementById('slumGrid');
+
+      function normalizeKey(value) {
+        return String(value || '')
+          .toLowerCase()
+          .replace(/[^a-z\s]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function getSlumsForDistrict(district) {
+        var match = normalizeKey(district);
+        var slums = [];
+        Object.keys(AREA_DATA).forEach(function (division) {
+          var districts = AREA_DATA[division] || {};
+          Object.keys(districts).forEach(function (key) {
+            var normalizedKey = normalizeKey(key);
+            if (normalizedKey === match || normalizedKey.includes(match) || match.includes(normalizedKey)) {
+              slums = districts[key].slice();
+            }
+          });
+        });
+        return slums;
+      }
+
+      function wireSlumCard(card) {
         card.addEventListener('click', function () {
           var name = (card.textContent || '').trim();
           var target = 'adminShowSlumAnalytics.html';
@@ -89,6 +251,61 @@
             card.click();
           }
         });
+      }
+
+      function renderSlumGrid(slums) {
+        if (!slumGrid) return;
+        slumGrid.innerHTML = '';
+        slums.forEach(function (name) {
+          var card = document.createElement('button');
+          card.className = 'card slum-card';
+          card.type = 'button';
+          card.textContent = name;
+          slumGrid.appendChild(card);
+          wireSlumCard(card);
+        });
+      }
+
+      function wireDivision(container) {
+        var card = container.querySelector('.division-card');
+        var dropdown = container.querySelector('.dropdown-menu');
+        var items = dropdown.querySelectorAll('.dropdown-item');
+
+        card.addEventListener('click', function (e) {
+          e.stopPropagation();
+          document.querySelectorAll('.dropdown-menu').forEach(function (menu) {
+            if (menu !== dropdown) { menu.classList.remove('show'); }
+          });
+          dropdown.classList.toggle('show');
+        });
+
+        items.forEach(function (item) {
+          item.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            dropdown.classList.remove('show');
+            var district = item.getAttribute('data-district') || item.textContent || 'Selected District';
+            if (selectedDistrictTitle) {
+              selectedDistrictTitle.textContent = 'Slum Areas in ' + district + ' District';
+            }
+            var slums = getSlumsForDistrict(district);
+            renderSlumGrid(slums);
+            if (divisionGrid) divisionGrid.style.display = 'none';
+            if (slumSection) slumSection.style.display = 'block';
+          });
+        });
+
+        card.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+        });
+      }
+
+      document.querySelectorAll('.card-container').forEach(wireDivision);
+
+      document.querySelectorAll('.slum-card').forEach(wireSlumCard);
+
+      document.addEventListener('click', function () {
+        document.querySelectorAll('.dropdown-menu').forEach(function (menu) { menu.classList.remove('show'); });
       });
     });
   </script>

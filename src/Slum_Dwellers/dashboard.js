@@ -43,6 +43,82 @@
   });
 })();
 
+// Populate top profile bar from localStorage (current signed-in user)
+// Also fetch fresh data from backend to update the display
+(function(){
+  function safeJsonParse(raw, fallback){ try { return JSON.parse(raw); } catch { return fallback; } }
+  const currentRaw = localStorage.getItem('SLUMLINK_CURRENT_USER');
+  const current = currentRaw ? safeJsonParse(currentRaw, null) : null;
+  
+  if (!current) {
+    // No user data, redirect to sign-in
+    window.location.href = '/src/signin.html?role=dweller';
+    return;
+  }
+
+  const nameEl = document.querySelector('.profile-text .name');
+  const phoneEl = document.querySelector('.profile-text .phone');
+  const slumIdEl = document.querySelector('.slum-id');
+  const welcomeEl = document.querySelector('.welcome-title');
+
+  // Display stored data first (immediate feedback)
+  const displayName = current.name || '';
+  const displayPhone = current.mobile ? ('Phone: ' + current.mobile) : '';
+  const displaySlumId = current.slum_code || '';
+
+  if (nameEl) nameEl.textContent = displayName || '—';
+  if (phoneEl) phoneEl.textContent = displayPhone || 'Phone: —';
+  if (slumIdEl) slumIdEl.textContent = 'Slum ID: ' + (displaySlumId || '—');
+  if (welcomeEl) welcomeEl.textContent = 'Welcome Back, ' + (displayName || '');
+
+  // Persist Slum ID for use in QR and elsewhere
+  if (displaySlumId) {
+    sessionStorage.setItem('slumId', displaySlumId);
+  }
+
+  // Fetch fresh data from backend to ensure it's up to date
+  if (current.id) {
+    fetch(`/api/slum-dweller/profile/${current.id}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          console.warn('Failed to fetch fresh profile data');
+          return;
+        }
+        const response = await r.json();
+        if (response.status === 'success' && response.data) {
+          const freshData = response.data;
+          
+          // Update display with fresh data
+          const freshName = freshData.full_name || '';
+          const freshPhone = freshData.mobile ? ('Phone: ' + freshData.mobile) : '';
+          const freshSlumCode = freshData.slum_code || '';
+
+          if (nameEl) nameEl.textContent = freshName || '—';
+          if (phoneEl) phoneEl.textContent = freshPhone || 'Phone: —';
+          if (slumIdEl) slumIdEl.textContent = 'Slum ID: ' + (freshSlumCode || '—');
+          if (welcomeEl) welcomeEl.textContent = 'Welcome Back, ' + (freshName || '');
+
+          // Update localStorage with fresh data
+          localStorage.setItem('SLUMLINK_CURRENT_USER', JSON.stringify({
+            id: freshData.id,
+            slum_code: freshData.slum_code,
+            name: freshData.full_name,
+            mobile: freshData.mobile
+          }));
+
+          // Update session storage for QR
+          if (freshSlumCode) {
+            sessionStorage.setItem('slumId', freshSlumCode);
+          }
+        }
+      })
+      .catch((err) => {
+        console.warn('Error fetching fresh profile:', err);
+        // Continue with cached data if fetch fails
+      });
+  }
+})();
+
 // Persist Slum ID for use across pages (QR generation)
 (function () {
   try {
@@ -51,7 +127,7 @@
     const txt = (idEl.textContent || '').trim();
     const m = txt.match(/Slum ID:\s*(\S+)/i);
     if (m && m[1]) {
-      localStorage.setItem('slumId', m[1]);
+      sessionStorage.setItem('slumId', m[1]);
     }
   } catch {}
 })();
@@ -195,80 +271,85 @@
     };
   };
 
-  // Base dummy complaints (initial dashboard state before any submission)
-  const staticComplaints = [
-    {
-      title: 'Water Supply Issue',
-      category: 'Water Management',
-      area: 'Hasan Nagar, Sector 3',
-      status: 'Pending',
-      description:
-        'Water supply has been irregular for the past week with low pressure during peak hours. Residents are facing difficulties accessing clean water for daily needs.',
-      attachment: ''
-    },
-    {
-      title: 'Street Light Not Working',
-      category: 'Electricity',
-      area: 'Hasan Nagar, Sector 1',
-      status: 'In Progress',
-      description:
-        'Multiple street lights have stopped working for 5 days, causing safety concerns at night. Local authority has acknowledged and initiated repairs.',
-      attachment: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+  // Build the Recent Complaint list for the current user (top 2 only)
+  (function loadRecentComplaints() {
+    const currentRaw = localStorage.getItem('SLUMLINK_CURRENT_USER');
+    const current = currentRaw ? JSON.parse(currentRaw) : null;
+    
+    if (!current || !current.slum_code) {
+      return;
     }
-  ];
 
-  // Build the Recent Complaint list:
-  // - If there are submissions, show newest on top and previous top second.
-  // - If only one submission exists, second is the original static top.
-  // - If none exist, show the original two static complaints.
-  let complaints = [];
-  try {
-    const rawArr = localStorage.getItem('submittedComplaints');
-    const arr = rawArr ? JSON.parse(rawArr) || [] : [];
-    if (arr.length >= 2) {
-      complaints = [arr[0], arr[1]];
-    } else if (arr.length === 1) {
-      complaints = [arr[0], staticComplaints[0]];
-    } else {
-      complaints = staticComplaints.slice(0, 2);
-    }
-  } catch (err) {
-    console.warn('Failed to read submittedComplaints, falling back to static:', err);
-    complaints = staticComplaints.slice(0, 2);
-  }
+    const listEl = document.querySelector('.complaint-list');
+    if (!listEl) return;
 
-  const listEl = document.querySelector('.complaint-list');
-  if (listEl) {
-    listEl.innerHTML = '';
-    complaints.forEach((c) => {
-      const card = document.createElement('div');
-      card.className = 'complaint-card';
+    // Fetch complaints from backend
+    fetch(`/api/complaints/slum/${current.slum_code}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          throw new Error('Failed to fetch complaints');
+        }
+        const response = await r.json();
+        if (response.status === 'success' && Array.isArray(response.data)) {
+          return response.data.slice(0, 2); // Get only top 2 most recent
+        }
+        throw new Error('Invalid response format');
+      })
+      .then((complaints) => {
+        listEl.innerHTML = '';
+        if (!complaints.length) {
+          const empty = document.createElement('div');
+          empty.textContent = 'No Complaint Submitted Yet';
+          empty.style.color = '#444';
+          listEl.appendChild(empty);
+        } else {
+          complaints.forEach((c) => {
+            const card = document.createElement('div');
+            card.className = 'complaint-card';
 
-      const title = document.createElement('div');
-      title.className = 'complaint-title';
-      title.textContent = c.title;
+            const title = document.createElement('div');
+            title.className = 'complaint-title';
+            title.textContent = c.title;
 
-      const cat = document.createElement('div');
-      cat.className = 'complaint-category';
-      cat.textContent = c.category;
+            const cat = document.createElement('div');
+            cat.className = 'complaint-category';
+            cat.textContent = c.category;
 
-      const status = document.createElement('div');
-      const sClass = 'status-badge ' + statusClassFor(c.status);
-      status.className = sClass;
-      status.textContent = c.status;
+            const status = document.createElement('div');
+            const sClass = 'status-badge ' + statusClassFor(c.status);
+            status.className = sClass;
+            status.textContent = c.status;
 
-      card.appendChild(title);
-      card.appendChild(cat);
-      card.appendChild(status);
+            card.appendChild(title);
+            card.appendChild(cat);
+            card.appendChild(status);
 
-      card.addEventListener('click', () => {
-        populateModal(c);
-        openModal();
+            card.addEventListener('click', () => {
+              // Fetch full complaint details with attachment
+              fetch(`/api/complaints/${c.complaint_id}`)
+                .then(async (r) => {
+                  if (!r.ok) throw new Error('Failed to fetch complaint details');
+                  const res = await r.json();
+                  if (res.status === 'success' && res.data) {
+                    populateModal(res.data);
+                    openModal();
+                  }
+                })
+                .catch((err) => {
+                  console.error('Failed to load complaint details:', err);
+                  alert('Failed to load complaint details');
+                });
+            });
+
+            listEl.appendChild(card);
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load complaints:', err);
+        listEl.innerHTML = '<div style="color: #d32f2f;">Failed to load complaints</div>';
       });
-
-      listEl.appendChild(card);
-    });
-  }
+  })();
 
   // Close when clicking outside the modal content
   modal.addEventListener('click', (e) => {
@@ -321,6 +402,11 @@
     if (title.includes('qr code')) {
       btn.addEventListener('click', () => {
         if (window.__openQrModal) window.__openQrModal();
+      });
+    }
+    if (title.includes('logout')) {
+      btn.addEventListener('click', () => {
+        if (window.__openLogoutModal) window.__openLogoutModal();
       });
     }
   });

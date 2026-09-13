@@ -1,0 +1,71 @@
+/* ============================================================
+   C) QUERIES WE WILL USE IN BACKEND / UI
+============================================================ */
+
+-- C1) Get "my campaigns" for logged-in org (Pending edit / View others)
+-- Use in: View Campaigns / Aid Distribution selection
+-- Params: :orgId
+-- SELECT * FROM campaigns WHERE org_id = :orgId ORDER BY created_at DESC;
+
+-- C2) Campaign summary card after selecting campaign
+-- Params: :campaignId, :orgId
+-- SELECT campaign_id, title, category, target_slum_area, start_date, end_date, start_time, description, status
+-- FROM campaigns
+-- WHERE campaign_id = :campaignId AND org_id = :orgId;
+
+-- C3) Create session (Start Distribution) — backend should also set campaign to IN_PROGRESS
+-- Params: :campaignId, :orgId, :aidTypeId
+-- INSERT INTO distribution_sessions (campaign_id, org_id, aid_type_id) VALUES (:campaignId, :orgId, :aidTypeId);
+-- UPDATE campaigns SET status='IN_PROGRESS' WHERE campaign_id=:campaignId AND org_id=:orgId AND status='PENDING';
+
+-- C4) Insert entry (Confirm) — validate requires_quantity in backend before insert
+-- Params: :sessionId, :campaignId, :orgId, :familyCode, :quantity, :comment
+-- INSERT INTO distribution_entries (session_id, campaign_id, org_id, family_code, quantity, comment)
+-- VALUES (:sessionId, :campaignId, :orgId, :familyCode, :quantity, :comment);
+
+-- C5) Optional snapshot: family size + basic ages (Head + active spouse + active children)
+-- Params: :familyCode
+-- Family size + head age
+-- SELECT
+--   sd.slum_code AS family_code,
+--   sd.full_name AS head_name,
+--   TIMESTAMPDIFF(YEAR, sd.dob, CURDATE()) AS head_age,
+--   (1
+--     + (SELECT COUNT(*) FROM spouses s WHERE s.slum_id = sd.slum_code AND s.status='active')
+--     + (SELECT COUNT(*) FROM children c WHERE c.slum_id = sd.slum_code AND c.status='active')
+--   ) AS family_size
+-- FROM slum_dwellers sd
+-- WHERE sd.slum_code = :familyCode;
+
+-- Ages list (basic)
+-- Params: :familyCode
+-- SELECT 'Head' AS role, sd.full_name AS name, TIMESTAMPDIFF(YEAR, sd.dob, CURDATE()) AS age
+-- FROM slum_dwellers sd WHERE sd.slum_code = :familyCode
+-- UNION ALL
+-- SELECT 'Spouse', s.name, TIMESTAMPDIFF(YEAR, s.dob, CURDATE())
+-- FROM spouses s WHERE s.slum_id = :familyCode AND s.status='active'
+-- UNION ALL
+-- SELECT 'Child', c.name, TIMESTAMPDIFF(YEAR, c.dob, CURDATE())
+-- FROM children c WHERE c.slum_id = :familyCode AND c.status='active';
+
+-- C6) Org-only previous aid history (THIS NGO/Local Authority only)
+-- Params: :familyCode, :orgId
+-- SELECT
+--   de.distributed_at,
+--   c.title,
+--   at.name AS aid_type,
+--   de.quantity,
+--   de.comment
+-- FROM distribution_entries de
+-- JOIN campaigns c ON c.campaign_id = de.campaign_id
+-- JOIN distribution_sessions ds ON ds.session_id = de.session_id
+-- JOIN aid_types at ON at.aid_type_id = ds.aid_type_id
+-- WHERE de.family_code = :familyCode
+--   AND de.org_id = :orgId
+-- ORDER BY de.distributed_at DESC
+-- LIMIT 10;
+
+-- C7) Status automation idea (do this in backend daily/when listing campaigns)
+-- If end_date passed and no entries exist -> NOT_EXECUTED
+-- If end_date passed and entries exist -> COMPLETED
+-- (Keep logic in backend; DB trigger is optional and can be risky)

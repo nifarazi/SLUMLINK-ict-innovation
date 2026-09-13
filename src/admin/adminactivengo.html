@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SLUMLINK · Active NGOs</title>
+  <link rel="stylesheet" href="adminSlumAnalytics.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    .active-table th:last-child {
+      text-align: right;
+      padding-right: 350px;
+    }
+
+    .active-table td:last-child {
+      text-align: right;
+      padding-right: 100px;
+    }
+    .btn-view {
+      background-color: rgba(45, 122, 61, 0.15) !important;
+      color: #2d7a3d !important;
+      border: none !important;
+    }
+
+    .btn-view:hover {
+      background-color: rgba(45, 122, 61, 0.25) !important;
+    }
+
+    .btn-delete {
+      background-color: rgba(211, 47, 47, 0.15) !important;
+      color: #d32f2f !important;
+      border: none !important;
+    }
+
+    .btn-delete:hover {
+      background-color: rgba(211, 47, 47, 0.25) !important;
+    }
+  </style>
+</head>
+<body>
+<header class="topbar" aria-label="Header">
+  <!-- Brand / Logo -->
+  <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
+
+  <!-- Search input -->
+  <input type="text" placeholder="Search" class="search" />
+
+  <!-- Admin & Notifications -->
+  <div class="top-right">
+    <div class="admin">
+      <span>Admin ▾</span>
+      <div class="admin-dropdown">
+        <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">
+          Logout
+        </button>
+      </div>
+    </div>
+    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+  </div>
+</header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <ul>
+        <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
+        <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
+        <li><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
+        <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li class="active"><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
+        <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <div class="page-header">
+        <div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="card-header">
+          <h2>Active NGOs</h2>
+          
+        </div>
+        <div class="table-wrapper">
+          <table class="active-table">
+            <thead>
+              <tr>
+                <th>Foundation Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ngoTableBody">
+              <!-- Rows will be populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="deleteModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">Delete NGO</div>
+      <div class="modal-body" id="deleteModalBody">Are you sure you want to delete this NGO? This action cannot be undone.</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
+        <button class="btn btn-primary" id="confirmDelete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="successModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-header">Success</div>
+      <div class="modal-body" id="successModalBody"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="closeSuccess">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div class="modal-overlay" id="logoutModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+      <div class="modal-header" id="logoutTitle">Log out</div>
+      <div class="modal-body">You're currently signed in as Admin. Do you want to log out and return to the home page?</div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="cancelLogout">Cancel</button>
+        <button class="btn btn-primary" id="confirmLogout">Log out</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="adminSlumAnalytics.js"></script>
+  <script>
+    var activeNGOs = [];
+
+    // Fetch active NGOs from backend
+    async function fetchActiveNGOs() {
+      try {
+        const response = await fetch("/api/ngo/active");
+        const result = await response.json();
+
+        if (result.status === "success") {
+          activeNGOs = result.data;
+          renderRows();
+        } else {
+          alert("Failed to fetch active NGOs");
+        }
+      } catch (err) {
+        console.error("Error fetching active NGOs:", err);
+        alert("Server error while fetching active NGOs");
+      }
+    }
+
+    function renderRows() {
+      var tbody = document.getElementById('ngoTableBody');
+      tbody.innerHTML = '';
+
+      activeNGOs.forEach(function(ngo, index) {
+        var row = document.createElement('tr');
+        
+        // Foundation Name (clickable)
+        var nameCell = document.createElement('td');
+        var nameLink = document.createElement('a');
+        nameLink.textContent = ngo.org_name;
+        nameLink.style.cursor = 'pointer';
+        nameLink.style.color = '#0066cc';
+        nameLink.style.textDecoration = 'underline';
+        nameLink.onclick = function() { 
+          sessionStorage.setItem('selectedNGO', JSON.stringify({...ngo, index: index}));
+          window.location.href = 'adminactivengoinfo.html';
+        };
+        nameCell.appendChild(nameLink);
+        row.appendChild(nameCell);
+
+        // Email
+        var emailCell = document.createElement('td');
+        emailCell.textContent = ngo.email;
+        row.appendChild(emailCell);
+
+        // Actions
+        var actionsCell = document.createElement('td');
+        actionsCell.className = 'active-actions';
+        actionsCell.style.padding = '8px';
+        
+        var actionsContainer = document.createElement('div');
+        actionsContainer.style.display = 'flex';
+        actionsContainer.style.gap = '8px';
+        actionsContainer.style.justifyContent = 'flex-end';
+        actionsContainer.style.width = '100%';
+        
+        var viewBtn = document.createElement('button');
+        viewBtn.textContent = 'View';
+        viewBtn.className = 'btn-view';
+        viewBtn.style.minWidth = '85px';
+        viewBtn.onclick = function(e) { 
+          e.stopPropagation();
+          sessionStorage.setItem('selectedNGO', JSON.stringify({...ngo, index: index}));
+          window.location.href = 'adminactivengoinfo.html';
+        };
+        
+        var deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.className = 'btn-delete';
+        deleteBtn.style.minWidth = '85px';
+        deleteBtn.onclick = function(e) { 
+          e.stopPropagation();
+          currentDeleteNGO = ngo;
+          openDeleteModal(ngo.org_name);
+        };
+        
+        actionsContainer.appendChild(viewBtn);
+        actionsContainer.appendChild(deleteBtn);
+        actionsCell.appendChild(actionsContainer);
+        row.appendChild(actionsCell);
+        
+        tbody.appendChild(row);
+      });
+
+      if (activeNGOs.length === 0) {
+        var empty = document.createElement('tr');
+        empty.innerHTML = '<td colspan="3" style="text-align:center;color:#8b6f5a;">No active NGOs found.</td>';
+        tbody.appendChild(empty);
+      }
+    }
+
+    var currentDeleteNGO = null;
+
+    function openDeleteModal(name) {
+      var modal = document.getElementById('deleteModal');
+      var body = document.getElementById('deleteModalBody');
+      body.textContent = 'Are you sure you want to delete ' + name + '? This action cannot be undone.';
+      modal.setAttribute('aria-hidden', 'false');
+      modal.classList.add('show');
+    }
+
+    function closeDeleteModal() {
+      var modal = document.getElementById('deleteModal');
+      modal.setAttribute('aria-hidden', 'true');
+      modal.classList.remove('show');
+      currentDeleteNGO = null;
+    }
+
+    function showSuccessModal(message) {
+      var modal = document.getElementById('successModal');
+      var body = document.getElementById('successModalBody');
+      body.textContent = message;
+      modal.setAttribute('aria-hidden', 'false');
+      modal.classList.add('show');
+    }
+
+    function closeSuccessModal() {
+      var modal = document.getElementById('successModal');
+      modal.setAttribute('aria-hidden', 'true');
+      modal.classList.remove('show');
+    }
+
+    document.getElementById('cancelDelete').addEventListener('click', closeDeleteModal);
+    
+    document.getElementById('confirmDelete').addEventListener('click', async function() {
+      if (currentDeleteNGO) {
+        var ngo = currentDeleteNGO;
+        try {
+          const response = await fetch(`/api/ngo/${ngo.org_id}`, { method: "DELETE" });
+          const result = await response.json();
+
+          if (result.status === "success") {
+            closeDeleteModal();
+            showSuccessModal(ngo.org_name + ' has been deleted successfully!');
+            // Remove from local array
+            activeNGOs = activeNGOs.filter(function(n) { return n.org_id !== ngo.org_id; });
+            renderRows();
+          } else {
+            alert("Error: " + (result.message || "Failed to delete NGO"));
+          }
+        } catch (err) {
+          console.error("Error deleting NGO:", err);
+          alert("Server error while deleting NGO");
+        }
+      }
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeDeleteModal();
+      }
+    });
+
+    document.getElementById('closeSuccess').addEventListener('click', closeSuccessModal);
+
+    document.getElementById('successModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeSuccessModal();
+      }
+    });
+
+    // Load active NGOs on page load
+    document.addEventListener('DOMContentLoaded', fetchActiveNGOs);
+  </script>
+</body>
+</html>

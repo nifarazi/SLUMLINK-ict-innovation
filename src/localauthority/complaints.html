@@ -146,6 +146,7 @@
       font-weight: 600;
       text-align: center;
       color:#000;
+      cursor:pointer;
     }
     .Solved{ background: #16C098; }
     .InProgress{ background: #DFA477; }
@@ -163,10 +164,15 @@
   <!-- ===== Header ===== -->
   <header class="topbar" aria-label="Header">
     <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
-      <span class="brand-mark" aria-hidden="true"></span>
+      <img
+        src="/src/images/slum Logo.png"
+        alt="SlumLink Logo"
+        class="brand-mark"
+      />
       <div class="brand-text">SLUMLINK</div>
     </div>
-
+  
+    <!-- Back button only -->
     <button class="pill-btn" id="backBtn" type="button" aria-label="Back to categories">
       <i class="fas fa-arrow-left" aria-hidden="true"></i>
       <span>Back to Categories</span>
@@ -215,42 +221,6 @@
         {text:"Some children forced to work.", status:"InProgress"},
         {text:"Lack of books and learning materials.", status:"InProgress"},
         {text:"School building unsafe.", status:"Waiting"}
-      ],
-      "Safety & Security":[
-        {text:"Street violence reported.", status:"Waiting"},
-        {text:"Insufficient police patrol.", status:"InProgress"},
-        {text:"Community watch program implemented.", status:"Solved"}
-      ],
-      "Environment & Disaster Issues":[
-        {text:"Flooded areas affecting homes.", status:"Waiting"},
-        {text:"Air pollution causing health issues.", status:"InProgress"},
-        {text:"Community cleanup drive completed.", status:"Solved"}
-      ],
-      "Waste Management":[
-        {text:"Garbage collection irregular.", status:"Waiting"},
-        {text:"Overflowing bins in alleys.", status:"InProgress"},
-        {text:"Local composting initiative successful.", status:"Solved"}
-      ],
-      "Health & Medical Services":[
-        {text:"Clinic shortage of medicines.", status:"InProgress"},
-        {text:"Vaccination clinic organized.", status:"Solved"}
-      ],
-      "Documentation & Registration Issues":[
-        {text:"Birth certificates delayed.", status:"Waiting"},
-        {text:"National ID registration pending.", status:"InProgress"}
-      ],
-      "Roads, Bridges & Infrastructure":[
-        {text:"Potholes making travel unsafe.", status:"Waiting"},
-        {text:"Bridge repair ongoing.", status:"InProgress"},
-        {text:"New road completed.", status:"Solved"}
-      ],
-      "Water & Sanitation":[
-        {text:"Water supply intermittent.", status:"InProgress"},
-        {text:"Public toilets cleaned regularly.", status:"Solved"}
-      ],
-      "Vaccination & Public Health Programs":[
-        {text:"Flu vaccination drive scheduled.", status:"Waiting"},
-        {text:"Polio vaccination completed.", status:"Solved"}
       ]
     };
 
@@ -264,14 +234,56 @@
     function renderComplaints(filter="All"){
       complaintsContainer.innerHTML = "";
       const complaints = allComplaints[category] || [];
+
+      // Dummy profiles for 3 complaints
+      const dummyProfiles = {
+        "No nearby shelters for families.": {
+          title: "No nearby shelters for families.",
+          category: category,
+          description: "There are no shelters nearby for families in need. Residents have nowhere safe to stay.",
+          evidence: "shelter_photo.jpg",
+          status: "Waiting"
+        },
+        "Some houses are damaged and unsafe.": {
+          title: "Some houses are damaged and unsafe.",
+          category: category,
+          description: "Several houses have structural damages and are unsafe for living. Immediate repairs are needed.",
+          evidence: "damaged_houses.pdf",
+          status: "InProgress"
+        },
+        "Temporary shelters provided.": {
+          title: "Temporary shelters provided.",
+          category: category,
+          description: "Temporary shelters have been set up successfully for families affected by recent disasters.",
+          evidence: "shelter_distribution.jpg",
+          status: "Solved"
+        }
+      };
+
       complaints.forEach(c=>{
         if(filter!=="All" && c.status!==filter) return;
+
         const card = document.createElement('div');
         card.className = 'complaint-card';
         card.innerHTML = `
           <div class="complaint-text">${c.text}</div>
-          <div class="status-box ${c.status.replace(/\s+/g,'')}">${c.status}</div>
+          <div class="status-box ${c.status.replace(/\s+/g,'')}" role="button" tabindex="0">${c.status}</div>
         `;
+
+        // Click on status navigates to complaint profile
+        const statusBox = card.querySelector('.status-box');
+        statusBox.addEventListener('click', ()=>{
+          const profileData = dummyProfiles[c.text] || {
+            title: c.text,
+            category: category,
+            description: "No detailed description available.",
+            evidence: "No file attached",
+            status: c.status
+          };
+          localStorage.setItem('selectedComplaint', JSON.stringify(profileData));
+          window.location.href = './complaintprofile.html';
+        });
+
         complaintsContainer.appendChild(card);
       });
     }
@@ -286,7 +298,6 @@
         renderComplaints(btn.dataset.status);
       });
     });
-
   </script>
 
 </body>

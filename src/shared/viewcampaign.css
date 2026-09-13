@@ -1,0 +1,213 @@
+:root{
+  --sand:#CBB093;
+  --sand2:#DAC4AD;
+  --paper:#FFF4E6;
+  --terra:#A4624D;
+  --peach:#DFA477;
+  --ink:#613729;
+  --mint:#C0E0D0;
+
+  --header-h:56px;
+  --radius-lg:26px;
+  --radius-md:18px;
+
+  --border: rgba(97, 55, 41, 0.18);
+  --shadowCard: 0 10px 24px rgba(97, 55, 41, 0.10);
+  --shadowHover: 0 16px 36px rgba(97, 55, 41, 0.14);
+  --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+html,body{ height:100%; }
+
+body{
+  font-family: "Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: linear-gradient(
+    to bottom right,
+    var(--sand) 0%,
+    var(--sand) 22%,
+    var(--sand2) 45%,
+    var(--mint) 76%,
+    var(--mint) 100%
+  );
+  background-attachment: fixed;
+  overflow-x:hidden;
+  padding-bottom: 72px;
+}
+
+/* Header */
+.topbar{
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: var(--header-h);
+  z-index: 50;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding: 0 73px 0 70px;
+
+  background: var(--paper);
+  box-shadow: none;
+}
+
+.brand{
+  display:inline-flex;
+  align-items:center;
+  gap: 10px;
+  cursor:pointer;
+  user-select:none;
+  transition: var(--transition);
+}
+.brand:hover{ transform: translateY(-1px); }
+
+.brand-mark{
+  width: 32px;
+  height: 32px;
+  border-radius: 14px;
+  object-fit: cover;
+  display:block;
+  background: linear-gradient(143.48deg, rgba(164,98,77,0.75) 38.34%, rgba(223,164,119,0.75) 78.43%);
+}
+
+.brand-text{
+  font-weight: 500;
+  font-size: 20px;
+  color: rgba(164, 98, 77, 0.86);
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.back-btn{
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor:pointer;
+  border: 1px solid rgba(97,55,41,0.14);
+  background: rgba(255,244,230,0.85);
+  color: rgba(97,55,41,0.78);
+  transition: var(--transition);
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.back-btn i{ font-size: 14px; }
+.back-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(97,55,41,0.22);
+  color: rgba(97,55,41,0.92);
+  box-shadow: 0 10px 18px rgba(97,55,41,0.10);
+}
+
+/* Page */
+.container{
+  max-width: 1360px;
+  margin: calc(var(--header-h) + 26px) auto 52px;
+  padding: 0 28px;
+}
+
+.page-title{
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 10px 0 8px;
+}
+
+.page-subtitle{
+  font-size: 16px;
+  font-weight: 600;
+  color: rgba(97, 55, 41, 0.62);
+  margin-bottom: 18px;
+  max-width: 900px;
+}
+
+/* Filter */
+.filter-container{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom: 16px;
+}
+
+select{
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(97,55,41,0.18);
+  background: rgba(255,244,230,0.92);
+  color: rgba(47,34,32,0.88);
+  font-weight: 700;
+  font-size: 14px;
+  cursor:pointer;
+  outline:none;
+}
+
+/* Cards */
+.campaign-card{
+  background: rgba(255, 244, 230, 0.94);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadowCard);
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap: 14px;
+
+  padding: 18px 18px 18px 22px;
+  margin-bottom: 14px;
+
+  font-size: 16px;
+  font-weight: 800;
+  cursor:pointer;
+  transition: var(--transition);
+}
+
+.campaign-card > span:first-child{
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.campaign-card:hover{
+  transform: translateY(-2px);
+  box-shadow: var(--shadowHover);
+}
+
+.campaign-status{
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color:#fff;
+  flex: 0 0 auto;
+  min-width: 130px;
+}
+
+.completed{ background:#16C098; }
+.pending{ background: var(--peach); }
+.in_progress{ background:#3B82F6; } /* ✅ NEW */
+.cancelled{ background: var(--terra); }
+
+@media (max-width: 1180px){
+  .topbar{ padding: 0 16px; }
+  .container{ padding: 0 16px; }
+}
+
+@media(max-width:680px){
+  .page-title{ font-size: 28px; }
+  .campaign-card{ font-size: 15px; padding: 16px; }
+  .campaign-status{ min-width: 110px; font-size: 12px; }
+}

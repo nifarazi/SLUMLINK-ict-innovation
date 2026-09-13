@@ -5,6 +5,7 @@
   <title>SLUMLINK · Resident Information</title>
   <link rel="stylesheet" href="adminSlumAnalytics.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     .info-section {
       background: white;
@@ -58,25 +59,6 @@
       margin: 0;
       opacity: 0.9;
     }
-    .doc-preview {
-      max-width: 150px;
-      border-radius: 4px;
-      cursor: pointer;
-      border: 2px solid #ddd;
-      transition: border-color 0.3s;
-    }
-    .doc-preview:hover {
-      border-color: #7D5A3B;
-    }
-    .new-docs-badge {
-      background: #ff6b6b;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 0.85em;
-      font-weight: 600;
-      margin-left: 10px;
-    }
     .action-buttons {
       display: flex;
       gap: 10px;
@@ -93,14 +75,91 @@
       margin-top: 0;
       color: #7D5A3B;
     }
+    .loading {
+      text-align: center;
+      color: #999;
+      padding: 40px;
+      font-size: 16px;
+    }
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    .document-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .document-modal-overlay.active {
+      display: flex;
+    }
+    .document-modal {
+      background: white;
+      border-radius: 8px;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow: auto;
+      padding: 0;
+      position: relative;
+    }
+    .document-modal-header {
+      padding: 16px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: #f5f5f5;
+    }
+    .document-modal-header h3 {
+      margin: 0;
+      color: #7D5A3B;
+    }
+    .document-modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+    .document-modal-body {
+      padding: 20px;
+      text-align: center;
+    }
+    .document-modal-body img {
+      max-width: 100%;
+      max-height: 500px;
+      border-radius: 4px;
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
+  <header class="topbar" aria-label="Header">
+    <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
     <input type="text" placeholder="Search" class="search" />
+
     <div class="top-right">
-      <span class="admin">Admin ▾</span>
+      <div class="admin">
+        <span>Admin ▾</span>
+        <div class="admin-dropdown">
+          <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">Logout</button>
+        </div>
+      </div>
       <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
     </div>
   </header>
@@ -110,1532 +169,545 @@
       <ul>
         <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
         <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-        <li class="active"><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+        <li class="active"><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
         <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
       </ul>
     </aside>
 
-    <main class="content">
-      <div class="profile-header">
-        <div class="profile-header-info">
-          <h2 id="residentName">Loading...</h2>
-          <p><strong>ID:</strong> <span id="residentId">-</span> | <strong>Slum:</strong> <span id="residentSlum">-</span></p>
-          <span id="newDocsBadge" class="new-docs-badge" style="display: none;">New Documents Pending</span>
-        </div>
-      </div>
-
-      <!-- Personal Information -->
-      <div class="info-section">
-        <h3>Personal Information</h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">Full Name</span>
-            <span class="info-value" id="fullName">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Date of Birth</span>
-            <span class="info-value" id="dob">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Gender</span>
-            <span class="info-value" id="gender">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">NID Number</span>
-            <span class="info-value" id="nid">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Education</span>
-            <span class="info-value" id="education">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Occupation</span>
-            <span class="info-value" id="occupation">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Income</span>
-            <span class="info-value" id="income">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Mobile Number</span>
-            <span class="info-value" id="mobile">-</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Location Information -->
-      <div class="info-section">
-        <h3>Location Information</h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">Area</span>
-            <span class="info-value" id="area">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">District</span>
-            <span class="info-value" id="district">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Division</span>
-            <span class="info-value" id="division">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Number of Family Members</span>
-            <span class="info-value" id="familyMembers">-</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Marital Information -->
-      <div class="info-section">
-        <h3>Marital Information</h3>
-        <div class="info-grid">
-          <div class="info-item">
-            <span class="info-label">Marital Status</span>
-            <span class="info-value" id="maritalStatus">-</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Number of Spouse</span>
-            <span class="info-value" id="numSpouse">-</span>
-          </div>
-        </div>
-
-        <div id="spouseContainer"></div>
-      </div>
-
-      <!-- Children Information -->
-      <div class="info-section">
-        <h3>Children Information</h3>
-        <div class="info-item" style="margin-bottom: 15px;">
-          <span class="info-label">Number of Children</span>
-          <span class="info-value" id="numChildren">-</span>
-        </div>
-
-        <div id="childrenContainer"></div>
-      </div>
-
-      <!-- New Documents Section (Only for accounts with new documents) -->
-      <div class="info-section" id="newDocsSection" style="display: none;">
-        <h3>New Documents Submitted <span class="new-docs-badge" style="margin-left: 10px;">Pending Review</span></h3>
-        <div class="info-grid">
-          <div class="info-item" id="birthCertContainer" style="display: none;">
-            <span class="info-label">Birth Certificate</span>
-            <img id="birthCert" src="" alt="Birth Certificate" class="doc-preview">
-          </div>
-          <div class="info-item" id="deathCertContainer" style="display: none;">
-            <span class="info-label">Death Certificate</span>
-            <img id="deathCert" src="" alt="Death Certificate" class="doc-preview">
-          </div>
-          <div class="info-item" id="marriageCertContainer" style="display: none;">
-            <span class="info-label">Marriage Certificate</span>
-            <img id="marriageCert" src="" alt="Marriage Certificate" class="doc-preview">
-          </div>
-        </div>
-      </div>
-
-      <div class="action-buttons">
-        <button class="btn btn-secondary" onclick="history.back()">← Go Back</button>
-      </div>
+    <main class="content" id="mainContent">
+      <div class="loading">Loading resident information...</div>
     </main>
   </div>
 
-  <!-- Image Modal -->
-  <div class="modal-overlay" id="imageModal" aria-hidden="true">
-    <div class="image-modal" role="dialog" aria-modal="true">
-      <button class="close-image-modal" id="closeImageModal" aria-label="Close">&times;</button>
-      <img id="modalImage" src="" alt="Document preview">
-      <div class="image-caption" id="imageCaption"></div>
-    </div>
-  </div>
-
-  <!-- Approve Modal -->
-  <div class="modal-overlay" id="approveModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-header">Approve Documents</div>
-      <div class="modal-body">Are you sure you want to approve these documents?</div>
+  <!-- Logout Modal -->
+  <div class="modal-overlay" id="logoutModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+      <div class="modal-header" id="logoutTitle">Log out</div>
+      <div class="modal-body">You're currently signed in as Admin. Do you want to log out and return to the home page?</div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelApprove">Cancel</button>
-        <button class="btn btn-primary" id="confirmApprove">Approve</button>
+        <button id="cancelLogout" type="button">Cancel</button>
+        <button id="confirmLogout" type="button" style="background-color: #8b6f5a; color: white;">Log out</button>
       </div>
     </div>
   </div>
 
-  <!-- Reject Modal -->
-  <div class="modal-overlay" id="rejectModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-header">Reject Documents</div>
-      <div class="modal-body">Are you sure you want to reject these documents?</div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelReject">Cancel</button>
-        <button class="btn btn-secondary" id="confirmReject">Reject</button>
+  <!-- Document View Modal -->
+  <div class="document-modal-overlay" id="documentModal">
+    <div class="document-modal">
+      <div class="document-modal-header">
+        <h3 id="documentTitle">Document</h3>
+        <button class="document-modal-close" onclick="closeDocumentModal()">×</button>
       </div>
-    </div>
-  </div>
-
-  <!-- Success Modal -->
-  <div class="modal-overlay" id="successModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-header">Success</div>
-      <div class="modal-body" id="successModalBody"></div>
-      <div class="modal-actions">
-        <button class="btn btn-primary" id="closeSuccess">OK</button>
+      <div class="document-modal-body" id="documentContent">
+        Loading...
       </div>
     </div>
   </div>
 
   <script src="adminSlumAnalytics.js"></script>
   <script>
-    // Sample resident data
-    var residentsData = {
-      'SR001': {
-        id: 'SR001',
-        name: 'Rahim Ahmed',
-        slum: 'Molla',
-        profile: '',
-        dob: '15-03-1985',
-        gender: 'Male',
-        nid: '19850315123456789',
-        education: 'SSC',
-        occupation: 'Rickshaw Puller',
-        income: '৳8,000 - ৳12,000',
-        mobile: '01712345678',
-        area: 'Mohammadpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 5,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Salma Khatun',
-            dob: '20-07-1988',
-            gender: 'Female',
-            nid: '19880720987654321',
-            education: 'JSC',
-            occupation: 'Housewife',
-            income: 'N/A',
-            mobile: '01798765432',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Aisha Ahmed',
-            dob: '10-05-2010',
-            gender: 'Female',
-            education: 'Class 8',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Kamal Ahmed',
-            dob: '25-11-2015',
-            gender: 'Male',
-            education: 'Class 3',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Doctor',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: 'profilepic/birthcertificate.jpg',
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR002': {
-        id: 'SR002',
-        name: 'Fatima Begum',
-        slum: 'Korail',
-        profile: '',
-        dob: '22-08-1990',
-        gender: 'Female',
-        nid: '19900822567891234',
-        education: 'HSC',
-        occupation: 'Garment Worker',
-        income: '৳10,000 - ৳15,000',
-        mobile: '01823456789',
-        area: 'Banani',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 4,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Hafiz Rahman',
-            dob: '15-02-1987',
-            gender: 'Male',
-            nid: '19870215456789123',
-            education: 'SSC',
-            occupation: 'Shop Owner',
-            income: '৳12,000 - ৳18,000',
-            mobile: '01934567890',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 1,
-        children: [
-          {
-            name: 'Nusrat Rahman',
-            dob: '05-12-2012',
-            gender: 'Female',
-            education: 'Class 6',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Nurse',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: 'profilepic/marraigeertificate.png'
-      },
-      'SR003': {
-        id: 'SR003',
-        name: 'Karim Hossain',
-        slum: 'Begun Bari',
-        profile: '',
-        dob: '30-01-1978',
-        gender: 'Male',
-        nid: '19780130234567890',
-        education: 'Class 8',
-        occupation: 'Day Laborer',
-        income: '৳6,000 - ৳10,000',
-        mobile: '01645678901',
-        area: 'Tejgaon',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 6,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Razia Sultana',
-            dob: '12-06-1982',
-            gender: 'Female',
-            nid: '19820612345678901',
-            education: 'Class 5',
-            occupation: 'Housemaid',
-            income: '৳5,000 - ৳8,000',
-            mobile: '01756789012',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 3,
-        children: [
-          {
-            name: 'Shakib Hossain',
-            dob: '18-03-2008',
-            gender: 'Male',
-            education: 'Class 10',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Mechanic',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Taslima Hossain',
-            dob: '22-09-2011',
-            gender: 'Female',
-            education: 'Class 7',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Tailor',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Rahim Hossain',
-            dob: '14-04-2016',
-            gender: 'Male',
-            education: 'Class 2',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Police',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR004': {
-        id: 'SR004',
-        name: 'Salma Khatun',
-        slum: 'Molla',
-        profile: '',
-        dob: '08-11-1992',
-        gender: 'Female',
-        nid: '19921108345678902',
-        education: 'JSC',
-        occupation: 'Domestic Worker',
-        income: '৳7,000 - ৳10,000',
-        mobile: '01867890123',
-        area: 'Mohammadpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 3,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Rafiq Islam',
-            dob: '25-04-1989',
-            gender: 'Male',
-            nid: '19890425678901234',
-            education: 'SSC',
-            occupation: 'Van Driver',
-            income: '৳9,000 - ৳13,000',
-            mobile: '01978901234',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 1,
-        children: [
-          {
-            name: 'Nadia Islam',
-            dob: '12-08-2014',
-            gender: 'Female',
-            education: 'Class 4',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: null,
-        deathCert: 'profilepic/birthcertificate.jpg',
-        marriageCert: null
-      },
-      'SR005': {
-        id: 'SR005',
-        name: 'Habib Rahman',
-        slum: 'Korail',
-        profile: '',
-        dob: '18-06-1980',
-        gender: 'Male',
-        nid: '19800618456789012',
-        education: 'SSC',
-        occupation: 'Construction Worker',
-        income: '৳10,000 - ৳14,000',
-        mobile: '01589012345',
-        area: 'Banani',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 5,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Rokeya Begum',
-            dob: '22-10-1984',
-            gender: 'Female',
-            nid: '19841022789012345',
-            education: 'Class 8',
-            occupation: 'Housewife',
-            income: 'N/A',
-            mobile: '01690123456',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Fahim Rahman',
-            dob: '15-03-2009',
-            gender: 'Male',
-            education: 'Class 9',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Engineer',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Sumaiya Rahman',
-            dob: '28-07-2013',
-            gender: 'Female',
-            education: 'Class 5',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Doctor',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR006': {
-        id: 'SR006',
-        name: 'Nasima Akter',
-        slum: 'DuariPara',
-        profile: '',
-        dob: '14-02-1986',
-        gender: 'Female',
-        nid: '19860214890123456',
-        education: 'HSC',
-        occupation: 'Garment Worker',
-        income: '৳11,000 - ৳15,000',
-        mobile: '01701234567',
-        area: 'Mirpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 4,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Shafiq Mia',
-            dob: '30-05-1983',
-            gender: 'Male',
-            nid: '19830530901234567',
-            education: 'SSC',
-            occupation: 'Small Business Owner',
-            income: '৳13,000 - ৳18,000',
-            mobile: '01812345678',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Tania Mia',
-            dob: '20-11-2011',
-            gender: 'Female',
-            education: 'Class 7',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Nurse',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Sabbir Mia',
-            dob: '05-09-2015',
-            gender: 'Male',
-            education: 'Class 3',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Pilot',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: 'profilepic/birthcertificate.jpg',
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR007': {
-        id: 'SR007',
-        name: 'Jahangir Alam',
-        slum: 'Kallyanpur',
-        profile: '',
-        dob: '07-12-1975',
-        gender: 'Male',
-        nid: '19751207012345678',
-        education: 'Class 5',
-        occupation: 'Street Vendor',
-        income: '৳5,000 - ৳9,000',
-        mobile: '01923456789',
-        area: 'Kallyanpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 7,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Ayesha Siddika',
-            dob: '18-08-1979',
-            gender: 'Female',
-            nid: '19790818123456789',
-            education: 'Class 3',
-            occupation: 'Housewife',
-            income: 'N/A',
-            mobile: '01634567890',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 4,
-        children: [
-          {
-            name: 'Mahbub Alam',
-            dob: '10-04-2006',
-            gender: 'Male',
-            education: 'HSC',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Driver',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Sabina Alam',
-            dob: '25-06-2010',
-            gender: 'Female',
-            education: 'Class 8',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Tailor',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Rubel Alam',
-            dob: '12-01-2013',
-            gender: 'Male',
-            education: 'Class 5',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Shopkeeper',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Mitu Alam',
-            dob: '08-11-2016',
-            gender: 'Female',
-            education: 'Class 2',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR008': {
-        id: 'SR008',
-        name: 'Roksana Sultana',
-        slum: 'Begun Bari',
-        profile: '',
-        dob: '05-09-1988',
-        gender: 'Female',
-        nid: '19880905234567890',
-        education: 'SSC',
-        occupation: 'Factory Worker',
-        income: '৳9,000 - ৳13,000',
-        mobile: '01745678901',
-        area: 'Tejgaon',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 3,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Jalal Uddin',
-            dob: '12-03-1985',
-            gender: 'Male',
-            nid: '19850312345678901',
-            education: 'HSC',
-            occupation: 'Electrician',
-            income: '৳12,000 - ৳16,000',
-            mobile: '01856789012',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 1,
-        children: [
-          {
-            name: 'Sadia Jalal',
-            dob: '22-05-2013',
-            gender: 'Female',
-            education: 'Class 5',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Designer',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: 'profilepic/marraigeertificate.png'
-      },
-      'SR009': {
-        id: 'SR009',
-        name: 'Monir Hossain',
-        slum: 'Pora Basti',
-        profile: '',
-        dob: '28-07-1982',
-        gender: 'Male',
-        nid: '19820728456789012',
-        education: 'Class 8',
-        occupation: 'Carpenter',
-        income: '৳10,000 - ৳15,000',
-        mobile: '01967890123',
-        area: 'Kamrangirchar',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 4,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Amina Khatun',
-            dob: '15-12-1986',
-            gender: 'Female',
-            nid: '19861215567890123',
-            education: 'JSC',
-            occupation: 'Housewife',
-            income: 'N/A',
-            mobile: '01678901234',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Rifat Hossain',
-            dob: '10-08-2010',
-            gender: 'Male',
-            education: 'Class 8',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Carpenter',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Mim Hossain',
-            dob: '03-02-2014',
-            gender: 'Female',
-            education: 'Class 4',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR010': {
-        id: 'SR010',
-        name: 'Shirin Akhter',
-        slum: 'Molla',
-        profile: '',
-        dob: '19-04-1991',
-        gender: 'Female',
-        nid: '19910419678901234',
-        education: 'HSC',
-        occupation: 'Beauty Parlor Worker',
-        income: '৳8,000 - ৳12,000',
-        mobile: '01789012345',
-        area: 'Mohammadpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 3,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Liton Mia',
-            dob: '08-01-1988',
-            gender: 'Male',
-            nid: '19880108789012345',
-            education: 'SSC',
-            occupation: 'Mechanic',
-            income: '৳11,000 - ৳15,000',
-            mobile: '01890123456',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 1,
-        children: [
-          {
-            name: 'Anisha Mia',
-            dob: '16-09-2015',
-            gender: 'Female',
-            education: 'Class 3',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Fashion Designer',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: 'profilepic/marraigeertificate.png'
-      },
-      'SR011': {
-        id: 'SR011',
-        name: 'Abdul Karim',
-        slum: 'Korail',
-        profile: '',
-        dob: '24-10-1977',
-        gender: 'Male',
-        nid: '19771024890123456',
-        education: 'Class 10',
-        occupation: 'Security Guard',
-        income: '৳9,000 - ৳12,000',
-        mobile: '01901234567',
-        area: 'Banani',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 5,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Rehana Begum',
-            dob: '02-06-1981',
-            gender: 'Female',
-            nid: '19810602901234567',
-            education: 'JSC',
-            occupation: 'Cleaner',
-            income: '৳6,000 - ৳8,000',
-            mobile: '01612345678',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 3,
-        children: [
-          {
-            name: 'Imran Karim',
-            dob: '14-07-2007',
-            gender: 'Male',
-            education: 'Class 11',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Security Officer',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Fatema Karim',
-            dob: '30-12-2011',
-            gender: 'Female',
-            education: 'Class 7',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Nurse',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Sohel Karim',
-            dob: '18-03-2015',
-            gender: 'Male',
-            education: 'Class 3',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Police',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR012': {
-        id: 'SR012',
-        name: 'Kulsum Begum',
-        slum: 'Pura',
-        profile: '',
-        dob: '11-05-1984',
-        gender: 'Female',
-        nid: '19840511012345678',
-        education: 'Class 8',
-        occupation: 'Housemaid',
-        income: '৳7,000 - ৳10,000',
-        mobile: '01723456789',
-        area: 'Badda',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 6,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Aziz Mollah',
-            dob: '26-09-1980',
-            gender: 'Male',
-            nid: '19800926123456789',
-            education: 'SSC',
-            occupation: 'Day Laborer',
-            income: '৳8,000 - ৳11,000',
-            mobile: '01834567890',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 3,
-        children: [
-          {
-            name: 'Raihan Aziz',
-            dob: '07-02-2008',
-            gender: 'Male',
-            education: 'Class 10',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Electrician',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Sharmin Aziz',
-            dob: '21-06-2012',
-            gender: 'Female',
-            education: 'Class 6',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Tanvir Aziz',
-            dob: '13-11-2016',
-            gender: 'Male',
-            education: 'Class 2',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Driver',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: null,
-        deathCert: 'profilepic/birthcertificate.jpg',
-        marriageCert: null
-      },
-      'SR013': {
-        id: 'SR013',
-        name: 'Sumon Mia',
-        slum: 'Molla',
-        profile: '',
-        dob: '16-07-1989',
-        gender: 'Male',
-        nid: '19890716123456789',
-        education: 'SSC',
-        occupation: 'Auto Rickshaw Driver',
-        income: '৳12,000 - ৳16,000',
-        mobile: '01634567890',
-        area: 'Mohammadpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 4,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Lovely Akter',
-            dob: '28-11-1992',
-            gender: 'Female',
-            nid: '19921128234567890',
-            education: 'HSC',
-            occupation: 'Garment Worker',
-            income: '৳9,000 - ৳12,000',
-            mobile: '01745678901',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Riya Mia',
-            dob: '12-04-2014',
-            gender: 'Female',
-            education: 'Class 4',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Designer',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Arman Mia',
-            dob: '20-09-2017',
-            gender: 'Male',
-            education: 'Class 1',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Driver',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR014': {
-        id: 'SR014',
-        name: 'Amina Begum',
-        slum: 'Korail',
-        profile: '',
-        dob: '03-03-1987',
-        gender: 'Female',
-        nid: '19870303345678901',
-        education: 'JSC',
-        occupation: 'Small Shop Owner',
-        income: '৳10,000 - ৳14,000',
-        mobile: '01856789012',
-        area: 'Banani',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 3,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Jobbar Ali',
-            dob: '10-05-1984',
-            gender: 'Male',
-            nid: '19840510456789012',
-            education: 'Class 8',
-            occupation: 'Construction Worker',
-            income: '৳11,000 - ৳15,000',
-            mobile: '01967890123',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 1,
-        children: [
-          {
-            name: 'Nusrat Ali',
-            dob: '22-08-2013',
-            gender: 'Female',
-            education: 'Class 5',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Businesswoman',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR015': {
-        id: 'SR015',
-        name: 'Nasiruddin Ahmed',
-        slum: 'Molla',
-        profile: '',
-        dob: '12-09-1988',
-        gender: 'Male',
-        nid: '19880912987654321',
-        education: 'SSC',
-        occupation: 'Tailor',
-        income: '৳9,000 - ৳13,000',
-        mobile: '01654321987',
-        area: 'Mohammadpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 4,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Nadia Akter',
-            dob: '14-11-1990',
-            gender: 'Female',
-            nid: '19901114456789123',
-            education: 'JSC',
-            occupation: 'Housewife',
-            income: 'N/A',
-            mobile: '01765432198',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Hasan Ahmed',
-            dob: '20-05-2012',
-            gender: 'Male',
-            education: 'Class 6',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Engineer',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Fiona Akhter',
-            dob: '08-03-2016',
-            gender: 'Female',
-            education: 'Class 2',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Doctor',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: 'profilepic/birthcertificate.jpg',
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR016': {
-        id: 'SR016',
-        name: 'Nusrat Jahan',
-        slum: 'Molla',
-        profile: '',
-        dob: '25-07-1994',
-        gender: 'Female',
-        nid: '19940725123456789',
-        education: 'HSC',
-        occupation: 'Garment Worker',
-        income: '৳10,000 - ৳14,000',
-        mobile: '01876543210',
-        area: 'Mohammadpur',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 3,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Imtiaz Hasan',
-            dob: '30-01-1991',
-            gender: 'Male',
-            nid: '19910130789012345',
-            education: 'SSC',
-            occupation: 'Shop Assistant',
-            income: '৳8,000 - ৳11,000',
-            mobile: '01987654321',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 1,
-        children: [
-          {
-            name: 'Sara Hasan',
-            dob: '11-08-2018',
-            gender: 'Female',
-            education: 'Nursery',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      },
-      'SR017': {
-        id: 'SR017',
-        name: 'Wasim Khan',
-        slum: 'Korail',
-        profile: '',
-        dob: '19-02-1985',
-        gender: 'Male',
-        nid: '19850219345678901',
-        education: 'SSC',
-        occupation: 'Electrician',
-        income: '৳11,000 - ৳15,000',
-        mobile: '01765432109',
-        area: 'Banani',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 5,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Rina Khan',
-            dob: '03-08-1987',
-            gender: 'Female',
-            nid: '19870803567890123',
-            education: 'JSC',
-            occupation: 'Domestic Worker',
-            income: '৳7,000 - ৳10,000',
-            mobile: '01654321098',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 3,
-        children: [
-          {
-            name: 'Arif Khan',
-            dob: '15-06-2009',
-            gender: 'Male',
-            education: 'Class 9',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Electrician',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Zara Khan',
-            dob: '27-10-2012',
-            gender: 'Female',
-            education: 'Class 6',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Nurse',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Samim Khan',
-            dob: '09-04-2017',
-            gender: 'Male',
-            education: 'Nursery',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Pilot',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: true,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: 'profilepic/marraigeertificate.png'
-      },
-      'SR018': {
-        id: 'SR018',
-        name: 'Sakina Akhter',
-        slum: 'Korail',
-        profile: '',
-        dob: '21-11-1989',
-        gender: 'Female',
-        nid: '19891121234567890',
-        education: 'HSC',
-        occupation: 'Teacher (Informal)',
-        income: '৳8,000 - ৳12,000',
-        mobile: '01543210987',
-        area: 'Banani',
-        district: 'Dhaka',
-        division: 'Dhaka',
-        familyMembers: 4,
-        maritalStatus: 'Married',
-        numSpouse: 1,
-        spouses: [
-          {
-            name: 'Karim Ullah',
-            dob: '17-05-1986',
-            gender: 'Male',
-            nid: '19860517678901234',
-            education: 'SSC',
-            occupation: 'Day Laborer',
-            income: '৳9,000 - ৳12,000',
-            mobile: '01432109876',
-            marriageCert: 'profilepic/marraigeertificate.png'
-          }
-        ],
-        numChildren: 2,
-        children: [
-          {
-            name: 'Tamim Ullah',
-            dob: '30-03-2014',
-            gender: 'Male',
-            education: 'Class 4',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Teacher',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          },
-          {
-            name: 'Mina Akhter',
-            dob: '18-07-2019',
-            gender: 'Female',
-            education: 'Nursery',
-            occupation: 'Student',
-            income: 'N/A',
-            preferredJob: 'Doctor',
-            birthCert: 'profilepic/birthcertificate.jpg'
-          }
-        ],
-        hasNewDocs: false,
-        birthCert: null,
-        deathCert: null,
-        marriageCert: null
-      }
-    };
+    let currentResident = null;
 
-    function loadResidentInfo() {
-      var params = new URLSearchParams(window.location.search);
-      var residentId = params.get('id');
+    function formatDate(value) {
+      if (!value) return '-';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return value;
+      return d.toISOString().split('T')[0];
+    }
 
-      // First check hardcoded data
-      var resident = residentsData[residentId];
-      
-      // If not found in hardcoded data, check localStorage for approved applications
-      if (!resident) {
-        try {
-          var stored = localStorage.getItem('SLUMLINK_APPLICATIONS');
-          if (stored) {
-            var allApps = JSON.parse(stored);
-            var approvedApp = allApps.find(function(app) {
-              return app.status === 'approved' && (app.id === residentId || 
-                (app.data && app.data.personal && app.data.personal.fullName === residentId));
-            });
-            
-            if (approvedApp) {
-              var p = approvedApp.data && approvedApp.data.personal || {};
-              var m = approvedApp.data && approvedApp.data.marital || {};
-              var c = approvedApp.data && approvedApp.data.children || {};
-              
-              resident = {
-                id: approvedApp.id || residentId,
-                name: p.fullName || '',
-                slum: approvedApp.slum || '',
-                profile: '',
-                dob: p.dob || '',
-                gender: p.gender || '',
-                nid: p.nidNumber || '',
-                education: p.education || '',
-                occupation: p.occupation || '',
-                income: p.income || '',
-                mobile: p.mobile || '',
-                area: p.area || '',
-                district: p.district || '',
-                division: p.division || '',
-                familyMembers: p.members || 0,
-                maritalStatus: m.maritalStatus || '',
-                numSpouse: (m.spouses && m.spouses.length) || 0,
-                spouses: m.spouses || [],
-                numChildren: (c.children && c.children.length) || 0,
-                children: c.children || [],
-                hasNewDocs: false,
-                birthCert: null,
-                deathCert: null,
-                marriageCert: null
-              };
-            }
-          }
-        } catch(e) { /* ignore parse errors */ }
-      }
+    function formatSkills(entity) {
+      if (!entity) return '-';
+      const skills = [entity.skills_1, entity.skills_2]
+        .map((s) => (s || '').trim())
+        .filter((s) => s);
+      return skills.length ? skills.join(', ') : '-';
+    }
 
-      if (!resident) {
-        document.getElementById('residentName').textContent = 'Resident Not Found';
+    document.addEventListener('DOMContentLoaded', async function () {
+      const mainContent = document.getElementById('mainContent');
+      const params = new URLSearchParams(window.location.search);
+      const residentId = params.get('id');
+
+      if (!residentId) {
+        mainContent.innerHTML = '<div class="error-message">No resident ID provided.</div>';
         return;
       }
 
-      // Header
-      document.getElementById('residentName').textContent = resident.name;
-      document.getElementById('residentId').textContent = resident.id;
-      document.getElementById('residentSlum').textContent = resident.slum;
+      // Fetch resident data from database
+      try {
+        const response = await fetch(`/api/slum-dweller/${residentId}`);
+        const result = await response.json();
 
-      // Personal Info
-      document.getElementById('fullName').textContent = resident.name;
-      document.getElementById('dob').textContent = resident.dob;
-      document.getElementById('gender').textContent = resident.gender;
-      document.getElementById('nid').textContent = resident.nid;
-      document.getElementById('education').textContent = resident.education;
-      document.getElementById('occupation').textContent = resident.occupation;
-      document.getElementById('income').textContent = resident.income;
-      document.getElementById('mobile').textContent = resident.mobile;
+        if (result.status !== 'success' || !result.data) {
+          mainContent.innerHTML = '<div class="error-message">Failed to load resident information. ' + (result.message || '') + '</div>';
+          return;
+        }
 
-      // Location Info
-      document.getElementById('area').textContent = resident.area;
-      document.getElementById('district').textContent = resident.district;
-      document.getElementById('division').textContent = resident.division;
-      document.getElementById('familyMembers').textContent = resident.familyMembers;
+        currentResident = result.data;
+        renderResidentInfo();
+      } catch (error) {
+        console.error('Error loading resident:', error);
+        mainContent.innerHTML = '<div class="error-message">Error loading resident information. Please try again.</div>';
+      }
+    });
 
-      // Marital Info
-      document.getElementById('maritalStatus').textContent = resident.maritalStatus;
-      document.getElementById('numSpouse').textContent = resident.numSpouse;
+    function renderResidentInfo() {
+      const mainContent = document.getElementById('mainContent');
+      const resident = currentResident.resident;
+      const spouses = currentResident.spouses || [];
+      const children = currentResident.children || [];
+
+      const statusBadge = resident.status === 'accepted' ? '<span style="background: rgba(45, 122, 61, 0.15); color: #2d7a3d; padding: 4px 8px; border-radius: 4px; font-weight: bold;">Active</span>' : 
+                         resident.status === 'pending' ? '<span style="background: rgba(217, 165, 116, 0.15); color: #d9a574; padding: 4px 8px; border-radius: 4px; font-weight: bold;">Pending</span>' : 
+                         '<span style="background: rgba(180, 80, 80, 0.2); color: #a83e3e; padding: 4px 8px; border-radius: 4px; font-weight: bold;">Rejected</span>';
+
+      let html = `
+        <div class="profile-header">
+          <div class="profile-header-info">
+            <h2>${resident.full_name || 'Unknown'}</h2>
+            <p><strong>ID:</strong> ${resident.id} | <strong>Slum Code:</strong> ${resident.slum_code || '-'}</p>
+            <p style="margin-top: 8px;">${statusBadge}</p>
+          </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="info-section">
+          <h3>Personal Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Full Name</span>
+              <span class="info-value">${resident.full_name || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Date of Birth</span>
+              <span class="info-value">${formatDate(resident.dob)}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Gender</span>
+              <span class="info-value">${resident.gender || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">NID Number</span>
+              <span class="info-value">${resident.nid || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Mobile Number</span>
+              <span class="info-value">${resident.mobile || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Education</span>
+              <span class="info-value">${resident.education || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Occupation</span>
+              <span class="info-value">${resident.occupation || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Skills</span>
+              <span class="info-value">${formatSkills(resident)}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Income Range</span>
+              <span class="info-value">${resident.income || '-'}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="info-section">
+          <h3>Address Information</h3>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Area</span>
+              <span class="info-value">${resident.area || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">District</span>
+              <span class="info-value">${resident.district || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Division</span>
+              <span class="info-value">${resident.division || '-'}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Family Members</span>
+              <span class="info-value">${resident.family_members || 0}</span>
+            </div>
+          </div>
+        </div>
+      `;
 
       // Spouses
-      var spouseContainer = document.getElementById('spouseContainer');
-      spouseContainer.innerHTML = '';
-      if (resident.spouses && resident.spouses.length > 0) {
-        resident.spouses.forEach(function(spouse, index) {
-          var spouseDiv = document.createElement('div');
-          spouseDiv.className = 'subsection';
-          spouseDiv.innerHTML = `
-            <h4>Spouse Information ${index + 1}</h4>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Full Name</span>
-                <span class="info-value">${spouse.name}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Date of Birth</span>
-                <span class="info-value">${spouse.dob}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Gender</span>
-                <span class="info-value">${spouse.gender}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">NID Number</span>
-                <span class="info-value">${spouse.nid}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Education</span>
-                <span class="info-value">${spouse.education}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Occupation</span>
-                <span class="info-value">${spouse.occupation}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Income Range</span>
-                <span class="info-value">${spouse.income}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Mobile Number</span>
-                <span class="info-value">${spouse.mobile}</span>
+      if (spouses.length > 0) {
+        html += '<div class="info-section"><h3>Spouse Information (' + spouses.length + ')</h3>';
+        spouses.forEach((spouse, idx) => {
+          html += `
+            <div class="subsection">
+              <h4>Spouse ${idx + 1}</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">Name</span>
+                  <span class="info-value">${spouse.name || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Date of Birth</span>
+                  <span class="info-value">${formatDate(spouse.dob)}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Gender</span>
+                  <span class="info-value">${spouse.gender || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">NID</span>
+                  <span class="info-value">${spouse.nid || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Education</span>
+                  <span class="info-value">${spouse.education || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Job</span>
+                  <span class="info-value">${spouse.job || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Skills</span>
+                  <span class="info-value">${formatSkills(spouse)}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Income Range</span>
+                  <span class="info-value">${spouse.income || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Mobile</span>
+                  <span class="info-value">${spouse.mobile || '-'}</span>
+                </div>
               </div>
             </div>
-            ${spouse.marriageCert ? `
-              <div class="info-item" style="margin-top: 10px;">
-                <span class="info-label">Marriage Certificate</span>
-                <img src="${spouse.marriageCert}" alt="Marriage Certificate" class="doc-preview" onclick="openImageModal('${spouse.marriageCert}', 'Marriage Certificate - ${spouse.name}')">
-              </div>
-            ` : ''}
           `;
-          spouseContainer.appendChild(spouseDiv);
+        });
+        html += '</div>';
+      }
+
+      // Children
+      if (children.length > 0) {
+        html += '<div class="info-section"><h3>Children Information (' + children.length + ')</h3>';
+        children.forEach((child, idx) => {
+          html += `
+            <div class="subsection">
+              <h4>Child ${idx + 1}</h4>
+              <div class="info-grid">
+                <div class="info-item">
+                  <span class="info-label">Name</span>
+                  <span class="info-value">${child.name || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Birth Certificate No.</span>
+                  <span class="info-value">${child.birth_certificate_number || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Date of Birth</span>
+                  <span class="info-value">${formatDate(child.dob)}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Gender</span>
+                  <span class="info-value">${child.gender || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Education</span>
+                  <span class="info-value">${child.education || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Job</span>
+                  <span class="info-value">${child.job || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Skills</span>
+                  <span class="info-value">${formatSkills(child)}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Income Range</span>
+                  <span class="info-value">${child.income || '-'}</span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Preferred Job</span>
+                  <span class="info-value">${child.preferred_job || '-'}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+      }
+
+      // Action buttons
+      html += `
+        <!-- Documents Section -->
+        <div class="info-section">
+          <h3>Submitted Documents</h3>
+          <div id="documentsContainer">
+            <p style="color: #999;">Loading documents...</p>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="generateReportBtn">📄 Generate Report</button>
+          <button class="btn btn-secondary" onclick="history.back()">← Go Back</button>
+        </div>
+      `;
+
+      mainContent.innerHTML = html;
+
+      // Load documents
+      loadDocuments(resident.slum_code);
+
+      // Attach PDF generation handler
+      document.getElementById('generateReportBtn').addEventListener('click', generatePdf);
+    }
+
+    // Load and display documents
+    async function loadDocuments(slumCode) {
+      try {
+        console.log('Loading documents for slumCode:', slumCode);
+        const response = await fetch(`/api/documents/${slumCode}/all`);
+        console.log('Response status:', response.status);
+        const result = await response.json();
+        console.log('Documents response:', result);
+        
+        const container = document.getElementById('documentsContainer');
+        
+        if (!result.success || !result.documents || result.documents.length === 0) {
+          console.log('No documents found for slumCode:', slumCode);
+          container.innerHTML = '<p style="color: #999;">No documents submitted.</p>';
+          return;
+        }
+
+        let html = '<div style="display: grid; gap: 12px;">';
+        
+        result.documents.forEach(doc => {
+          const uploadDate = new Date(doc.uploaded_at).toLocaleDateString();
+          let statusBadge = '';
+          let statusColor = '';
+          
+          if (doc.status === 'approved') {
+            statusBadge = '✓ Approved';
+            statusColor = '#2d7a3d';
+          } else if (doc.status === 'rejected') {
+            statusBadge = '✗ Rejected';
+            statusColor = '#a83e3e';
+          } else {
+            statusBadge = '⏳ Pending Review';
+            statusColor = '#d9a574';
+          }
+
+          html += `
+            <div style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; background: #f9f9f9;">
+              <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                <div>
+                  <div style="font-weight: bold; color: #7D5A3B; margin-bottom: 4px;">${doc.document_title || doc.document_type}</div>
+                  <div style="font-size: 12px; color: #999;">Type: ${doc.document_type}</div>
+                </div>
+                <span style="background: rgba(${statusColor === '#2d7a3d' ? '45, 122, 61' : statusColor === '#a83e3e' ? '168, 62, 62' : '217, 165, 116'}, 0.15); color: ${statusColor}; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; white-space: nowrap;">${statusBadge}</span>
+              </div>
+              <div style="font-size: 12px; color: #999; margin-bottom: 8px;">
+                Uploaded: ${uploadDate} | Size: ${(doc.file_size / 1024).toFixed(2)} KB
+              </div>
+              ${doc.status === 'rejected' && doc.rejection_reason ? `<div style="font-size: 12px; color: #a83e3e; background: rgba(168, 62, 62, 0.1); padding: 8px; border-radius: 4px; margin-bottom: 8px;">Reason: ${doc.rejection_reason}</div>` : ''}
+              <button onclick="viewDocument(${doc.id})" style="padding: 6px 12px; background: #7D5A3B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">View Document</button>
+            </div>
+          `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (error) {
+        console.error('Error loading documents:', error);
+        document.getElementById('documentsContainer').innerHTML = '<p style="color: red;">Failed to load documents.</p>';
+      }
+    }
+
+    // View document function
+    async function viewDocument(docId) {
+      try {
+        console.log('Fetching document:', docId);
+        const response = await fetch(`/api/documents/view/${docId}`);
+        const result = await response.json();
+        console.log('Document response:', result);
+        
+        if (result.status !== 'success' || !result.data) {
+          console.error('Document fetch failed:', result);
+          alert('Failed to load document');
+          return;
+        }
+
+        const doc = result.data;
+        const modalTitle = document.getElementById('documentTitle');
+        const modalContent = document.getElementById('documentContent');
+        const modal = document.getElementById('documentModal');
+        
+        modalTitle.textContent = doc.document_title || doc.document_type;
+        
+        if (doc.file_mimetype.startsWith('image/')) {
+          modalContent.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 16px; align-items: center; padding: 10px 0;">
+              <img src="${doc.file_data}" alt="Document image" style="max-height: 500px; max-width: 100%; border-radius: 4px;" />
+              <a href="${doc.file_data}" download="${(doc.document_title || doc.document_type || 'document')}.png" style="display: inline-block; padding: 10px 20px; background: #7D5A3B; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">⬇ Download Image</a>
+            </div>
+          `;
+        } else if (doc.file_mimetype === 'application/pdf') {
+          modalContent.innerHTML = `
+            <div style="padding: 20px;">
+              <p style="font-size: 48px; margin: 20px 0;">📄</p>
+              <p style="font-weight: bold;">PDF Document</p>
+              <p style="color: #999; margin-bottom: 20px;">Click the button below to download this PDF</p>
+              <a href="${doc.file_data}" download="${doc.document_title || 'document'}.pdf" style="display: inline-block; padding: 10px 20px; background: #7D5A3B; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">⬇ Download PDF</a>
+            </div>
+          `;
+        } else {
+          modalContent.innerHTML = `
+            <div style="padding: 20px;">
+              <p style="font-size: 48px; margin: 20px 0;">📎</p>
+              <p style="font-weight: bold;">${doc.file_mimetype}</p>
+              <p style="color: #999; margin-bottom: 20px;">This file type cannot be previewed in browser</p>
+              <a href="${doc.file_data}" download="${doc.document_title || 'document'}" style="display: inline-block; padding: 10px 20px; background: #7D5A3B; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">⬇ Download File</a>
+            </div>
+          `;
+        }
+        
+        modal.classList.add('active');
+      } catch (error) {
+        console.error('Error viewing document:', error);
+        alert('Failed to view document: ' + error.message);
+      }
+    }
+
+    function closeDocumentModal() {
+      const modal = document.getElementById('documentModal');
+      modal.classList.remove('active');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('documentModal')?.addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeDocumentModal();
+      }
+    });
+
+    function generatePdf() {
+      const jsPDFCtor = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+      if (!jsPDFCtor) {
+        alert('PDF library not loaded');
+        return;
+      }
+
+      const doc = new jsPDFCtor({ unit: 'pt', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 30;
+      let yPosition = margin;
+
+      function addLine(text, fontSize = 12, isBold = false) {
+        if (yPosition > pageHeight - 40) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        doc.setFontSize(fontSize);
+        doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+        const lines = doc.splitTextToSize(text || '', pageWidth - 2 * margin);
+        lines.forEach(line => {
+          doc.text(line, margin, yPosition);
+          yPosition += fontSize + 5;
+        });
+      }
+
+      function addSection(title) {
+        yPosition += 10;
+        if (yPosition > pageHeight - 60) {
+          doc.addPage();
+          yPosition = margin;
+        }
+        addLine(title, 14, true);
+        yPosition += 5;
+      }
+
+      const resident = currentResident.resident;
+      const spouses = currentResident.spouses || [];
+      const children = currentResident.children || [];
+
+      // Title
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SLUMLINK Resident Report', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 25;
+
+      // Personal Information
+      addSection('Personal Information');
+      addLine(`Name: ${resident.full_name || '-'}`);
+      addLine(`Slum Code: ${resident.slum_code || '-'}`);
+      addLine(`Date of Birth: ${formatDate(resident.dob)}`);
+      addLine(`Gender: ${resident.gender || '-'}`);
+      addLine(`NID: ${resident.nid || '-'}`);
+      addLine(`Mobile: ${resident.mobile || '-'}`);
+      addLine(`Education: ${resident.education || '-'}`);
+      addLine(`Occupation: ${resident.occupation || '-'}`);
+      addLine(`Skills: ${formatSkills(resident)}`);
+      addLine(`Income: ${resident.income || '-'}`);
+      addLine(`Status: ${resident.status}`);
+
+      // Address Information
+      addSection('Address Information');
+      addLine(`Area: ${resident.area || '-'}`);
+      addLine(`District: ${resident.district || '-'}`);
+      addLine(`Division: ${resident.division || '-'}`);
+      addLine(`Family Members: ${resident.family_members || 0}`);
+
+      // Spouses
+      if (spouses.length > 0) {
+        addSection(`Spouse Information (${spouses.length})`);
+        spouses.forEach((spouse, idx) => {
+          addLine(`Spouse ${idx + 1}:`, 12, true);
+          addLine(`  Name: ${spouse.name || '-'}`);
+          addLine(`  Date of Birth: ${formatDate(spouse.dob)}`);
+          addLine(`  Gender: ${spouse.gender || '-'}`);
+          addLine(`  NID: ${spouse.nid || '-'}`);
+          addLine(`  Education: ${spouse.education || '-'}`);
+          addLine(`  Job: ${spouse.job || '-'}`);
+          addLine(`  Skills: ${formatSkills(spouse)}`);
+          addLine(`  Income: ${spouse.income || '-'}`);
+          addLine(`  Mobile: ${spouse.mobile || '-'}`);
+          yPosition += 5;
         });
       }
 
       // Children
-      document.getElementById('numChildren').textContent = resident.numChildren;
-      var childrenContainer = document.getElementById('childrenContainer');
-      childrenContainer.innerHTML = '';
-      if (resident.children && resident.children.length > 0) {
-        resident.children.forEach(function(child, index) {
-          var childDiv = document.createElement('div');
-          childDiv.className = 'subsection';
-          childDiv.innerHTML = `
-            <h4>Children Information ${index + 1}</h4>
-            <div class="info-grid">
-              <div class="info-item">
-                <span class="info-label">Full Name</span>
-                <span class="info-value">${child.name}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Date of Birth</span>
-                <span class="info-value">${child.dob}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Gender</span>
-                <span class="info-value">${child.gender}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Education</span>
-                <span class="info-value">${child.education}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Occupation</span>
-                <span class="info-value">${child.occupation}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Income Range</span>
-                <span class="info-value">${child.income}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Preferred Job</span>
-                <span class="info-value">${child.preferredJob}</span>
-              </div>
-            </div>
-            ${child.birthCert ? `
-              <div class="info-item" style="margin-top: 10px;">
-                <span class="info-label">Birth Certificate</span>
-                <img src="${child.birthCert}" alt="Birth Certificate" class="doc-preview" onclick="openImageModal('${child.birthCert}', 'Birth Certificate - ${child.name}')">
-              </div>
-            ` : ''}
-          `;
-          childrenContainer.appendChild(childDiv);
+      if (children.length > 0) {
+        addSection(`Children Information (${children.length})`);
+        children.forEach((child, idx) => {
+          addLine(`Child ${idx + 1}:`, 12, true);
+          addLine(`  Name: ${child.name || '-'}`);
+          addLine(`  Birth Certificate No.: ${child.birth_certificate_number || '-'}`);
+          addLine(`  Date of Birth: ${formatDate(child.dob)}`);
+          addLine(`  Gender: ${child.gender || '-'}`);
+          addLine(`  Education: ${child.education || '-'}`);
+          addLine(`  Job: ${child.job || '-'}`);
+          addLine(`  Skills: ${formatSkills(child)}`);
+          addLine(`  Income: ${child.income || '-'}`);
+          addLine(`  Preferred Job: ${child.preferred_job || '-'}`);
+          yPosition += 5;
         });
       }
 
-      // New Documents - Check localStorage for approval/rejection status
-      var showNewDocs = resident.hasNewDocs;
-      try {
-        var DOC_STATUS_KEY = 'SLUMLINK_DOC_STATUS';
-        var stored = localStorage.getItem(DOC_STATUS_KEY);
-        if (stored) {
-          var docStatuses = JSON.parse(stored);
-          if (docStatuses[resident.id]) {
-            // If documents have been approved or rejected, don't show as new
-            if (docStatuses[resident.id].approved || docStatuses[resident.id].rejected) {
-              showNewDocs = false;
-            }
-            // Apply the stored status
-            if (docStatuses[resident.id].hasNewDocs === false) {
-              showNewDocs = false;
-            }
-          }
-        }
-      } catch(e) { /* ignore errors */ }
-      
-      if (showNewDocs) {
-        document.getElementById('newDocsBadge').style.display = 'inline-block';
-        document.getElementById('newDocsSection').style.display = 'block';
-        
-        if (resident.birthCert) {
-          document.getElementById('birthCertContainer').style.display = 'block';
-          var birthImg = document.getElementById('birthCert');
-          birthImg.src = resident.birthCert;
-          birthImg.onclick = function() {
-            openImageModal(resident.birthCert, 'Birth Certificate - ' + resident.name);
-          };
-        }
-        
-        if (resident.deathCert) {
-          document.getElementById('deathCertContainer').style.display = 'block';
-          var deathImg = document.getElementById('deathCert');
-          deathImg.src = resident.deathCert;
-          deathImg.onclick = function() {
-            openImageModal(resident.deathCert, 'Death Certificate - ' + resident.name);
-          };
-        }
-        
-        if (resident.marriageCert) {
-          document.getElementById('marriageCertContainer').style.display = 'block';
-          var marriageImg = document.getElementById('marriageCert');
-          marriageImg.src = resident.marriageCert;
-          marriageImg.onclick = function() {
-            openImageModal(resident.marriageCert, 'Marriage Certificate - ' + resident.name);
-          };
-        }
-      }
+      // Footer
+      yPosition = pageHeight - 30;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(150);
+      doc.text('Generated by SLUMLINK', margin, yPosition);
+
+      doc.save(`${resident.full_name}_Resident_Report.pdf`);
     }
-
-    function openImageModal(src, caption) {
-      var modal = document.getElementById('imageModal');
-      var img = document.getElementById('modalImage');
-      var captionEl = document.getElementById('imageCaption');
-      img.src = src;
-      captionEl.textContent = caption || '';
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeImageModal() {
-      var modal = document.getElementById('imageModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-    }
-
-    function showSuccessModal(message) {
-      var modal = document.getElementById('successModal');
-      document.getElementById('successModalBody').textContent = message;
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeSuccessModal() {
-      var modal = document.getElementById('successModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-    }
-
-    // Event Listeners
-    document.getElementById('closeImageModal').addEventListener('click', closeImageModal);
-    document.getElementById('imageModal').addEventListener('click', function(e) {
-      if (e.target === this) closeImageModal();
-    });
-
-    document.getElementById('closeSuccess').addEventListener('click', closeSuccessModal);
-    document.getElementById('successModal').addEventListener('click', function(e) {
-      if (e.target === this) closeSuccessModal();
-    });
-
-    // Load data on page load
-    loadResidentInfo();
   </script>
 </body>
 </html>

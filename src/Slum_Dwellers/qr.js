@@ -25,30 +25,26 @@
     document.body.appendChild(wrapper.firstElementChild);
   }
 
-  async function ensureQRCodeLib() {
-    if (window.QRCode) return;
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    }).catch(async () => {
-      await new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js';
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
+  async function generateQRImageFromAPI(text) {
+    const encodedText = encodeURIComponent(text);
+    const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodedText}`;
+    
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Enable CORS
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to load QR code from API'));
+      img.src = qrApiUrl;
+      img.alt = 'Generated QR Code';
+      img.style.maxWidth = '100%';
+      img.style.height = 'auto';
     });
-    if (!window.QRCode) throw new Error('QRCode library unavailable');
   }
 
   function getSlumId() {
     // Prefer stored ID, then DOM, then default
     try {
-      const stored = localStorage.getItem('slumId');
+      const stored = sessionStorage.getItem('slumId');
       if (stored) return stored;
     } catch {}
     const idEl = document.querySelector('.slum-id');
@@ -75,21 +71,41 @@
   }
 
   async function generateQr() {
-    await ensureQRCodeLib();
     const container = document.getElementById('qrContainer');
     if (!container) return;
+    
+    // Clear previous QR code
     while (container.firstChild) container.removeChild(container.firstChild);
-    const slumId = getSlumId();
-    const text = `SLUMLINK-ID:${slumId}`;
-    // eslint-disable-next-line no-undef
-    new QRCode(container, {
-      text,
-      width: 256,
-      height: 256,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M
-    });
+    
+    // Show loading state
+    const loading = document.createElement('div');
+    loading.textContent = 'Generating QR Code...';
+    loading.style.padding = '20px';
+    loading.style.textAlign = 'center';
+    loading.style.color = '#666';
+    container.appendChild(loading);
+    
+    try {
+      const slumId = getSlumId();
+      const text = `SLUMLINK-ID:${slumId}`;
+      
+      // Generate QR code using API
+      const qrImage = await generateQRImageFromAPI(text);
+      
+      // Remove loading and add QR image
+      container.removeChild(loading);
+      container.appendChild(qrImage);
+      
+    } catch (error) {
+      container.removeChild(loading);
+      const errorDiv = document.createElement('div');
+      errorDiv.textContent = 'Failed to generate QR Code';
+      errorDiv.style.padding = '20px';
+      errorDiv.style.textAlign = 'center';
+      errorDiv.style.color = '#d32f2f';
+      container.appendChild(errorDiv);
+      console.error('QR generation failed:', error);
+    }
   }
 
   function wireCloseAndDownload() {
@@ -106,34 +122,93 @@
     });
 
     if (downloadBtn) {
-      downloadBtn.addEventListener('click', () => {
+      downloadBtn.addEventListener('click', async () => {
         try {
           const container = document.getElementById('qrContainer');
           if (!container) return;
-          const canvas = container.querySelector('canvas');
-          let dataUrl = '';
-          if (canvas && canvas.toDataURL) {
-            dataUrl = canvas.toDataURL('image/png');
-          } else {
-            const img = container.querySelector('img');
-            if (img && img.src) dataUrl = img.src;
-          }
-          if (!dataUrl) {
+          
+          // Check if we have an image element
+          const img = container.querySelector('img');
+          if (!img || !img.src) {
             alert('QR image not available for download.');
             return;
           }
-          const a = document.createElement('a');
-          a.href = dataUrl;
+          
           const slumId = getSlumId();
-          a.download = slumId !== 'UNKNOWN' ? `SlumLink_QR_${slumId}.png` : 'SlumLink_QR.png';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
+          const filename = slumId !== 'UNKNOWN' ? `SlumLink_QR_${slumId}.png` : 'SlumLink_QR.png';
+          
+          try {
+            // Try canvas method first (works if CORS is properly set)
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Wait for image to load if it hasn't already
+            if (!img.complete) {
+              await new Promise((resolve) => {
+                img.onload = resolve;
+              });
+            }
+            
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            
+            // Convert to blob and download
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                // Fallback to direct download
+                downloadImageDirect(img.src, filename);
+                return;
+              }
+              
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = filename;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            }, 'image/png');
+            
+          } catch (canvasError) {
+            // Fallback: direct download from image URL
+            console.log('Canvas method failed, using direct download:', canvasError.message);
+            downloadImageDirect(img.src, filename);
+          }
+          
         } catch (err) {
           console.error('Failed to download QR:', err);
           alert('Failed to download QR code.');
         }
       });
+    }
+    
+    // Fallback download function
+    function downloadImageDirect(imageUrl, filename) {
+      fetch(imageUrl)
+        .then(response => response.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+          console.error('Direct download failed:', error);
+          // Last resort: open image in new tab
+          const a = document.createElement('a');
+          a.href = imageUrl;
+          a.target = '_blank';
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        });
     }
   }
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Campaigns | SlumLink</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="./viewcampaign.css" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand" onclick="goDashboard()">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark" />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
+
+  <button class="back-btn" onclick="goDashboard()">
+    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+    <span>Back to Dashboard</span>
+  </button>
+</header>
+
+<main class="container">
+  <h1 class="page-title">View All Campaigns</h1>
+  <p class="page-subtitle">Track impact, manage campaigns, and support communities with transparency.</p>
+
+  <div class="filter-container">
+    <select id="campaignFilter" onchange="filterCampaigns()">
+      <option value="all">All</option>
+      <option value="pending">Pending</option>
+      <option value="in_progress">In Progress</option>
+      <option value="completed">Completed</option>
+    </select>
+  </div>
+
+  <div id="campaignList"></div>
+</main>
+
+<script src="./viewcampaign.js"></script>
+</body>
+</html>

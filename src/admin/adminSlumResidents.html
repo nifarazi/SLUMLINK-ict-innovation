@@ -7,22 +7,40 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
-    <input type="text" placeholder="Search" class="search" />
-    <div class="top-right">
-      <span class="admin">Admin ▾</span>
-      <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+<header class="topbar" aria-label="Header">
+  <!-- Brand / Logo -->
+  <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+    <div class="brand-text">SLUMLINK</div>
+  </div>
+
+  <!-- Search input -->
+  <input type="text" placeholder="Search" class="search" />
+
+  <!-- Admin & Notifications -->
+  <div class="top-right">
+    <div class="admin">
+      <span>Admin ▾</span>
+      <div class="admin-dropdown">
+        <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">
+          Logout
+        </button>
+      </div>
     </div>
-  </header>
+    <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
+  </div>
+</header>
+
 
   <div class="container">
     <aside class="sidebar">
       <ul>
         <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
         <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-        <li class="active"><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+        <li class="active"><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
         <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
       </ul>
     </aside>
@@ -146,6 +164,61 @@
   <script>
     // Handle dropdown menu display and card click behavior
     document.addEventListener('DOMContentLoaded', function () {
+      var AREA_DATA = {
+        "Dhaka": {
+          "Dhaka (North)": [
+            "Korail",
+            "Begun Bari",
+            "Duaripara",
+            "Kallyanpur",
+            "Pora Basti",
+            "Chalantika",
+            "Agargaon",
+            "Sattola (Mohakhali)",
+            "Mohammadpur",
+            "Basbari",
+            "Molla"
+          ],
+          "Dhaka (South)": [
+            "Nama Para",
+            "Pura",
+            "Nubur",
+            "Mannan"
+          ],
+          "Narayanganj": [
+            "Bhuigar",
+            "Chashara",
+            "Fatullah Cluster"
+          ],
+          "Gazipur": [
+            "Tongi Cluster",
+            "Board Bazar Cluster"
+          ]
+        },
+        "Chattogram": {
+          "Chattogram (City)": ["Halishahar", "Pahartali", "Agrabad Cluster"],
+          "Cox's Bazar": ["Teknaf Cluster", "Kutupalong (Nearby)"]
+        },
+        "Khulna": { "Khulna": ["Rupsha Ghat Cluster", "Khalishpur Cluster"] },
+        "Rajshahi": { "Rajshahi": ["Kazla Cluster", "Bornali Cluster"] },
+        "Barishal": { "Barishal": ["Nathullabad Cluster", "Battala Cluster"] },
+        "Sylhet": { "Sylhet": ["Ambarkhana Cluster", "Subidbazar Cluster"] },
+        "Rangpur": { "Rangpur": ["Jahaj Company Cluster", "Modern Mor Cluster"] },
+        "Mymensingh": { "Mymensingh": ["Town Hall Cluster", "Charpara Cluster"] }
+      };
+
+      function getSlumsForDistrict(district) {
+        var match = String(district || '').trim();
+        var slums = [];
+        Object.keys(AREA_DATA).forEach(function (division) {
+          var districts = AREA_DATA[division] || {};
+          if (districts[match]) {
+            slums = districts[match].slice();
+          }
+        });
+        return slums;
+      }
+
       function wireCard(container){
         var card = container.querySelector('.card');
         var dropdown = container.querySelector('.dropdown-menu');
@@ -182,41 +255,26 @@
         });
       }
 
-      // Wire existing static cards
-      document.querySelectorAll('.card-container').forEach(wireCard);
-
-      // Read applications to append any new slum buttons
-      function safeJsonParse(raw, fb){ try { return JSON.parse(raw); } catch { return fb; } }
-      var LIST_KEY = 'SLUMLINK_APPLICATIONS';
-      var apps = safeJsonParse(localStorage.getItem(LIST_KEY), []);
-      var dynamicSlums = new Set();
-      (apps || []).forEach(function(app){
-        var s = String(app.slum || '').trim();
-        if (s) dynamicSlums.add(s);
-      });
-      // Collect existing slum names from static cards
-      var existing = new Set();
-      document.querySelectorAll('.card-container .card').forEach(function(btn){
-        var name = (btn.textContent || '').trim();
-        if (name) existing.add(name.toLowerCase());
-      });
-      // Append new cards for slums not present
       var grid = document.querySelector('.card-grid');
-      dynamicSlums.forEach(function(slum){
-        if (!existing.has(slum.toLowerCase())){
+      var districtParam = new URLSearchParams(window.location.search).get('district') || '';
+      var slumsToRender = districtParam ? getSlumsForDistrict(districtParam) : [];
+      if (slumsToRender.length && grid) {
+        grid.innerHTML = '';
+        slumsToRender.forEach(function (slum) {
           var container = document.createElement('div');
           container.className = 'card-container';
-          container.innerHTML = '<button class="card" type="button">'+ slum +'</button>' +
+          container.innerHTML = '<button class="card" type="button">' + slum + '</button>' +
                                 '<div class="dropdown-menu">' +
                                 '<a href="#" class="dropdown-item" data-type="active">Active Accounts</a>' +
                                 '<a href="#" class="dropdown-item" data-type="pending">Pending Accounts</a>' +
                                 '</div>';
           grid.appendChild(container);
           wireCard(container);
-        }
-      });
+        });
+      } else {
+        document.querySelectorAll('.card-container').forEach(wireCard);
+      }
 
-      // Close dropdown when clicking outside
       document.addEventListener('click', function () {
         document.querySelectorAll('.dropdown-menu').forEach(function (menu) { menu.classList.remove('show'); });
       });

@@ -22,16 +22,15 @@
       --pink:#FFC8D2;
       --warning:#E8A444;
 
-      --header-h:56px; /* match analytics page */
+      --header-h:56px;
       --radius-lg:26px; 
       --radius-md:18px;
-
       --transition: all 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
 
     *{ box-sizing:border-box; margin:0; padding:0; }
     body{
-      font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-family:"Poppins", system-ui, sans-serif;
       background: linear-gradient(116.82deg, #CBB093 21.58%, #E0C7AC 31.36%, #F8E5CF 50.73%, #C0E0D0 71.52%);
       color: var(--ink);
       min-height: 100vh;
@@ -51,7 +50,6 @@
       align-items:center;
       justify-content:space-between;
       padding: 0 73px 0 70px;
-      box-shadow: none;
       z-index: 50;
     }
 
@@ -60,10 +58,7 @@
       align-items:center;
       gap: 10px;
       cursor:pointer;
-      user-select: none;
-      transition: var(--transition);
     }
-    .brand:hover{ transform: translateY(-1px); }
 
     .brand-mark{
       width: 32px; height: 32px;
@@ -75,9 +70,6 @@
       font-weight: 500;
       font-size: 20px;
       color: rgba(164,98,77,0.86);
-      text-transform: uppercase;
-      line-height: 1;
-      white-space: nowrap;
       letter-spacing: 0.04em;
     }
 
@@ -95,21 +87,32 @@
       display:inline-flex;
       align-items:center;
       gap: 8px;
-      white-space: nowrap;
+      position: relative;
     }
-    .pill-btn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(97,55,41,0.22);
-      color: rgba(97,55,41,0.92);
-      box-shadow: 0 10px 18px rgba(97,55,41,0.10);
+
+    /* ===== Alert Bubble ===== */
+    .alert-badge{
+      position:absolute;
+      top:-6px;
+      right:-10px;
+      background: var(--warning);
+      color:#fff;
+      font-size:15px;
+      font-weight:700;
+      min-width:26px;
+      height:26px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 4px 10px rgba(0,0,0,.2);
+      padding:0 8px;
     }
-    .pill-btn:active{ transform: translateY(0); }
 
-
-    /* ===== Page Container ===== */
+    /* ===== Page ===== */
     .container{
       max-width: 1440px;
-      margin: calc(var(--header-h)+26px) auto 52px;
+      margin: calc(var(--header-h) + 26px) auto 52px;
       padding: 0 40px;
     }
 
@@ -127,7 +130,7 @@
       max-width: 1200px;
     }
 
-    /* ===== Categories Grid ===== */
+    /* ===== Categories ===== */
     .categories-grid{
       display:grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -148,121 +151,143 @@
       font-weight:600;
       text-align:center;
       cursor:pointer;
-      transition: var(--transition);
       padding: 10px;
       position: relative;
     }
 
-    .category-card .count {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 16px;
-      font-weight: 500;
+    .category-card .count{
+      position:absolute;
+      top:12px;
+      right:16px;
+      font-size:16px;
+      font-weight:500;
       color: var(--terra);
-    }
-
-    .category-card:hover{
-      transform: translateY(-4px);
-      box-shadow: 5px 10px 14px rgba(173,117,98,0.4);
-    }
-
-    /* Responsive */
-    @media(max-width: 680px){
-      .page-title{ font-size: 28px; }
-      .page-subtitle{ font-size: 18px; }
-      .category-card{ font-size: 18px; height:150px; }
     }
   </style>
 </head>
+
 <body>
 
-  <header class="topbar" aria-label="Header">
-  <div class="brand" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
-    <span class="brand-mark" aria-hidden="true"></span>
+<header class="topbar">
+  <div class="brand" id="brandBtn">
+    <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="brand-mark"/>
     <div class="brand-text">SLUMLINK</div>
   </div>
 
-  <!-- Buttons container (back button remains in header) -->
-  <div style="display:flex; flex-direction:column; gap:6px;">
-    <button class="pill-btn" id="backBtn" type="button" aria-label="Back to dashboard">
-      <i class="fas fa-arrow-left" aria-hidden="true"></i>
-      <span>Back to Dashboard</span>
+  <button class="pill-btn" id="backBtn">
+    <i class="fas fa-arrow-left"></i>
+    Back to Dashboard
+  </button>
+</header>
+
+<main class="container">
+  <h1 class="page-title">Complaint Checking</h1>
+  <p class="page-subtitle">
+    Complaints are categorized using predefined administrative domains. Voice complaints are transcribed and auto-classified using AI.
+  </p>
+
+  <!-- New Complaints Button -->
+  <div style="margin:18px 0 28px;">
+    <button class="pill-btn" id="notifBtn">
+      <i class="fas fa-bell"></i>
+      New Complaints
+      <span class="alert-badge" id="notifCount">0</span>
     </button>
   </div>
-</header>
-  <main class="container">
-    <h1 class="page-title">Complaint Checking</h1>
-    <p class="page-subtitle">
-      Complaints are categorized using predefined administrative domains. Voice complaints are transcribed and auto-classified using AI, while authorities can manually reassign categories if needed.
-    </p>
 
-    <!-- Waiting Complaints button moved out of the header and placed below subtitle -->
-    <div style="margin:18px 0 28px;">
-      <button class="pill-btn" id="notifBtn" type="button" aria-label="View waiting complaints">
-        <i class="fas fa-bell" aria-hidden="true"></i>
-        <span>New Complaints</span>
-      </button>
-    </div>
+  <section class="categories-grid">
+    <div class="category-card" data-category="Housing & Shelter">Housing & Shelter <span class="count"></span></div>
+    <div class="category-card" data-category="Electricity & Lighting">Electricity & Lighting <span class="count"></span></div>
+    <div class="category-card" data-category="Aid & Relief Services">Aid & Relief Services <span class="count"></span></div>
+    <div class="category-card" data-category="Safety & Security">Safety & Security <span class="count"></span></div>
+    <div class="category-card" data-category="Education & Child Welfare">Education & Child Welfare <span class="count"></span></div>
+    <div class="category-card" data-category="Environment & Disaster Issues">Environment & Disaster Issues <span class="count"></span></div>
+    <div class="category-card" data-category="Waste Management">Waste Management <span class="count"></span></div>
+    <div class="category-card" data-category="Health & Medical Services">Health & Medical Services <span class="count"></span></div>
+    <div class="category-card" data-category="Documentation & Registration Issues">Documentation & Registration Issues <span class="count"></span></div>
+    <div class="category-card" data-category="Roads, Bridges & Infrastructure">Roads, Bridges & Infrastructure <span class="count"></span></div>
+    <div class="category-card" data-category="Water & Sanitation">Water & Sanitation <span class="count"></span></div>
+    <div class="category-card" data-category="Vaccination & Public Health Programs">Vaccination & Public Health Programs <span class="count"></span></div>
+  </section>
+</main>
 
-    <section class="categories-grid">
-      <div class="category-card" data-category="Housing & Shelter">Housing & Shelter <span class="count"></span></div>
-      <div class="category-card" data-category="Electricity & Lighting">Electricity & Lighting <span class="count"></span></div>
-      <div class="category-card" data-category="Aid & Relief Services">Aid & Relief Services <span class="count"></span></div>
-      <div class="category-card" data-category="Safety & Security">Safety & Security <span class="count"></span></div>
-      <div class="category-card" data-category="Education & Child Welfare">Education & Child Welfare <span class="count"></span></div>
-      <div class="category-card" data-category="Environment & Disaster Issues">Environment & Disaster Issues <span class="count"></span></div>
-      <div class="category-card" data-category="Waste Management">Waste Management <span class="count"></span></div>
-      <div class="category-card" data-category="Health & Medical Services">Health & Medical Services <span class="count"></span></div>
-      <div class="category-card" data-category="Documentation & Registration Issues">Documentation & Registration Issues <span class="count"></span></div>
-      <div class="category-card" data-category="Roads, Bridges & Infrastructure">Roads, Bridges & Infrastructure <span class="count"></span></div>
-      <div class="category-card" data-category="Water & Sanitation">Water & Sanitation <span class="count"></span></div>
-      <div class="category-card" data-category="Vaccination & Public Health Programs">Vaccination & Public Health Programs <span class="count"></span></div>
-    </section>
-  </main>
+<script>
+  brandBtn.onclick = () => window.location.href = "/";
+  backBtn.onclick = () => window.location.href = "./local-dashboard.html";
+  notifBtn.onclick = () => window.location.href = "./waiting-complaints.html";
 
- <script>
-  // Header actions
-  const brandBtn = document.getElementById("brandBtn");
-  const backBtn = document.getElementById("backBtn");
-
-  function goHome(){ window.location.href = "/"; }
-  brandBtn.addEventListener("click", goHome);
-  brandBtn.addEventListener("keydown", (e)=>{
-    if(e.key==="Enter"||e.key===" "){ e.preventDefault(); goHome(); }
-  });
-
-  // Back to Local Authority dashboard
-  backBtn.addEventListener("click", ()=>{ window.location.href = "./local-dashboard.html"; });
-const notifBtn = document.getElementById("notifBtn");
-notifBtn.addEventListener("click", ()=>{
-  window.location.href = "./waiting-complaints.html";
-});
-  // Dummy complaints for counts
-  const categories = {
-    "Housing & Shelter":[{status:"In Progress"},{status:"Waiting"},{status:"Solved"}],
-    "Electricity & Lighting":[{status:"In Progress"},{status:"Waiting"},{status:"Solved"}],
-    "Aid & Relief Services":[{status:"Waiting"},{status:"In Progress"},{status:"Solved"}],
-    "Safety & Security":[{status:"In Progress"},{status:"Waiting"},{status:"Solved"}],
-    "Education & Child Welfare":[{status:"Solved"},{status:"In Progress"},{status:"Waiting"}],
-    "Environment & Disaster Issues":[{status:"Waiting"},{status:"In Progress"},{status:"Solved"}],
-    "Waste Management":[{status:"In Progress"},{status:"Waiting"},{status:"Solved"}],
-    "Health & Medical Services":[{status:"Waiting"},{status:"Solved"}],
-    "Documentation & Registration Issues":[{status:"In Progress"},{status:"Waiting"}],
-    "Roads, Bridges & Infrastructure":[{status:"Waiting"},{status:"In Progress"},{status:"Solved"}],
-    "Water & Sanitation":[{status:"Waiting"},{status:"Solved"}],
-    "Vaccination & Public Health Programs":[{status:"In Progress"},{status:"Solved"}]
+  // Full complaints data (same as in complaints.html)
+  const allComplaints = {
+    "Housing & Shelter":[
+      {text:"No nearby shelters for families.", status:"Waiting"},
+      {text:"Some houses are damaged and unsafe.", status:"InProgress"},
+      {text:"Temporary shelters provided.", status:"Solved"}
+    ],
+    "Electricity & Lighting":[
+      {text:"Frequent power outages in the area.", status:"InProgress"},
+      {text:"Streetlights not working at night.", status:"Waiting"},
+      {text:"Solar lamps installed.", status:"Solved"}
+    ],
+    "Aid & Relief Services":[
+      {text:"Food rations delayed.", status:"Waiting"},
+      {text:"Distribution of blankets incomplete.", status:"InProgress"},
+      {text:"Aid distributed successfully.", status:"Solved"}
+    ],
+    "Education & Child Welfare":[
+      {text:"Children travel far to reach school.", status:"Solved"},
+      {text:"Some children forced to work.", status:"InProgress"},
+      {text:"Lack of books and learning materials.", status:"InProgress"},
+      {text:"School building unsafe.", status:"Waiting"}
+    ],
+    "Safety & Security":[
+      {text:"Street violence reported.", status:"Waiting"},
+      {text:"Insufficient police patrol.", status:"InProgress"},
+      {text:"Community watch program implemented.", status:"Solved"}
+    ],
+    "Environment & Disaster Issues":[
+      {text:"Flooded areas affecting homes.", status:"Waiting"},
+      {text:"Air pollution causing health issues.", status:"InProgress"},
+      {text:"Community cleanup drive completed.", status:"Solved"}
+    ],
+    "Waste Management":[
+      {text:"Garbage collection irregular.", status:"Waiting"},
+      {text:"Overflowing bins in alleys.", status:"InProgress"},
+      {text:"Local composting initiative successful.", status:"Solved"}
+    ],
+    "Health & Medical Services":[
+      {text:"Clinic shortage of medicines.", status:"InProgress"},
+      {text:"Vaccination clinic organized.", status:"Solved"}
+    ],
+    "Documentation & Registration Issues":[
+      {text:"Birth certificates delayed.", status:"Waiting"},
+      {text:"National ID registration pending.", status:"InProgress"}
+    ],
+    "Roads, Bridges & Infrastructure":[
+      {text:"Potholes making travel unsafe.", status:"Waiting"},
+      {text:"Bridge repair ongoing.", status:"InProgress"},
+      {text:"New road completed.", status:"Solved"}
+    ],
+    "Water & Sanitation":[
+      {text:"Water supply intermittent.", status:"InProgress"},
+      {text:"Public toilets cleaned regularly.", status:"Solved"}
+    ],
+    "Vaccination & Public Health Programs":[
+      {text:"Flu vaccination drive scheduled.", status:"Waiting"},
+      {text:"Polio vaccination completed.", status:"Solved"}
+    ]
   };
 
-  // Populate counts and set click to dynamic complaints page
+  let waitingCount = 0;
+
   document.querySelectorAll('.category-card').forEach(card=>{
     const cat = card.dataset.category;
-    const count = categories[cat]?.length || 0;
+    const count = allComplaints[cat]?.length || 0;  // use actual complaints length
     card.querySelector('.count').textContent = `(${count})`;
-    card.addEventListener('click', ()=>{
-      window.location.href = `./complaints.html?category=${encodeURIComponent(cat)}`;
-    });
+    waitingCount += count;
+    card.onclick = () => window.location.href = `./complaints.html?category=${encodeURIComponent(cat)}`;
   });
+
+  document.getElementById("notifCount").textContent = waitingCount;
 </script>
 
 </body>

@@ -1,5 +1,4 @@
-// adminSlumAnalytics.js
-// Handles the logout modal behavior for admin pages
+// Handles the logout modal behavior and admin dropdown for admin pages
 document.addEventListener('DOMContentLoaded', function () {
   var adminEls = document.querySelectorAll('.admin');
   var modal = document.getElementById('logoutModal');
@@ -20,10 +19,40 @@ document.addEventListener('DOMContentLoaded', function () {
     modal.setAttribute('aria-hidden', 'true');
   }
 
-  adminEls.forEach(function (el) {
-    el.addEventListener('click', function () {
-      showModal();
+  function closeAllDropdowns() {
+    adminEls.forEach(function (el) {
+      var dropdown = el.querySelector('.admin-dropdown');
+      if (dropdown) {
+        dropdown.classList.remove('show');
+      }
     });
+  }
+
+  adminEls.forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var dropdown = el.querySelector('.admin-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('show');
+      }
+    });
+
+    // Handle logout button in dropdown
+    var logoutBtn = el.querySelector('.admin-logout');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeAllDropdowns();
+        showModal();
+      });
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.admin')) {
+      closeAllDropdowns();
+    }
   });
 
   cancelBtn && cancelBtn.addEventListener('click', function () {

@@ -1,0 +1,35 @@
+.otp-modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:1200;visibility:hidden;opacity:0;transition:opacity .18s ease,visibility .18s;}
+.otp-modal, .otp-panel, body { font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+.otp-modal.open{visibility:visible;opacity:1}
+.otp-backdrop{position:fixed;inset:0;background:rgba(10,12,16,0.6);backdrop-filter:blur(2px)}
+.otp-panel{position:relative;z-index:2;width:min(680px,96vw);background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(10,12,16,0.18);overflow:hidden}
+.otp-head{padding:20px 24px 0 24px;border-bottom:1px solid #f0f0f0}
+.otp-head h2{margin:0;font-size:1.125rem;color:#A4624D}
+.otp-sub{margin:8px 0 0;color:#A4624D;font-size:0.95rem}
+.otp-body{padding:10px 24px 20px}
+.otp-inputs{display:flex;flex-direction:column;gap:12px;margin:12px 0}
+.otp-item{display:flex;flex-direction:column}
+.otp-label{font-size:.85rem;color:#334e68;margin-bottom:6px}
+.otp-row{display:flex;gap:10px}
+.otp-box{width:100%;padding:12px 14px;border-radius:8px;border:1px solid #d6e1ea;font-size:1rem;outline:none;box-sizing:border-box}
+.otp-box:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.08)}
+.otp-actions{display:flex;gap:8px;margin-top:16px}
+.otp-actions .btn{flex:1;min-width:0}
+.otp-actions .btn.primary{background:#A4624D;color:#fff;border-color:transparent}
+.otp-actions .btn.ghost{background:#F5DFC5;color:#2c2c2c;border-color:transparent}
+.btn{padding:8px 14px;border-radius:8px;border:1px solid transparent;background:#fff;color:#102a43;cursor:pointer}
+.btn.primary{background:#2563eb;color:#fff}
+.btn.ghost{background:transparent;border:1px solid #e6eef7}
+.otp-footer{margin-top:12px;text-align:center}
+.otp-footer a{color:#A4624D;text-decoration:none;font-weight:600}
+
+/* Responsive: show compact input boxes in a row for small counts */
+@media (max-width:520px){
+  .otp-panel{width:94vw}
+  .otp-row{flex-wrap:wrap}
+  .otp-box{flex:1;width:100%}
+}
+
+/* Demo wrapper */
+.demo-wrap{padding:24px}
+.demo-wrap .hint{margin-top:8px;color:#5b6b73;font-size:0.9rem}

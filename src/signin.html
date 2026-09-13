@@ -7,6 +7,51 @@
 
   <link rel="stylesheet" href="/src/signin-styles.css" />
 
+  <style>
+    .link-strong {
+      transition: all 0.3s ease;
+    }
+
+    .link-strong:hover {
+      transform: translateY(-2px);
+      text-decoration: underline;
+      text-shadow: 0 2px 8px rgba(164, 98, 77, 0.3);
+    }
+
+    /* Error notification styles */
+    .error-notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #c41e3a;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      animation: slideIn 0.3s ease-out;
+      z-index: 1000;
+      max-width: 350px;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .form-input.has-error {
+      border-color: #c41e3a;
+      background-color: #fff5f7;
+    }
+  </style>
+
   <!-- Google Font -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -20,7 +65,7 @@
 </head>
 
 <body>
-  <a href="/" class="back-btn" aria-label="Back to home">
+  <a onclick="window.history.back()" class="back-btn" aria-label="Back to home" style="cursor:pointer">
     <i class="fas fa-arrow-left"></i>
   </a>
 
@@ -28,10 +73,14 @@
     <!-- Left / intro panel -->
     <section class="auth-intro">
       <div class="intro-content">
-        <div class="brand">
-          <span class="brand-mark"></span>
-          <span class="brand-name">SlumLink</span>
-        </div>
+       <div class="brand">
+  <img
+    src="/src/images/slum Logo.png"
+    alt="SlumLink Logo"
+    class="brand-mark"
+  />
+  <span class="brand-name">SlumLink</span>
+</div>
 
         <h1>Welcome back</h1>
         <p class="intro-tagline">
@@ -75,6 +124,7 @@
             id="identifier"
             class="form-input"
             placeholder="e.g., org@mail.com"
+            required
           />
           <small class="form-hint" id="identifierHint">
             Use the official email you registered with SlumLink.
@@ -91,6 +141,7 @@
               id="password"
               class="form-input"
               placeholder="Enter your password"
+              required
             />
             <button
               type="button"
@@ -100,6 +151,7 @@
               <i class="fa-regular fa-eye-slash"></i>
             </button>
           </div>
+          <small class="form-error" id="loginError" style="display: none;"></small>
         </div>
 
         <button type="submit" class="primary-btn">
@@ -108,7 +160,7 @@
 
         <p class="below-text">
           Don't have an account?
-          <a href="/src/ngo/signup.html" class="link-strong">Register your organization</a>
+          <span class="link-strong" style="cursor:pointer"></span>
         </p>
       </form>
     </section>

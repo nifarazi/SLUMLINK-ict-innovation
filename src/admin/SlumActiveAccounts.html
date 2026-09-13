@@ -6,56 +6,80 @@
   <link rel="stylesheet" href="adminSlumAnalytics.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    .pending-table th:last-child,
-    .pending-table td:last-child {
-      text-align: right;
-      padding-right: 270px;
+    .active-table th:last-child,
+    .active-table td:last-child {
+      text-align: left;
+      padding-right: 0;
     }
-    .pending-actions {
-      display: flex !important;
+
+    .active-table th:last-child {
+      text-align: right;
+      padding-right: 100px;
+    }
+
+    .active-actions {
+      display: flex;
+      justify-content: flex-start;
       gap: 8px;
-      justify-content: flex-end;
       flex-wrap: wrap;
     }
 
-    .pending-actions button {
-      min-width: 85px;
-    }
-
-    .btn-approve {
-      background-color: rgba(45, 122, 61, 0.15) !important;
-      color: #2d7a3d !important;
+    .btn-view {
+      background-color: #8b6f5a !important;
+      color: white !important;
       border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
     }
 
-    .btn-approve:hover {
-      background-color: rgba(45, 122, 61, 0.25) !important;
+    .btn-view:hover {
+      background-color: #6b5744 !important;
     }
 
-    .btn-reject {
-      background-color: rgba(139, 111, 90, 0.3) !important;
-      color: #8b6f5a !important;
+    .btn-delete {
+      background-color: rgba(180, 80, 80, 0.2) !important;
+      color: #a83e3e !important;
       border: none !important;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
     }
 
-    .btn-reject:hover {
-      background-color: rgba(139, 111, 90, 0.4) !important;
+    .btn-delete:hover {
+      background-color: rgba(180, 80, 80, 0.3) !important;
     }
 
     .card-header h2 {
       color: #8b6f5a;
     }
+
+    .status-badge {
+      background: rgba(45, 122, 61, 0.15);
+      color: #2d7a3d;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo">SLUMLINK</div>
+  <header class="topbar" aria-label="Header">
+    <div class="brand clickable" id="brandBtn" aria-label="SlumLink Home" role="button" tabindex="0">
+      <img src="/src/images/slum Logo.png" alt="SlumLink Logo" class="logo-mark" />
+      <div class="brand-text">SLUMLINK</div>
+    </div>
+
     <input type="text" placeholder="Search" class="search" />
+
     <div class="top-right">
       <div class="admin">
         <span>Admin ▾</span>
         <div class="admin-dropdown">
-          <button class="admin-logout">Logout</button>
+          <button class="admin-logout" id="logoutBtn" type="button" aria-label="Log out">Logout</button>
         </div>
       </div>
       <a class="bell" href="adminNotification.html" title="Notifications">🔔</a>
@@ -67,92 +91,57 @@
       <ul>
         <li><a href="adminSlumAnalytics.html">📊 Slum Analytics</a></li>
         <li><a href="adminNgoAnalytics.html">📈 NGO Analytics</a></li>
-        <li class="active"><a href="adminSlumResidents.html">🏠 Slum Residents</a></li>
+        <li class="active"><a href="adminslumdivision.html">🏠 Slum Residents</a></li>
         <li><a href="adminFieldAgents.html">🧑‍💼 Field Agents</a></li>
+        <li><a href="adminactivengo.html">✅ Active NGOs</a></li>
+        <li><a href="adminlocalauthority.html">🏛 Local Authority</a></li>
         <li><a href="adminVerifyNgo.html">✔ Verify NGOs</a></li>
       </ul>
     </aside>
 
     <main class="content">
       <div class="page-header">
-        <div>
-        </div>
+        
       </div>
 
       <div class="table-card">
         <div class="card-header">
-          <h2 id="pageTitle">Active Slum Resident Accounts</h2>
-          
+          <h2>Active Accounts</h2>
         </div>
-        <div class="table-wrapper">
-          <table class="pending-table">
-            <thead>
-              <tr>
-                <th>Unique ID</th>
-                <th>Name</th>
-                <th>Slum</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="activeTableBody">
-              <!-- Rows will be populated by JavaScript -->
-            </tbody>
-          </table>
+        <table class="active-table">
+          <thead>
+            <tr>
+              <th>Full Name</th>
+              <th>Slum Code</th>
+              <th>Mobile</th>
+              <th>Education</th>
+              <th>Area</th>
+              <th>District</th>
+              <th>Division</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="activeTableBody">
+            <tr><td colspan="9" style="text-align: center; color: #999;">Loading...</td></tr>
+          </tbody>
+        </table>
+        <div class="footer">
+          <span>Showing data</span>
+          <div class="pagination" id="pagination"></div>
         </div>
-      </div>
-      
-      <div style="margin-top: 20px; text-align: center;">
-        <a href="adminSlumResidents.html" class="btn btn-secondary" style="text-decoration: none; padding: 8px 16px;">
-          ← Go Back
-        </a>
       </div>
     </main>
-  </div>
-
-  <!-- Image Modal -->
-  <div class="modal-overlay" id="imageModal" aria-hidden="true">
-    <div class="image-modal" role="dialog" aria-modal="true">
-      <button class="close-image-modal" id="closeImageModal" aria-label="Close">&times;</button>
-      <img id="modalImage" src="" alt="Document preview">
-      <div class="image-caption" id="imageCaption"></div>
-      <button class="btn btn-primary" id="downloadImage" style="margin-top: 15px;">
-        📥 Download Image
-      </button>
-    </div>
-  </div>
-
-  <!-- Approve Confirmation Modal -->
-  <div class="modal-overlay" id="approveModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-header">Approve Documents</div>
-      <div class="modal-body" id="approveModalBody">Are you sure you want to approve these documents?</div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelApprove">Cancel</button>
-        <button class="btn btn-primary" id="confirmApprove">Approve</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Reject Confirmation Modal -->
-  <div class="modal-overlay" id="rejectModal" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true">
-      <div class="modal-header">Reject Documents</div>
-      <div class="modal-body" id="rejectModalBody">Are you sure you want to reject these documents?</div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelReject">Cancel</button>
-        <button class="btn btn-secondary" id="confirmReject">Reject</button>
-      </div>
-    </div>
   </div>
 
   <!-- Delete Confirmation Modal -->
   <div class="modal-overlay" id="deleteModal" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-header">Delete Account</div>
-      <div class="modal-body" id="deleteModalBody">Are you sure you want to delete this account? This action cannot be undone.</div>
+      <div class="modal-body" id="deleteModalBody">Are you sure you want to delete this active account?</div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelDelete">Cancel</button>
-        <button class="btn btn-primary" id="confirmDelete">Delete</button>
+        <button id="cancelDelete" type="button">Cancel</button>
+        <button id="confirmDelete" type="button" style="background-color: #a83e3e; color: white;">Delete</button>
       </div>
     </div>
   </div>
@@ -163,7 +152,7 @@
       <div class="modal-header">Success</div>
       <div class="modal-body" id="successModalBody"></div>
       <div class="modal-actions">
-        <button class="btn btn-primary" id="closeSuccess">OK</button>
+        <button id="closeSuccess" type="button" style="background-color: #2d7a3d; color: white;">Close</button>
       </div>
     </div>
   </div>
@@ -174,434 +163,212 @@
       <div class="modal-header" id="logoutTitle">Log out</div>
       <div class="modal-body">You're currently signed in as Admin. Do you want to log out and return to the home page?</div>
       <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelLogout">Cancel</button>
-        <button class="btn btn-primary" id="confirmLogout">Log out</button>
+        <button id="cancelLogout" type="button">Cancel</button>
+        <button id="confirmLogout" type="button" style="background-color: #8b6f5a; color: white;">Log out</button>
       </div>
     </div>
   </div>
 
   <script src="adminSlumAnalytics.js"></script>
   <script>
-    var activeResidents = [
-      { id: 'SR001', name: 'Rahim Ahmed', slum: 'Molla', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: 'profilepic/birthcertificate.jpg', deathCert: null, marriageCert: null },
-      { id: 'SR002', name: 'Fatima Begum', slum: 'Korail', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: 'profilepic/marraigeertificate.png' },
-      { id: 'SR003', name: 'Karim Hossain', slum: 'Begun Bari', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR004', name: 'Salma Khatun', slum: 'Molla', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: 'profilepic/birthcertificate.jpg', marriageCert: null },
-      { id: 'SR005', name: 'Habib Rahman', slum: 'Korail', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR006', name: 'Nasima Akter', slum: 'DuariPara', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: 'profilepic/birthcertificate.jpg', deathCert: null, marriageCert: null },
-      { id: 'SR007', name: 'Jahangir Alam', slum: 'Kallyanpur', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR008', name: 'Roksana Sultana', slum: 'Begun Bari', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: 'profilepic/marraigeertificate.png' },
-      { id: 'SR009', name: 'Monir Hossain', slum: 'Pora Basti', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR010', name: 'Shirin Akhter', slum: 'Molla', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: 'profilepic/marraigeertificate.png' },
-      { id: 'SR011', name: 'Abdul Karim', slum: 'Korail', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR012', name: 'Kulsum Begum', slum: 'Pura', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: 'profilepic/birthcertificate.jpg', marriageCert: null },
-      { id: 'SR013', name: 'Sumon Mia', slum: 'Molla', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR014', name: 'Amina Begum', slum: 'Korail', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR015', name: 'Nasiruddin Ahmed', slum: 'Molla', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: 'profilepic/birthcertificate.jpg', deathCert: null, marriageCert: null },
-      { id: 'SR016', name: 'Nusrat Jahan', slum: 'Molla', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null },
-      { id: 'SR017', name: 'Wasim Khan', slum: 'Korail', hasNewDocs: true, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: 'profilepic/marraigeertificate.png' },
-      { id: 'SR018', name: 'Sakina Akhter', slum: 'Korail', hasNewDocs: false, profile: 'profilepic/NID.jpg', birthCert: null, deathCert: null, marriageCert: null }
-    ];
+    let activeAccounts = [];
+    let currentDeleteId = -1;
 
-    var currentDeleteIndex = -1;
-    var currentApproveIndex = -1;
-    var currentRejectIndex = -1;
-    var currentDeleteResident = null;
-    var currentApproveResident = null;
-    var currentRejectResident = null;
+    document.addEventListener('DOMContentLoaded', async function () {
+      const tableBody = document.getElementById('activeTableBody');
+      const params = new URLSearchParams(window.location.search);
+      const slumParam = (params.get('slum') || '').trim();
+      const districtParam = (params.get('district') || '').trim();
+      const divisionParam = (params.get('division') || '').trim();
 
-    function renderRows() {
-      var params = new URLSearchParams(window.location.search);
-      var selectedSlum = params.get('slum');
-      
-      if (selectedSlum) {
-        document.getElementById('pageTitle').textContent = selectedSlum + ' - Active Slum Resident Accounts';
+      function normalize(value) {
+        return String(value || '').trim().toLowerCase();
       }
 
-      // Load approved applications from localStorage
-      var LIST_KEY = 'SLUMLINK_APPLICATIONS';
-      var approvedApps = [];
-      try {
-        var stored = localStorage.getItem(LIST_KEY);
-        if (stored) {
-          var allApps = JSON.parse(stored);
-          approvedApps = allApps.filter(function(app) { return app.status === 'approved'; });
+      // Fetch active accounts from database
+      async function fetchActiveAccounts() {
+        try {
+          const response = await fetch('/api/slum-dweller/active');
+          const result = await response.json();
+          if (result.status === 'success') {
+            activeAccounts = result.data || [];
+            renderRows();
+          } else {
+            tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: red;">Failed to load accounts: ' + result.message + '</td></tr>';
+          }
+        } catch (error) {
+          console.error('Error fetching active accounts:', error);
+          tableBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: red;">Error loading accounts. Please try again.</td></tr>';
         }
-      } catch(e) { /* ignore parse errors */ }
+      }
 
-      // Convert approved applications to resident format
-      var approvedResidents = approvedApps.map(function(app) {
-        var p = app.data && app.data.personal || {};
-        return {
-          id: app.id || 'APP_' + Date.now(),
-          name: p.fullName || 'Unknown',
-          slum: app.slum || 'Unknown',
-          hasNewDocs: false,
-          profile: '',
-          birthCert: null,
-          deathCert: null,
-          marriageCert: null
-        };
+      function renderRows() {
+        tableBody.innerHTML = '';
+
+        const filtered = (activeAccounts || []).filter((account) => {
+          if (account.status && normalize(account.status) !== 'accepted') return false;
+          if (slumParam && normalize(account.area) !== normalize(slumParam)) return false;
+          if (districtParam && normalize(account.district) !== normalize(districtParam)) return false;
+          if (divisionParam && normalize(account.division) !== normalize(divisionParam)) return false;
+          return true;
+        });
+
+        if (filtered.length === 0) {
+          const emptyRow = document.createElement('tr');
+          const emptyCell = document.createElement('td');
+          emptyCell.colSpan = 9;
+          emptyCell.style.textAlign = 'center';
+          emptyCell.style.color = '#8b6f5a';
+          emptyCell.textContent = 'No active accounts.';
+          emptyRow.appendChild(emptyCell);
+          tableBody.appendChild(emptyRow);
+          return;
+        }
+
+        filtered.forEach(function (account) {
+          const row = document.createElement('tr');
+
+          // Name
+          const nameCell = document.createElement('td');
+          nameCell.textContent = account.full_name || 'Unknown';
+          row.appendChild(nameCell);
+
+          // Slum Code
+          const slumCell = document.createElement('td');
+          slumCell.textContent = account.slum_code || '—';
+          slumCell.style.fontWeight = 'bold';
+          row.appendChild(slumCell);
+
+          // Mobile
+          const mobileCell = document.createElement('td');
+          mobileCell.textContent = account.mobile || '—';
+          row.appendChild(mobileCell);
+
+          // Education
+          const educationCell = document.createElement('td');
+          educationCell.textContent = account.education || '—';
+          row.appendChild(educationCell);
+
+          // Area (Slum)
+          const areaCell = document.createElement('td');
+          areaCell.textContent = account.area || '—';
+          row.appendChild(areaCell);
+
+          // District
+          const districtCell = document.createElement('td');
+          districtCell.textContent = account.district || '—';
+          row.appendChild(districtCell);
+
+          // Division
+          const divisionCell = document.createElement('td');
+          divisionCell.textContent = account.division || '—';
+          row.appendChild(divisionCell);
+
+          // Status
+          const statusCell = document.createElement('td');
+          const statusBadge = document.createElement('span');
+          statusBadge.className = 'status-badge';
+          statusBadge.textContent = 'Active';
+          statusCell.appendChild(statusBadge);
+          row.appendChild(statusCell);
+
+          // Actions
+          const actionsCell = document.createElement('td');
+          actionsCell.className = 'active-actions';
+
+          const viewBtn = document.createElement('button');
+          viewBtn.textContent = 'View Details';
+          viewBtn.className = 'btn-view';
+          viewBtn.onclick = () => {
+            sessionStorage.setItem('selectedSlumDweller', JSON.stringify(account));
+            window.location.href = 'SlumResidentsInfo.html?id=' + account.id;
+          };
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.className = 'btn-delete';
+          deleteBtn.onclick = () => {
+            currentDeleteId = account.id;
+            openDeleteModal(account.full_name || 'resident');
+          };
+
+          actionsCell.appendChild(viewBtn);
+          actionsCell.appendChild(deleteBtn);
+          row.appendChild(actionsCell);
+
+          tableBody.appendChild(row);
+        });
+      }
+
+      // Modal functions
+      function openDeleteModal(name) {
+        const modal = document.getElementById('deleteModal');
+        const body = document.getElementById('deleteModalBody');
+        body.textContent = 'Are you sure you want to delete ' + name + '\'s active account and all associated records?';
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('show');
+      }
+
+      function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('show');
+        currentDeleteId = -1;
+      }
+
+      function showSuccessModal(message) {
+        const modal = document.getElementById('successModal');
+        const body = document.getElementById('successModalBody');
+        body.textContent = message;
+        modal.setAttribute('aria-hidden', 'false');
+        modal.classList.add('show');
+      }
+
+      function closeSuccessModal() {
+        const modal = document.getElementById('successModal');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.classList.remove('show');
+      }
+
+      // Delete button handler
+      document.getElementById('confirmDelete').addEventListener('click', async function() {
+        if (currentDeleteId < 0) return;
+        
+        try {
+          const response = await fetch(`/api/slum-dweller/${currentDeleteId}`, {
+            method: 'DELETE'
+          });
+          const result = await response.json();
+          
+          if (result.status === 'success') {
+            closeDeleteModal();
+            showSuccessModal('Account deleted successfully.');
+            setTimeout(() => {
+              closeSuccessModal();
+              fetchActiveAccounts(); // Refresh the list
+            }, 2000);
+          } else {
+            alert('Failed to delete: ' + result.message);
+          }
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          alert('Error deleting account. Please try again.');
+        }
       });
 
-      // Combine hardcoded and approved residents
-      var allResidents = activeResidents.concat(approvedResidents);
-      
-      // Check localStorage for document approval/rejection status
-      var DOC_STATUS_KEY = 'SLUMLINK_DOC_STATUS';
-      var docStatuses = {};
-      try {
-        var stored = localStorage.getItem(DOC_STATUS_KEY);
-        if (stored) {
-          docStatuses = JSON.parse(stored);
-        }
-      } catch(e) { /* ignore errors */ }
-      
-      var tbody = document.getElementById('activeTableBody');
-      tbody.innerHTML = '';
-
-      var filtered = selectedSlum 
-        ? allResidents.filter(function(r) { return r.slum === selectedSlum; })
-        : allResidents;
-
-      filtered.forEach(function(resident, index) {
-        var row = document.createElement('tr');
-        row.style.cursor = 'pointer';
-        
-        // Unique ID
-        var idCell = document.createElement('td');
-        idCell.textContent = resident.id;
-        idCell.onclick = function() { 
-          window.location.href = 'SlumResidentsInfo.html?id=' + resident.id;
-        };
-        row.appendChild(idCell);
-
-        // Name
-        var nameCell = document.createElement('td');
-        nameCell.textContent = resident.name;
-        nameCell.onclick = function() { 
-          window.location.href = 'SlumResidentsInfo.html?id=' + resident.id;
-        };
-        row.appendChild(nameCell);
-
-        // Slum
-        var slumCell = document.createElement('td');
-        slumCell.textContent = resident.slum;
-        slumCell.onclick = function() { 
-          window.location.href = 'SlumResidentsInfo.html?id=' + resident.id;
-        };
-        row.appendChild(slumCell);
-
-        // Actions
-        var actionsCell = document.createElement('td');
-        actionsCell.className = 'pending-actions';
-        actionsCell.style.padding = '8px';
-        
-        var actionsContainer = document.createElement('div');
-        actionsContainer.style.display = 'flex';
-        actionsContainer.style.gap = '8px';
-        actionsContainer.style.justifyContent = 'flex-end';
-        actionsContainer.style.width = '100%';
-        
-        // Check if documents have been approved or rejected in localStorage
-        var hasNewDocs = resident.hasNewDocs;
-        if (docStatuses[resident.id]) {
-          if (docStatuses[resident.id].approved || docStatuses[resident.id].rejected) {
-            hasNewDocs = false;
-          }
-        }
-        
-        if (hasNewDocs) {
-          var approveBtn = document.createElement('button');
-          approveBtn.textContent = 'Approve';
-          approveBtn.className = 'btn-approve';
-          approveBtn.style.minWidth = '85px';
-          approveBtn.onclick = function(e) { 
-            e.stopPropagation();
-            currentApproveResident = resident;
-            openApproveModal(resident.name);
-          };
-          
-          var rejectBtn = document.createElement('button');
-          rejectBtn.textContent = 'Reject';
-          rejectBtn.className = 'btn-reject';
-          rejectBtn.style.minWidth = '85px';
-          rejectBtn.onclick = function(e) { 
-            e.stopPropagation();
-            currentRejectResident = resident;
-            openRejectModal(resident.name);
-          };
-          
-          actionsContainer.appendChild(approveBtn);
-          actionsContainer.appendChild(rejectBtn);
-        }
-
-        var deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.className = 'btn-delete';
-        deleteBtn.style.minWidth = '85px';
-        deleteBtn.onclick = function(e) {
-          e.stopPropagation();
-          currentDeleteResident = resident;
-          openDeleteModal(resident.name);
-        };
-        
-        actionsContainer.appendChild(deleteBtn);
-        actionsCell.appendChild(actionsContainer);
-        row.appendChild(actionsCell);
-        
-        tbody.appendChild(row);
+      document.getElementById('cancelDelete').addEventListener('click', closeDeleteModal);
+      document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
       });
-    }
 
-    function openImageModal(src, caption) {
-      var modal = document.getElementById('imageModal');
-      var img = document.getElementById('modalImage');
-      var captionEl = document.getElementById('imageCaption');
-      img.src = src;
-      captionEl.textContent = caption || '';
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
+      document.getElementById('closeSuccess').addEventListener('click', closeSuccessModal);
+      document.getElementById('successModal').addEventListener('click', function(e) {
+        if (e.target === this) closeSuccessModal();
+      });
 
-    function closeImageModal() {
-      var modal = document.getElementById('imageModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-    }
-
-    function openApproveModal(name) {
-      var modal = document.getElementById('approveModal');
-      var body = document.getElementById('approveModalBody');
-      body.textContent = 'Are you sure you want to approve the documents for ' + name + '?';
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeApproveModal() {
-      var modal = document.getElementById('approveModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-      currentApproveResident = null;
-    }
-
-    function openRejectModal(name) {
-      var modal = document.getElementById('rejectModal');
-      var body = document.getElementById('rejectModalBody');
-      body.textContent = 'Are you sure you want to reject the documents for ' + name + '?';
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeRejectModal() {
-      var modal = document.getElementById('rejectModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-      currentRejectResident = null;
-    }
-
-    function openDeleteModal(name) {
-      var modal = document.getElementById('deleteModal');
-      var body = document.getElementById('deleteModalBody');
-      body.textContent = 'Are you sure you want to delete the account for ' + name + '? This action cannot be undone.';
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeDeleteModal() {
-      var modal = document.getElementById('deleteModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-      currentDeleteResident = null;
-    }
-
-    function showSuccessModal(message) {
-      var modal = document.getElementById('successModal');
-      var body = document.getElementById('successModalBody');
-      body.textContent = message;
-      modal.setAttribute('aria-hidden', 'false');
-      modal.classList.add('show');
-    }
-
-    function closeSuccessModal() {
-      var modal = document.getElementById('successModal');
-      modal.setAttribute('aria-hidden', 'true');
-      modal.classList.remove('show');
-    }
-
-    document.getElementById('closeImageModal').addEventListener('click', closeImageModal);
-    
-    document.getElementById('imageModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeImageModal();
-      }
+      // Initial fetch
+      fetchActiveAccounts();
     });
-
-    document.getElementById('downloadImage').addEventListener('click', function() {
-      var img = document.getElementById('modalImage');
-      var caption = document.getElementById('imageCaption');
-      var src = img.src;
-      var fileName = caption.textContent.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.jpg';
-      
-      fetch(src)
-        .then(function(response) { return response.blob(); })
-        .then(function(blob) {
-          var url = window.URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        })
-        .catch(function() { alert('Failed to download image'); });
-    });
-
-    document.getElementById('cancelApprove').addEventListener('click', closeApproveModal);
-    
-    document.getElementById('confirmApprove').addEventListener('click', function() {
-      if (currentApproveResident) {
-        var approvedResident = currentApproveResident;
-        
-        // Update in activeResidents array if it exists there
-        for (var i = 0; i < activeResidents.length; i++) {
-          if (activeResidents[i].id === approvedResident.id) {
-            activeResidents[i].hasNewDocs = false;
-            activeResidents[i].birthCert = null;
-            activeResidents[i].deathCert = null;
-            activeResidents[i].marriageCert = null;
-            break;
-          }
-        }
-        
-        // Save approval status to localStorage
-        try {
-          var DOC_STATUS_KEY = 'SLUMLINK_DOC_STATUS';
-          var stored = localStorage.getItem(DOC_STATUS_KEY);
-          var docStatuses = stored ? JSON.parse(stored) : {};
-          docStatuses[approvedResident.id] = {
-            hasNewDocs: false,
-            birthCert: null,
-            deathCert: null,
-            marriageCert: null,
-            approved: true
-          };
-          localStorage.setItem(DOC_STATUS_KEY, JSON.stringify(docStatuses));
-        } catch(e) { /* ignore errors */ }
-        
-        closeApproveModal();
-        showSuccessModal('Documents approved for ' + approvedResident.name);
-        renderRows();
-      }
-    });
-
-    document.getElementById('approveModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeApproveModal();
-      }
-    });
-
-    document.getElementById('cancelReject').addEventListener('click', closeRejectModal);
-    
-    document.getElementById('confirmReject').addEventListener('click', function() {
-      if (currentRejectResident) {
-        var rejectedResident = currentRejectResident;
-        
-        // Update in activeResidents array if it exists there
-        for (var i = 0; i < activeResidents.length; i++) {
-          if (activeResidents[i].id === rejectedResident.id) {
-            activeResidents[i].hasNewDocs = false;
-            activeResidents[i].birthCert = null;
-            activeResidents[i].deathCert = null;
-            activeResidents[i].marriageCert = null;
-            break;
-          }
-        }
-        
-        // Save rejection status to localStorage
-        try {
-          var DOC_STATUS_KEY = 'SLUMLINK_DOC_STATUS';
-          var stored = localStorage.getItem(DOC_STATUS_KEY);
-          var docStatuses = stored ? JSON.parse(stored) : {};
-          docStatuses[rejectedResident.id] = {
-            hasNewDocs: false,
-            birthCert: null,
-            deathCert: null,
-            marriageCert: null,
-            rejected: true
-          };
-          localStorage.setItem(DOC_STATUS_KEY, JSON.stringify(docStatuses));
-        } catch(e) { /* ignore errors */ }
-        
-        closeRejectModal();
-        showSuccessModal('Documents rejected for ' + rejectedResident.name);
-        renderRows();
-      }
-    });
-
-    document.getElementById('rejectModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeRejectModal();
-      }
-    });
-
-    document.getElementById('cancelDelete').addEventListener('click', closeDeleteModal);
-    
-    document.getElementById('confirmDelete').addEventListener('click', function() {
-      if (currentDeleteResident) {
-        var deletedName = currentDeleteResident.name;
-        var LIST_KEY = 'SLUMLINK_APPLICATIONS';
-        
-        // Try to find and remove from hardcoded activeResidents array
-        var foundInActive = false;
-        for (var i = 0; i < activeResidents.length; i++) {
-          if (activeResidents[i].id === currentDeleteResident.id) {
-            activeResidents.splice(i, 1);
-            foundInActive = true;
-            break;
-          }
-        }
-        
-        // If not found in activeResidents, remove from localStorage
-        if (!foundInActive) {
-          try {
-            var stored = localStorage.getItem(LIST_KEY);
-            if (stored) {
-              var allApps = JSON.parse(stored);
-              var filteredApps = allApps.filter(function(app) {
-                var appId = app.id || 'APP_' + Date.now();
-                return appId !== currentDeleteResident.id;
-              });
-              localStorage.setItem(LIST_KEY, JSON.stringify(filteredApps));
-            }
-          } catch(e) {
-            console.error('Error updating localStorage:', e);
-          }
-        }
-        
-        closeDeleteModal();
-        showSuccessModal('Account deleted: ' + deletedName);
-        renderRows();
-      }
-    });
-
-    document.getElementById('deleteModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeDeleteModal();
-      }
-    });
-
-    document.getElementById('closeSuccess').addEventListener('click', closeSuccessModal);
-
-    document.getElementById('successModal').addEventListener('click', function(e) {
-      if (e.target === this) {
-        closeSuccessModal();
-      }
-    });
-
-    renderRows();
   </script>
 </body>
 </html>
