@@ -3,5 +3,6 @@ dist/
 .vite/
 .env
 .env.*
-.DS_Storepackage.json
-package-lock.json
+!.env.example
+!backend/.env.example
+.DS_Store

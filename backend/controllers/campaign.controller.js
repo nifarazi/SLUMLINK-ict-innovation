@@ -73,7 +73,7 @@ async function getRecipients(connection, campaignRow) {
     SELECT
       sd.slum_code,
       sd.full_name AS family_head_name,
-      GROUP_CONCAT(DISTINCT eligible.person_name) AS eligible_names
+      STRING_AGG(DISTINCT eligible.person_name, ',') AS eligible_names
     FROM slum_dwellers sd
     INNER JOIN (
       SELECT
@@ -139,9 +139,9 @@ async function getRecipients(connection, campaignRow) {
 
   const ag = String(campaignRow.age_group || "both").toLowerCase();
   if (ag === "child") {
-    sql += ` AND eligible.dob IS NOT NULL AND TIMESTAMPDIFF(YEAR, eligible.dob, CURDATE()) < 18 `;
+    sql += ` AND eligible.dob IS NOT NULL AND EXTRACT(YEAR FROM AGE(CURRENT_DATE, eligible.dob)) < 18 `;
   } else if (ag === "adult") {
-    sql += ` AND eligible.dob IS NOT NULL AND TIMESTAMPDIFF(YEAR, eligible.dob, CURDATE()) >= 18 `;
+    sql += ` AND eligible.dob IS NOT NULL AND EXTRACT(YEAR FROM AGE(CURRENT_DATE, eligible.dob)) >= 18 `;
   }
 
 
@@ -204,7 +204,7 @@ async function insertTargetsBulk(connection, campaign_id, slumCodes) {
   if (!slumCodes.length) return 0;
 
   const values = slumCodes.map((code) => [campaign_id, code]);
-  const sql = `INSERT IGNORE INTO campaign_targets (campaign_id, slum_code) VALUES ?`;
+  const sql = `INSERT INTO campaign_targets (campaign_id, slum_code) VALUES ? ON CONFLICT (campaign_id, slum_code) DO NOTHING`;
 
   const [result] = await connection.query(sql, [values]);
   return result.affectedRows || 0;
@@ -222,8 +222,8 @@ async function refreshCampaignStatuses(connection, orgIdNum = null){
     UPDATE campaigns
     SET status = CASE
       WHEN status IN ('cancelled','not_executed') THEN status
-      WHEN end_date < CURDATE() THEN 'completed'
-      WHEN start_date <= CURDATE() AND end_date >= CURDATE() THEN 'in_progress'
+      WHEN end_date < CURRENT_DATE THEN 'completed'
+      WHEN start_date <= CURRENT_DATE AND end_date >= CURRENT_DATE THEN 'in_progress'
       ELSE 'pending'
     END
     WHERE status NOT IN ('cancelled','not_executed')
@@ -343,8 +343,8 @@ export async function createCampaign(req, res) {
         status
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
         CASE
-          WHEN ? < CURDATE() THEN 'completed'
-          WHEN ? <= CURDATE() AND ? >= CURDATE() THEN 'in_progress'
+          WHEN ? < CURRENT_DATE THEN 'completed'
+          WHEN ? <= CURRENT_DATE AND ? >= CURRENT_DATE THEN 'in_progress'
           ELSE 'pending'
         END
       )
@@ -767,8 +767,8 @@ export async function getMyActiveCampaignsToday(req, res) {
        FROM campaigns
        WHERE org_id = ?
          AND status <> 'cancelled'
-         AND start_date <= CURDATE()
-         AND end_date >= CURDATE()
+         AND start_date <= CURRENT_DATE
+         AND end_date >= CURRENT_DATE
        ORDER BY start_date ASC, created_at DESC`,
       [orgIdNum]
     );
@@ -823,7 +823,7 @@ export async function getEligibleFamilies(req, res) {
         sd.full_name AS family_head_name,
         sd.family_members AS total_family_members,
         COUNT(DISTINCT eligible.person_name) AS eligible_members_count,
-        GROUP_CONCAT(DISTINCT eligible.person_name SEPARATOR ', ') AS eligible_member_names
+        STRING_AGG(DISTINCT eligible.person_name, ', ') AS eligible_member_names
       FROM slum_dwellers sd
       INNER JOIN (
         SELECT
@@ -881,9 +881,9 @@ export async function getEligibleFamilies(req, res) {
 
     const ag = String(campaign.age_group || "both").toLowerCase();
     if (ag === "child") {
-      sql += ` AND eligible.dob IS NOT NULL AND TIMESTAMPDIFF(YEAR, eligible.dob, CURDATE()) < 18 `;
+      sql += ` AND eligible.dob IS NOT NULL AND EXTRACT(YEAR FROM AGE(CURRENT_DATE, eligible.dob)) < 18 `;
     } else if (ag === "adult") {
-      sql += ` AND eligible.dob IS NOT NULL AND TIMESTAMPDIFF(YEAR, eligible.dob, CURDATE()) >= 18 `;
+      sql += ` AND eligible.dob IS NOT NULL AND EXTRACT(YEAR FROM AGE(CURRENT_DATE, eligible.dob)) >= 18 `;
     }
 
     const edu = String(campaign.education_required || "").trim();

@@ -523,11 +523,11 @@ export const getNgoAnalytics = async (req, res) => {
     const [monthlyRows] = await connection.query(
       `SELECT
          SUM(CASE
-               WHEN distributed_at >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+               WHEN distributed_at >= DATE_TRUNC('month', CURRENT_DATE)
                THEN COALESCE(quantity, 1) ELSE 0 END) AS current_month,
          SUM(CASE
-               WHEN distributed_at >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m-01')
-                AND distributed_at < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+               WHEN distributed_at >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '1 month'
+                AND distributed_at < DATE_TRUNC('month', CURRENT_DATE)
                THEN COALESCE(quantity, 1) ELSE 0 END) AS previous_month
        FROM distribution_entries
        WHERE org_id = ?`,

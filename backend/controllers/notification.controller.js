@@ -6,10 +6,10 @@ export const notificationController = {
   async getNotifications(req, res) {
     try {
       const { slumCode } = req.params;
-      
+
       // Get notifications ordered by creation date (newest first)
       const [notifications] = await pool.execute(`
-        SELECT 
+        SELECT
           n.notification_id,
           n.campaign_id,
           n.org_id,
@@ -28,8 +28,8 @@ export const notificationController = {
       // Get unread count
       const [unreadCount] = await pool.execute(`
         SELECT COUNT(*) as unread_count
-        FROM notifications 
-        WHERE slum_code = ? AND is_read = 0
+        FROM notifications
+        WHERE slum_code = ? AND is_read = false
       `, [slumCode]);
 
       res.json({
@@ -39,10 +39,10 @@ export const notificationController = {
       });
     } catch (error) {
       console.error('Error fetching notifications:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         message: 'Error fetching notifications',
-        error: error.message 
+        error: error.message
       });
     }
   },
@@ -51,17 +51,17 @@ export const notificationController = {
   async markAsRead(req, res) {
     try {
       const { notificationId } = req.params;
-      
+
       const [result] = await pool.execute(`
-        UPDATE notifications 
-        SET is_read = 1 
+        UPDATE notifications
+        SET is_read = true
         WHERE notification_id = ?
       `, [notificationId]);
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ 
-          success: false, 
-          message: 'Notification not found' 
+        return res.status(404).json({
+          success: false,
+          message: 'Notification not found'
         });
       }
 
@@ -71,10 +71,10 @@ export const notificationController = {
       });
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         message: 'Error updating notification',
-        error: error.message 
+        error: error.message
       });
     }
   },
@@ -83,11 +83,11 @@ export const notificationController = {
   async markAllAsRead(req, res) {
     try {
       const { slumCode } = req.params;
-      
+
       await pool.execute(`
-        UPDATE notifications 
-        SET is_read = 1 
-        WHERE slum_code = ? AND is_read = 0
+        UPDATE notifications
+        SET is_read = true
+        WHERE slum_code = ? AND is_read = false
       `, [slumCode]);
 
       res.json({
@@ -96,10 +96,10 @@ export const notificationController = {
       });
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         message: 'Error updating notifications',
-        error: error.message 
+        error: error.message
       });
     }
   },
@@ -108,11 +108,11 @@ export const notificationController = {
   async getUnreadCount(req, res) {
     try {
       const { slumCode } = req.params;
-      
+
       const [result] = await pool.execute(`
         SELECT COUNT(*) as unread_count
-        FROM notifications 
-        WHERE slum_code = ? AND is_read = 0
+        FROM notifications
+        WHERE slum_code = ? AND is_read = false
       `, [slumCode]);
 
       res.json({
@@ -121,10 +121,10 @@ export const notificationController = {
       });
     } catch (error) {
       console.error('Error fetching unread count:', error);
-      res.status(500).json({ 
-        success: false, 
+      res.status(500).json({
+        success: false,
         message: 'Error fetching unread count',
-        error: error.message 
+        error: error.message
       });
     }
   }

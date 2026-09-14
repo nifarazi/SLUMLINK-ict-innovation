@@ -142,7 +142,7 @@ export const checkBirthCertificateDuplicate = async (req, res) => {
         'SELECT slum_id, name FROM children WHERE birth_certificate_number = ? LIMIT 1',
         [cleanCertNumber]
       );
-      
+
       if (detailRows.length > 0) {
         details.push({
           location: "children",
@@ -173,7 +173,7 @@ async function checkNidDuplicateInternal(cleanNid, excludeSlumId = null, exclude
   // Check in slum_dwellers table - count only first
   let slumDwellerCountQuery = 'SELECT COUNT(*) as count FROM slum_dwellers WHERE nid = ?';
   const slumDwellerCountParams = [cleanNid];
-  
+
   if (excludeSlumId) {
     slumDwellerCountQuery += ' AND slum_code != ?';
     slumDwellerCountParams.push(excludeSlumId);
@@ -183,14 +183,14 @@ async function checkNidDuplicateInternal(cleanNid, excludeSlumId = null, exclude
   const slumDwellerCount = slumDwellerCountRows[0].count;
 
   // Check in spouses table - count only first
-  let spousesCountQuery = 'SELECT COUNT(*) as count FROM spouses WHERE nid = ? AND status != "pending_remove"';
+  let spousesCountQuery = "SELECT COUNT(*) as count FROM spouses WHERE nid = ? AND status != 'pending_remove'";
   const spousesCountParams = [cleanNid];
-  
+
   if (excludeSpouseId) {
     spousesCountQuery += ' AND id != ?';
     spousesCountParams.push(excludeSpouseId);
   }
-  
+
   if (excludeSlumId) {
     spousesCountQuery += ' AND slum_id != ?';
     spousesCountParams.push(excludeSlumId);
@@ -210,13 +210,13 @@ async function checkNidDuplicateInternal(cleanNid, excludeSlumId = null, exclude
     if (slumDwellerCount > 0) {
       let slumDwellerDetailQuery = 'SELECT slum_code, full_name FROM slum_dwellers WHERE nid = ?';
       const slumDwellerDetailParams = [cleanNid];
-      
+
       if (excludeSlumId) {
         slumDwellerDetailQuery += ' AND slum_code != ?';
         slumDwellerDetailParams.push(excludeSlumId);
       }
       slumDwellerDetailQuery += ' LIMIT 1';
-      
+
       const [slumDwellerDetailRows] = await pool.query(slumDwellerDetailQuery, slumDwellerDetailParams);
       if (slumDwellerDetailRows.length > 0) {
         message = "NID already exists in the system";
@@ -227,22 +227,22 @@ async function checkNidDuplicateInternal(cleanNid, excludeSlumId = null, exclude
         });
       }
     }
-    
+
     if (spousesCount > 0) {
-      let spousesDetailQuery = 'SELECT slum_id, name FROM spouses WHERE nid = ? AND status != "pending_remove"';
+      let spousesDetailQuery = "SELECT slum_id, name FROM spouses WHERE nid = ? AND status != 'pending_remove'";
       const spousesDetailParams = [cleanNid];
-      
+
       if (excludeSpouseId) {
         spousesDetailQuery += ' AND id != ?';
         spousesDetailParams.push(excludeSpouseId);
       }
-      
+
       if (excludeSlumId) {
         spousesDetailQuery += ' AND slum_id != ?';
         spousesDetailParams.push(excludeSlumId);
       }
       spousesDetailQuery += ' LIMIT 1';
-      
+
       const [spousesDetailRows] = await pool.query(spousesDetailQuery, spousesDetailParams);
       if (spousesDetailRows.length > 0) {
         message = "NID already exists in the system";
@@ -268,7 +268,7 @@ async function checkNidDuplicateInternal(cleanNid, excludeSlumId = null, exclude
 async function validateRegistrationNids(personalNid, spousesData) {
   const errors = [];
   const cleanPersonalNid = personalNid ? String(personalNid).replace(/\s+/g, '') : null;
-  
+
   // Check personal NID for duplicates if provided
   if (cleanPersonalNid) {
     const personalCheck = await checkNidDuplicateInternal(cleanPersonalNid);
@@ -280,15 +280,15 @@ async function validateRegistrationNids(personalNid, spousesData) {
       });
     }
   }
-  
+
   // Check spouse NIDs
   if (spousesData && Array.isArray(spousesData)) {
     const spouseNids = [];
-    
+
     for (let i = 0; i < spousesData.length; i++) {
       const spouse = spousesData[i];
       const cleanSpouseNid = spouse.nid ? String(spouse.nid).replace(/\s+/g, '') : null;
-      
+
       if (cleanSpouseNid) {
         // Check if spouse NID matches personal NID
         if (cleanPersonalNid && cleanSpouseNid === cleanPersonalNid) {
@@ -298,7 +298,7 @@ async function validateRegistrationNids(personalNid, spousesData) {
             spouseName: spouse.name
           });
         }
-        
+
         // Check if spouse NID is duplicate with other spouses in current registration
         if (spouseNids.includes(cleanSpouseNid)) {
           errors.push({
@@ -308,7 +308,7 @@ async function validateRegistrationNids(personalNid, spousesData) {
           });
         }
         spouseNids.push(cleanSpouseNid);
-        
+
         // Check if spouse NID exists in database
         const spouseCheck = await checkNidDuplicateInternal(cleanSpouseNid);
         if (spouseCheck.isDuplicate) {
@@ -322,7 +322,7 @@ async function validateRegistrationNids(personalNid, spousesData) {
       }
     }
   }
-  
+
   return errors;
 }
 
@@ -331,7 +331,7 @@ function dataUrlToBuffer(dataUrl) {
   if (!dataUrl || typeof dataUrl !== 'string' || !dataUrl.startsWith('data:')) {
     return null;
   }
-  
+
   try {
     // Data URL format: data:mime/type;base64,<base64data>
     const base64Data = dataUrl.split(',')[1];
@@ -346,20 +346,20 @@ function dataUrlToBuffer(dataUrl) {
 // Helper function to calculate age from date of birth
 function calculateAge(dateOfBirth) {
   if (!dateOfBirth) return null;
-  
+
   const today = new Date();
   const birthDate = new Date(dateOfBirth);
-  
+
   if (isNaN(birthDate.getTime())) return null;
-  
+
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDifference = today.getMonth() - birthDate.getMonth();
-  
+
   // Adjust age if birthday hasn't occurred this year
   if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
-  
+
   return age >= 0 ? age : null;
 }
 
@@ -403,22 +403,22 @@ function extensionFromMime(mimeType) {
 
 export const registerSlumDweller = async (req, res) => {
   const connection = await pool.getConnection();
-  
+
   try {
     const { personal, spouses, children } = req.body;
 
-    console.log('📝 Registration request received:', { 
-      personal: personal?.name, 
-      spousesCount: spouses?.length, 
-      childrenCount: children?.length 
+    console.log('📝 Registration request received:', {
+      personal: personal?.name,
+      spousesCount: spouses?.length,
+      childrenCount: children?.length
     });
 
     // Validate required fields
     if (!personal || !personal.name || !personal.mobile || !personal.password) {
       console.error('❌ Validation failed:', { personal });
-      return res.status(400).json({ 
-        status: "error", 
-        message: "Missing required personal information." 
+      return res.status(400).json({
+        status: "error",
+        message: "Missing required personal information."
       });
     }
 
@@ -440,7 +440,7 @@ export const registerSlumDweller = async (req, res) => {
 
     // Insert into slum_dwellers table (family_members will be calculated after family data is inserted)
     const dwellerSql = `
-      INSERT INTO slum_dwellers 
+      INSERT INTO slum_dwellers
       (full_name, mobile, dob, gender, nid, education, occupation, income, area, district, division, password_hash, skills_1, skills_2, status)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
     `;
@@ -478,9 +478,9 @@ export const registerSlumDweller = async (req, res) => {
       for (const spouse of spouses) {
         // Convert marriage certificate Data URL to Buffer
         const certBuffer = dataUrlToBuffer(spouse.marriageCertificate);
-        
+
         const spouseSql = `
-          INSERT INTO spouses 
+          INSERT INTO spouses
           (slum_id, name, dob, gender, nid, education, job, income, mobile, marriage_certificate, skills_1, skills_2)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
@@ -508,15 +508,15 @@ export const registerSlumDweller = async (req, res) => {
       for (const child of children) {
         // Convert birth certificate Data URL to Buffer
         const certBuffer = dataUrlToBuffer(child.birthCertificate);
-        
+
         // Calculate age and determine age group
         const childAge = calculateAge(child.dob);
         const ageGroup = getAgeGroup(childAge);
-        
+
         console.log(`👶 Child: ${child.name}, DOB: ${child.dob}, Age: ${childAge}, Age Group: ${ageGroup}`);
-        
+
         const childSql = `
-          INSERT INTO children 
+          INSERT INTO children
           (slum_id, name, dob, gender, education, job, income, preferred_job, birth_certificate, birth_certificate_number, skills_1, skills_2, age_group)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
@@ -542,9 +542,9 @@ export const registerSlumDweller = async (req, res) => {
         if (certBuffer) {
           const mimetypeMatch = child.birthCertificate?.match(/^data:([^;]+)/) || [];
           const mimetype = mimetypeMatch[1] || 'application/octet-stream';
-          
+
           const docSql = `
-            INSERT INTO documents 
+            INSERT INTO documents
             (slum_id, document_type, document_title, file_blob, file_mimetype, file_size, status)
             VALUES (?, ?, ?, ?, ?, ?, 'pending')
           `;
@@ -570,9 +570,9 @@ export const registerSlumDweller = async (req, res) => {
         if (certBuffer) {
           const mimetypeMatch = spouse.marriageCertificate?.match(/^data:([^;]+)/) || [];
           const mimetype = mimetypeMatch[1] || 'application/octet-stream';
-          
+
           const docSql = `
-            INSERT INTO documents 
+            INSERT INTO documents
             (slum_id, document_type, document_title, file_blob, file_mimetype, file_size, status)
             VALUES (?, ?, ?, ?, ?, ?, 'pending')
           `;
@@ -619,10 +619,10 @@ export const registerSlumDweller = async (req, res) => {
     await connection.rollback();
     console.error("❌ Registration error:", error);
     console.error("Error stack:", error.stack);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Registration failed. Please try again.",
-      error: error.message 
+      error: error.message
     });
   } finally {
     connection.release();
@@ -636,7 +636,7 @@ export const getPendingSlumDwellers = async (req, res) => {
       'SELECT id, slum_code, full_name, mobile, nid, gender, education, occupation, income, area, district, division, created_at FROM slum_dwellers WHERE status = ? ORDER BY created_at DESC',
       ['pending']
     );
-    
+
     console.log('📋 Retrieved pending slum dwellers:', rows.length);
     return res.json({
       status: "success",
@@ -644,10 +644,10 @@ export const getPendingSlumDwellers = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error fetching pending slum dwellers:", error);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Failed to fetch pending accounts.",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -656,7 +656,7 @@ export const getPendingSlumDwellers = async (req, res) => {
 export const getActiveSlumDwellers = async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT 
+      `SELECT
          sd.id,
          sd.slum_code,
          sd.full_name,
@@ -670,18 +670,18 @@ export const getActiveSlumDwellers = async (req, res) => {
          sd.district,
          sd.division,
          sd.created_at,
-         (SELECT COUNT(*) FROM spouses s 
-          WHERE s.slum_id = sd.slum_code 
+         (SELECT COUNT(*) FROM spouses s
+          WHERE s.slum_id = sd.slum_code
             AND s.status IN ('pending_add', 'pending_remove')) AS spouse_updates,
-         (SELECT COUNT(*) FROM children c 
-          WHERE c.slum_id = sd.slum_code 
+         (SELECT COUNT(*) FROM children c
+          WHERE c.slum_id = sd.slum_code
             AND c.status IN ('pending_add', 'pending_remove')) AS child_updates
        FROM slum_dwellers sd
        WHERE sd.status = ?
        ORDER BY sd.created_at DESC`,
       ['accepted']
     );
-    
+
     console.log('📋 Retrieved active slum dwellers:', rows.length);
     return res.json({
       status: "success",
@@ -689,10 +689,10 @@ export const getActiveSlumDwellers = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error fetching active slum dwellers:", error);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Failed to fetch active accounts.",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -701,7 +701,7 @@ export const getActiveSlumDwellers = async (req, res) => {
 export const getSlumDwellerById = async (req, res) => {
   const { id } = req.params;
   const connection = await pool.getConnection();
-  
+
   try {
     // Get main resident info
     const [dwellerRows] = await connection.query(
@@ -710,9 +710,9 @@ export const getSlumDwellerById = async (req, res) => {
     );
 
     if (!dwellerRows || dwellerRows.length === 0) {
-      return res.status(404).json({ 
-        status: "error", 
-        message: "Resident not found." 
+      return res.status(404).json({
+        status: "error",
+        message: "Resident not found."
       });
     }
 
@@ -721,7 +721,7 @@ export const getSlumDwellerById = async (req, res) => {
 
     // Get spouses (include active, pending_add, pending_remove)
     const [spouseRows] = await connection.query(
-      `SELECT 
+      `SELECT
          id,
          slum_id,
          name,
@@ -737,14 +737,14 @@ export const getSlumDwellerById = async (req, res) => {
          status,
          CASE WHEN marriage_certificate IS NULL THEN 0 ELSE 1 END AS has_marriage_certificate,
          CASE WHEN divorce_certificate IS NULL THEN 0 ELSE 1 END AS has_divorce_certificate
-       FROM spouses 
+       FROM spouses
        WHERE slum_id = ? AND status IN (?, ?, ?)`,
       [slumCode, 'active', 'pending_add', 'pending_remove']
     );
 
     // Get children (include active, pending_add, pending_remove)
     const [childrenRows] = await connection.query(
-      `SELECT 
+      `SELECT
          id,
          slum_id,
          name,
@@ -760,7 +760,7 @@ export const getSlumDwellerById = async (req, res) => {
          status,
          CASE WHEN birth_certificate IS NULL THEN 0 ELSE 1 END AS has_birth_certificate,
          CASE WHEN death_certificate IS NULL THEN 0 ELSE 1 END AS has_death_certificate
-       FROM children 
+       FROM children
        WHERE slum_id = ? AND status IN (?, ?, ?)`,
       [slumCode, 'active', 'pending_add', 'pending_remove']
     );
@@ -777,10 +777,10 @@ export const getSlumDwellerById = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error fetching resident:", error);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Failed to fetch resident details.",
-      error: error.message 
+      error: error.message
     });
   } finally {
     connection.release();
@@ -1044,7 +1044,7 @@ export const getMemberDocuments = async (req, res) => {
 
   try {
     const [spouseDocs] = await pool.query(
-      `SELECT 
+      `SELECT
          id,
          name,
          created_at,
@@ -1056,7 +1056,7 @@ export const getMemberDocuments = async (req, res) => {
     );
 
     const [childDocs] = await pool.query(
-      `SELECT 
+      `SELECT
          id,
          name,
          created_at,
@@ -1137,7 +1137,7 @@ export const getMemberDocuments = async (req, res) => {
 export const approveSlumDweller = async (req, res) => {
   const { id } = req.params;
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
 
@@ -1149,9 +1149,9 @@ export const approveSlumDweller = async (req, res) => {
 
     if (!dwellerRows || dwellerRows.length === 0) {
       await connection.rollback();
-      return res.status(404).json({ 
-        status: "error", 
-        message: "Resident not found or already processed." 
+      return res.status(404).json({
+        status: "error",
+        message: "Resident not found or already processed."
       });
     }
 
@@ -1211,10 +1211,10 @@ export const approveSlumDweller = async (req, res) => {
   } catch (error) {
     await connection.rollback();
     console.error("❌ Error approving slum dweller:", error);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Failed to approve account.",
-      error: error.message 
+      error: error.message
     });
   } finally {
     connection.release();
@@ -1225,7 +1225,7 @@ export const approveSlumDweller = async (req, res) => {
 export const rejectSlumDweller = async (req, res) => {
   const { id } = req.params;
   const connection = await pool.getConnection();
-  
+
   try {
     await connection.beginTransaction();
 
@@ -1237,9 +1237,9 @@ export const rejectSlumDweller = async (req, res) => {
 
     if (!dwellerRows || dwellerRows.length === 0) {
       await connection.rollback();
-      return res.status(404).json({ 
-        status: "error", 
-        message: "Resident not found." 
+      return res.status(404).json({
+        status: "error",
+        message: "Resident not found."
       });
     }
 
@@ -1274,10 +1274,10 @@ export const rejectSlumDweller = async (req, res) => {
   } catch (error) {
     await connection.rollback();
     console.error("❌ Error rejecting slum dweller:", error);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Failed to reject account.",
-      error: error.message 
+      error: error.message
     });
   } finally {
     connection.release();
@@ -1287,7 +1287,7 @@ export const rejectSlumDweller = async (req, res) => {
 // Get current user's profile (for dashboard)
 export const getCurrentUserProfile = async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     // Get main resident info (basic fields for dashboard)
     const [dwellerRows] = await pool.query(
@@ -1296,9 +1296,9 @@ export const getCurrentUserProfile = async (req, res) => {
     );
 
     if (!dwellerRows || dwellerRows.length === 0) {
-      return res.status(404).json({ 
-        status: "error", 
-        message: "User not found or account not active." 
+      return res.status(404).json({
+        status: "error",
+        message: "User not found or account not active."
       });
     }
 
@@ -1317,10 +1317,10 @@ export const getCurrentUserProfile = async (req, res) => {
     });
   } catch (error) {
     console.error("❌ Error fetching user profile:", error);
-    return res.status(500).json({ 
-      status: "error", 
+    return res.status(500).json({
+      status: "error",
       message: "Failed to fetch user profile.",
-      error: error.message 
+      error: error.message
     });
   }
 };
@@ -1342,7 +1342,7 @@ export const updatePersonalInfo = async (req, res) => {
     // Enhanced NID validation for updates
     if (updates.nid) {
       const cleanNid = String(updates.nid).replace(/\s+/g, '');
-      
+
       // Check for NID duplicates excluding current user
       const nidCheck = await checkNidDuplicateInternal(cleanNid, slumId);
       if (nidCheck.isDuplicate) {
@@ -1356,47 +1356,47 @@ export const updatePersonalInfo = async (req, res) => {
 
     // Build dynamic update query
     const allowedFields = [
-      'full_name', 'nid', 'dob', 'gender', 'education', 
+      'full_name', 'nid', 'dob', 'gender', 'education',
       'occupation', 'income', 'area', 'district', 'division', 'family_members',
       'skills_1', 'skills_2'
     ];
-    
+
     const updateFields = [];
     const updateValues = [];
-    
+
     Object.keys(updates).forEach(key => {
       if (allowedFields.includes(key) && updates[key] !== undefined) {
         updateFields.push(`${key} = ?`);
         updateValues.push(updates[key]);
       }
     });
-    
+
     if (updateFields.length === 0) {
       return res.status(400).json({
         status: "error",
         message: "No valid fields to update."
       });
     }
-    
+
     updateValues.push(slumId);
-    
+
     const [result] = await pool.query(
       `UPDATE slum_dwellers SET ${updateFields.join(', ')} WHERE slum_code = ?`,
       updateValues
     );
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({
         status: "error",
         message: "Slum dweller not found."
       });
     }
-    
+
     return res.json({
       status: "success",
       message: "Personal information updated successfully"
     });
-    
+
   } catch (error) {
     console.error("Update Personal Info Error:", error);
     return res.status(500).json({
@@ -1423,7 +1423,7 @@ export const updateSpouseInfo = async (req, res) => {
     // Enhanced NID validation for spouse updates
     if (updates.nid) {
       const cleanNid = String(updates.nid).replace(/\s+/g, '');
-      
+
       // Check for NID duplicates excluding current spouse
       const nidCheck = await checkNidDuplicateInternal(cleanNid, slumId, spouseId);
       if (nidCheck.isDuplicate) {
@@ -1433,13 +1433,13 @@ export const updateSpouseInfo = async (req, res) => {
           details: nidCheck.details
         });
       }
-      
+
       // Check if spouse NID matches the main dweller's NID
       const [dwellerRows] = await pool.query(
         'SELECT nid FROM slum_dwellers WHERE slum_code = ?',
         [slumId]
       );
-      
+
       if (dwellerRows.length > 0 && dwellerRows[0].nid) {
         const dwellerNid = String(dwellerRows[0].nid).replace(/\s+/g, '');
         if (cleanNid === dwellerNid) {
@@ -1449,13 +1449,13 @@ export const updateSpouseInfo = async (req, res) => {
           });
         }
       }
-      
+
       // Check if spouse NID matches other spouses' NIDs
       const [otherSpousesRows] = await pool.query(
-        'SELECT COUNT(*) as count FROM spouses WHERE slum_id = ? AND id != ? AND nid = ? AND status != "pending_remove"',
+        "SELECT COUNT(*) as count FROM spouses WHERE slum_id = ? AND id != ? AND nid = ? AND status != 'pending_remove'",
         [slumId, spouseId, cleanNid]
       );
-      
+
       if (otherSpousesRows[0].count > 0) {
         return res.status(400).json({
           status: "error",
@@ -1466,46 +1466,46 @@ export const updateSpouseInfo = async (req, res) => {
 
     // Build dynamic update query for spouse
     const allowedFields = [
-      'name', 'dob', 'gender', 'nid', 'education', 
+      'name', 'dob', 'gender', 'nid', 'education',
       'job', 'income', 'skills_1', 'skills_2'
     ];
-    
+
     const updateFields = [];
     const updateValues = [];
-    
+
     Object.keys(updates).forEach(key => {
       if (allowedFields.includes(key) && updates[key] !== undefined) {
         updateFields.push(`${key} = ?`);
         updateValues.push(updates[key]);
       }
     });
-    
+
     if (updateFields.length === 0) {
       return res.status(400).json({
         status: "error",
         message: "No valid fields to update."
       });
     }
-    
+
     updateValues.push(spouseId, slumId);
-    
+
     const [result] = await pool.query(
       `UPDATE spouses SET ${updateFields.join(', ')} WHERE id = ? AND slum_id = ?`,
       updateValues
     );
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({
         status: "error",
         message: "Spouse not found."
       });
     }
-    
+
     return res.json({
       status: "success",
       message: "Spouse information updated successfully"
     });
-    
+
   } catch (error) {
     console.error("Update Spouse Info Error:", error);
     return res.status(500).json({
@@ -1531,22 +1531,22 @@ export const updateChildInfo = async (req, res) => {
 
     // Build dynamic update query for child
     const allowedFields = [
-      'name', 'dob', 'gender', 'education', 
+      'name', 'dob', 'gender', 'education',
       'job', 'income', 'preferred_job', 'skills_1', 'skills_2'
     ];
-    
+
     const updateFields = [];
     const updateValues = [];
-    
+
     // Check if date of birth is being updated to recalculate age_group
     let shouldUpdateAgeGroup = false;
     let newAgeGroup = null;
-    
+
     Object.keys(updates).forEach(key => {
       if (allowedFields.includes(key) && updates[key] !== undefined) {
         updateFields.push(`${key} = ?`);
         updateValues.push(updates[key]);
-        
+
         // If date of birth is being updated, calculate new age group
         if (key === 'dob' && updates[key]) {
           const childAge = calculateAge(updates[key]);
@@ -1556,43 +1556,43 @@ export const updateChildInfo = async (req, res) => {
         }
       }
     });
-    
+
     // Add age_group to update if DOB was changed
     if (shouldUpdateAgeGroup && newAgeGroup) {
       updateFields.push('age_group = ?');
       updateValues.push(newAgeGroup);
     }
-    
+
     if (updateFields.length === 0) {
       return res.status(400).json({
         status: "error",
         message: "No valid fields to update."
       });
     }
-    
+
     updateValues.push(childId, slumId);
-    
+
     const [result] = await pool.query(
       `UPDATE children SET ${updateFields.join(', ')} WHERE id = ? AND slum_id = ?`,
       updateValues
     );
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({
         status: "error",
         message: "Child not found."
       });
     }
-    
-    const responseMessage = shouldUpdateAgeGroup 
+
+    const responseMessage = shouldUpdateAgeGroup
       ? `Child information updated successfully (age group: ${newAgeGroup})`
       : "Child information updated successfully";
-    
+
     return res.json({
       status: "success",
       message: responseMessage
     });
-    
+
   } catch (error) {
     console.error("Update Child Info Error:", error);
     return res.status(500).json({
@@ -1620,17 +1620,17 @@ function storeOTP(key, otp, expiryMinutes = 5) {
 function verifyOTP(key, providedOTP) {
   const otpData = otpStorage.get(key);
   if (!otpData) return false;
-  
+
   if (Date.now() > otpData.expiryTime) {
     otpStorage.delete(key);
     return false;
   }
-  
+
   if (otpData.otp === providedOTP) {
     otpStorage.delete(key);
     return true;
   }
-  
+
   return false;
 }
 
@@ -1709,7 +1709,7 @@ export const initPhoneChange = async (req, res) => {
 
     // Get current user's phone number
     const [dwellers] = await pool.query(
-      'SELECT mobile FROM slum_dwellers WHERE slum_code = ? AND status = "accepted"',
+      "SELECT mobile FROM slum_dwellers WHERE slum_code = ? AND status = 'accepted'",
       [slumCode]
     );
 
@@ -1954,7 +1954,7 @@ export const initSpousePhoneChange = async (req, res) => {
 
     // Get spouse's current phone number
     const [spouses] = await pool.query(
-      'SELECT mobile FROM spouses WHERE id = ? AND slum_id = ? AND status = "active"',
+      "SELECT mobile FROM spouses WHERE id = ? AND slum_id = ? AND status = 'active'",
       [spouseId, slumCode]
     );
 
@@ -2080,7 +2080,7 @@ export const sendSpouseNewPhoneOTP = async (req, res) => {
       'SELECT COUNT(*) as count FROM slum_dwellers WHERE mobile = ?',
       [newPhone]
     );
-    
+
     const [existingSpouses] = await pool.query(
       'SELECT COUNT(*) as count FROM spouses WHERE mobile = ? AND NOT (slum_id = ? AND id = ?)',
       [newPhone, slumCode, spouseId]
@@ -2220,7 +2220,7 @@ export const changePassword = async (req, res) => {
       'SELECT id, slum_code, password_hash FROM slum_dwellers WHERE slum_code = ? AND status = ?',
       [slumCode, 'accepted']
     );
-    
+
     if (residents.length === 0) {
       return res.status(404).json({
         status: "error",
@@ -2276,9 +2276,9 @@ export const changePassword = async (req, res) => {
 export const updateSpouseStatus = async (req, res) => {
   const { slumId, spouseId } = req.params;
   const { status } = req.body;
-  
+
   const connection = await pool.getConnection();
-  
+
   try {
     // Validate status value
     const allowedStatuses = ['active', 'pending_remove', 'removed'];
@@ -2349,9 +2349,9 @@ export const updateSpouseStatus = async (req, res) => {
 export const updateChildStatus = async (req, res) => {
   const { slumId, childId } = req.params;
   const { status } = req.body;
-  
+
   const connection = await pool.getConnection();
-  
+
   try {
     // Validate status value
     const allowedStatuses = ['active', 'pending_remove', 'removed'];
@@ -2435,8 +2435,8 @@ export const reviewSpouseUpdate = async (req, res) => {
     // Get spouse and slum dweller information for SMS notifications
     const [spouseRows] = await connection.query(
       `SELECT s.id, s.status, s.name, s.mobile, sd.full_name as slum_dweller_name
-       FROM spouses s 
-       JOIN slum_dwellers sd ON s.slum_id = sd.slum_code 
+       FROM spouses s
+       JOIN slum_dwellers sd ON s.slum_id = sd.slum_code
        WHERE s.id = ? AND s.slum_id = ?`,
       [spouseId, slumId]
     );
@@ -2769,9 +2769,9 @@ export const addSpouse = async (req, res) => {
 
     // Insert spouse with pending_add status
     const [insertResult] = await connection.query(
-      `INSERT INTO spouses 
-       (slum_id, name, dob, gender, nid, mobile, education, job, skills_1, skills_2, income, 
-        marriage_certificate, status, created_at) 
+      `INSERT INTO spouses
+       (slum_id, name, dob, gender, nid, mobile, education, job, skills_1, skills_2, income,
+        marriage_certificate, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         slumCode,
@@ -2852,7 +2852,7 @@ export const addChild = async (req, res) => {
     // Check for birth certificate duplicate if provided
     if (childData.birth_certificate_number) {
       const cleanCertNumber = String(childData.birth_certificate_number).replace(/\s+/g, '');
-      
+
       // Validate 17-digit format
       if (!/^\d{17}$/.test(cleanCertNumber)) {
         await connection.rollback();
@@ -2894,9 +2894,9 @@ export const addChild = async (req, res) => {
 
     // Insert child with pending_add status
     const [insertResult] = await connection.query(
-      `INSERT INTO children 
-       (slum_id, name, dob, gender, birth_certificate_number, education, job, skills_1, skills_2, 
-        income, preferred_job, birth_certificate, age_group, status, created_at) 
+      `INSERT INTO children
+       (slum_id, name, dob, gender, birth_certificate_number, education, job, skills_1, skills_2,
+        income, preferred_job, birth_certificate, age_group, status, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         slumCode,
@@ -2995,7 +2995,7 @@ export const sendSpouseAddOTP = async (req, res) => {
     if (!global.otpStorage) {
       global.otpStorage = new Map();
     }
-    
+
     global.otpStorage.set(otpKey, {
       otp: otp.toString(),
       expiry: Date.now() + 5 * 60 * 1000, // 5 minutes
@@ -3092,7 +3092,7 @@ export const verifySpouseAddOTP = async (req, res) => {
 
     // Get the spouseKey from either request body or stored OTP data
     const actualSpouseKey = spouseKey || storedOtpData.spouseKey;
-    
+
     if (!actualSpouseKey) {
       return res.status(400).json({
         status: "error",
@@ -3128,9 +3128,9 @@ export const verifySpouseAddOTP = async (req, res) => {
 
       // Insert the spouse data after successful OTP verification with pending_add status
       const [insertResult] = await connection.query(
-        `INSERT INTO spouses 
-         (slum_id, name, dob, gender, nid, mobile, education, job, skills_1, skills_2, income, 
-          marriage_certificate, status, created_at) 
+        `INSERT INTO spouses
+         (slum_id, name, dob, gender, nid, mobile, education, job, skills_1, skills_2, income,
+          marriage_certificate, status, created_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           pendingData.slumCode,
@@ -3199,7 +3199,7 @@ export const getSpousesByArea = async (req, res) => {
     }
 
     const [spouses] = await pool.query(
-      `SELECT 
+      `SELECT
          s.id,
          s.slum_id,
          s.name,
@@ -3246,7 +3246,7 @@ export const getChildrenByArea = async (req, res) => {
     }
 
     const [children] = await pool.query(
-      `SELECT 
+      `SELECT
          c.id,
          c.slum_id,
          c.name,

@@ -1,46 +1,22 @@
-import mysql from "mysql2/promise";
-import dotenv from "dotenv";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import db from "./db.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.join(__dirname, ".env") });
-
-async function setupDatabase() {
-  const connection = await mysql.createConnection({
-    host: process.env.DB_HOST || "localhost",
-    port: Number(process.env.DB_PORT || 3306),
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "nanjiba@282002",
-    database: process.env.DB_NAME || "slumlink",
-  });
-
+async function verifyDatabase() {
   try {
-    console.log("Setting up database tables...");
-    
-    // Read and execute documents table SQL
-    const sqlPath = path.join(__dirname, "sql", "add_documents_table.sql");
-    const sql = fs.readFileSync(sqlPath, "utf8");
-    
-    // Split by semicolon and execute each statement
-    const statements = sql.split(";").filter(stmt => stmt.trim());
-    
-    for (const statement of statements) {
-      if (statement.trim()) {
-        console.log("Executing:", statement.substring(0, 50) + "...");
-        await connection.execute(statement);
-      }
-    }
-    
-    console.log("✅ Database setup completed successfully");
+    const [tables] = await db.query(`
+      SELECT tablename
+      FROM pg_catalog.pg_tables
+      WHERE schemaname = 'public'
+      ORDER BY tablename
+    `);
+
+    console.log(`PostgreSQL connected. Found ${tables.length} public tables.`);
+    for (const table of tables) console.log(`- ${table.tablename}`);
   } catch (error) {
-    console.error("❌ Database setup failed:", error.message);
+    console.error("Database verification failed:", error.message);
+    process.exitCode = 1;
   } finally {
-    await connection.end();
+    await db.end();
   }
 }
 
-setupDatabase();
+verifyDatabase();

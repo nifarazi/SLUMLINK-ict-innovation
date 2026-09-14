@@ -1,0 +1,2 @@
+-- Development seed data will be added after the schema migration is verified.
+-- Do not place production resident, identity, contact, or document data here.

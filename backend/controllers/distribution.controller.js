@@ -28,8 +28,8 @@ async function ensureCampaignActiveForOrgToday(conn, campaign_id, org_id) {
      WHERE campaign_id = ?
        AND org_id = ?
        AND status <> 'cancelled'
-       AND start_date <= CURDATE()
-       AND end_date >= CURDATE()
+       AND start_date <= CURRENT_DATE
+       AND end_date >= CURRENT_DATE
      LIMIT 1`,
     [campaign_id, org_id]
   );
@@ -467,7 +467,7 @@ export async function getCampaignDistributionHistory(req, res) {
         SELECT
           DATE(de.distributed_at) AS distribution_date,
           de.family_code,
-          COALESCE(sd.family_members, 0) AS family_members
+          MAX(COALESCE(sd.family_members, 0)) AS family_members
         FROM distribution_entries de
         LEFT JOIN slum_dwellers sd ON sd.slum_code = de.family_code
         WHERE de.campaign_id = ?
@@ -572,7 +572,7 @@ export async function getCampaignImpact(req, res) {
       FROM (
         SELECT
           de.family_code,
-          COALESCE(sd.family_members, 0) AS family_members
+          MAX(COALESCE(sd.family_members, 0)) AS family_members
         FROM distribution_entries de
         LEFT JOIN slum_dwellers sd ON sd.slum_code = de.family_code
         WHERE de.campaign_id = ?

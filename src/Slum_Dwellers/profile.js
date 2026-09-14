@@ -3450,7 +3450,7 @@ function showToast(title, message, type = 'success') {
   }
 
   // API Base URL
-  const API_BASE = 'http://localhost:5001/api';
+  const API_BASE = '/api';
 
   // Step 1: Initial confirmation
   changePhoneBtn.addEventListener('click', showModal);
@@ -3797,7 +3797,7 @@ function showToast(title, message, type = 'success') {
   }
 
   // API Base URL
-  const API_BASE = 'http://localhost:5001/api';
+  const API_BASE = '/api';
 
   // Event delegation for change spouse phone buttons
   document.addEventListener('click', (e) => {

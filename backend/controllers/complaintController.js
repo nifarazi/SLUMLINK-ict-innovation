@@ -1,25 +1,25 @@
 // backend/controllers/complaintController.js
-import pool from "../db.js"; // Make sure this exports a MySQL pool
+import pool from "../db.js";
 
 // 1️⃣ Get counts per category (with optional division filter for local authorities)
 export const getComplaintCounts = async (req, res) => {
   try {
     const { division } = req.query;
-    
+
     let query = `
       SELECT category, COUNT(*) AS total,
-             SUM(status='pending') AS pendingCount
+             COUNT(*) FILTER (WHERE status = 'pending') AS "pendingCount"
       FROM complaints
     `;
     const params = [];
-    
+
     if (division) {
       query += ` WHERE division = ?`;
       params.push(division);
     }
-    
+
     query += ` GROUP BY category`;
-    
+
     const [rows] = await pool.query(query, params);
 
     const categories = {};
@@ -44,19 +44,19 @@ export const getComplaintsByCategory = async (req, res) => {
     if (!category) return res.status(400).json({ error: "Category is required" });
 
     let query = `
-      SELECT complaint_id, slum_id, title, description, status 
-      FROM complaints 
+      SELECT complaint_id, slum_id, title, description, status
+      FROM complaints
       WHERE category = ?
     `;
     const params = [category];
-    
+
     if (division) {
       query += ` AND division = ?`;
       params.push(division);
     }
-    
+
     query += ` ORDER BY created_at DESC`;
-    
+
     const [rows] = await pool.query(query, params);
 
     res.json(rows);
@@ -131,7 +131,7 @@ export const getComplaintAttachment = async (req, res) => {
     }
 
     const attachment = rows[0];
-    
+
     // Set proper headers for file download
     res.setHeader('Content-Type', attachment.attachment_mimetype || 'application/octet-stream');
     res.setHeader('Content-Disposition', `inline; filename="${attachment.attachment_filename}"`);
